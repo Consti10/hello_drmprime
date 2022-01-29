@@ -221,6 +221,9 @@ static int decode_write(AVCodecContext * const avctx,
             goto fail;
         }
         assert(ret==0);
+        if(ret!=0){
+            std::cerr<<"This should never happen\n";
+        }
         nPulledFrames++;
         nTotalPulledFrames++;
         {
