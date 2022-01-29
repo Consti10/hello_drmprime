@@ -179,7 +179,6 @@ static int decode_write(AVCodecContext * const avctx,
     unsigned int i;
 
     std::cout<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
-    const float fps=
 
     const auto before=std::chrono::steady_clock::now();
 
