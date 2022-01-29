@@ -70,7 +70,7 @@ typedef struct drm_aux_s
 #define AUX_SIZE 3
 typedef struct drmprime_out_env_s
 {
-    AVClass *class;
+    AVClass *classx;
 
     int drm_fd;
     uint32_t con_id;
@@ -290,7 +290,7 @@ static int do_sem_wait(sem_t *const sem, const int nowait)
 
 static void* display_thread(void *v)
 {
-    drmprime_out_env_t *const de = v;
+    drmprime_out_env_t *const de = (drmprime_out_env_t *)v;
     int i;
 
 #if TRACE_ALL
