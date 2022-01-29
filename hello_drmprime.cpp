@@ -523,7 +523,7 @@ loopy:
 
         if (video_stream == packet.stream_index){
             ret = decode_write(decoder_ctx, dpo, &packet);
-            nFeedFrames++:
+            nFeedFrames++;
             const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
             const double runTimeS=runTimeMs/1000.0f;
             const double fps=nFeedFrames/runTimeS;
