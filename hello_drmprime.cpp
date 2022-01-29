@@ -190,7 +190,7 @@ static int decode_write(AVCodecContext * const avctx,
     //
     feedDecoderTimePoints.push_back(before);
 
-    int nPulledFrames=0;
+    int nPulledFramesThisIteraton=0;
     const std::chrono::steady_clock::time_point pullFramesStartTimePoint=std::chrono::steady_clock::now();
 
     for (;;) {
@@ -208,7 +208,7 @@ static int decode_write(AVCodecContext * const avctx,
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             av_frame_free(&frame);
             av_frame_free(&sw_frame);
-            //fprintf(stderr, "Got eagain. N Pulled frames: %d\n",nPulledFrames);
+            //fprintf(stderr, "Got eagain. N Pulled frames: %d\n",nPulledFramesThisIteraton);
             const auto timePulling=std::chrono::steady_clock::now()-pullFramesStartTimePoint;
             if(timePulling>std::chrono::milliseconds(1000)){
                 std::cout<<"Timeout of 1 second reached\n";
@@ -224,14 +224,14 @@ static int decode_write(AVCodecContext * const avctx,
         if(ret!=0){
             std::cerr<<"This should never happen\n";
         }
-        nPulledFrames++;
+        nPulledFramesThisIteraton++;
         nTotalPulledFrames++;
         {
             const auto decode_delay=std::chrono::steady_clock::now()-before;
             std::cout<<"Decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(decode_delay).count()/1000.0f)<<" ms\n";
             // check if we have the (put in) time stamp for this frame
             if(feedDecoderTimePoints.size()>=nPulledFrames){
-                const auto thisFrameFeedDecoderTimePoint=feedDecoderTimePoints.at(nPulledFrames-1);
+                const auto thisFrameFeedDecoderTimePoint=feedDecoderTimePoints.at(nTotalPulledFrames-1);
                 const auto x_delay=std::chrono::steady_clock::now()-thisFrameFeedDecoderTimePoint;
                 std::cout<<"(True) decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(x_delay).count()/1000.0f)<<" ms\n";
             }
