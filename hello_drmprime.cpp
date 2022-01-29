@@ -100,6 +100,8 @@ static int decode_write(AVCodecContext * const avctx,
     int ret = 0;
     unsigned int i;
 
+    std::cout<<"Decode frame:"<<packet->size<<" B\n";
+
     const auto before=std::chrono::steady_clock::now();
 
     ret = avcodec_send_packet(avctx, packet);
