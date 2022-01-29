@@ -230,7 +230,7 @@ static int decode_write(AVCodecContext * const avctx,
             const auto decode_delay=std::chrono::steady_clock::now()-before;
             std::cout<<"Decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(decode_delay).count()/1000.0f)<<" ms\n";
             // check if we have the (put in) time stamp for this frame
-            if(feedDecoderTimePoints.size()>=nPulledFrames){
+            if(feedDecoderTimePoints.size()>=nTotalPulledFrames){
                 const auto thisFrameFeedDecoderTimePoint=feedDecoderTimePoints.at(nTotalPulledFrames-1);
                 const auto x_delay=std::chrono::steady_clock::now()-thisFrameFeedDecoderTimePoint;
                 std::cout<<"(True) decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(x_delay).count()/1000.0f)<<" ms\n";
