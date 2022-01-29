@@ -501,7 +501,9 @@ loopy:
     if (hw_decoder_init(decoder_ctx, type) < 0)
         return -1;
 
-    decoder_ctx->thread_count = 3;
+    // Consti10
+    //decoder_ctx->thread_count = 3;
+    decoder_ctx->thread_count = 1;
 
     if ((ret = avcodec_open2(decoder_ctx, decoder, NULL)) < 0) {
         fprintf(stderr, "Failed to open codec for stream #%u\n", video_stream);
