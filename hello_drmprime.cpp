@@ -177,7 +177,6 @@ static int decode_write(AVCodecContext * const avctx,
     int size;
     int ret = 0;
     unsigned int i;
-
     std::cout<<"Currently fed frames: "<<feedDecoderTimePoints.size()<<" Currently outputed frames:"<<nTotalPulledFrames<<"\n";
 
     std::cout<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
