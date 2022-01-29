@@ -182,6 +182,8 @@ static int decode_write(AVCodecContext * const avctx,
         return ret;
     }
 
+    int nPulledFrames=0;
+
     for (;;) {
         if (!(frame = av_frame_alloc()) || !(sw_frame = av_frame_alloc())) {
             fprintf(stderr, "Can not alloc frame\n");
@@ -197,7 +199,7 @@ static int decode_write(AVCodecContext * const avctx,
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             av_frame_free(&frame);
             av_frame_free(&sw_frame);
-            fprintf(stderr, "Got eagain\n");
+            fprintf(stderr, "Got eagain. N Pulled frames: %d\n",nPulledFrames);
             return 0; // Consti10
             //continue;
         } else if (ret < 0) {
@@ -205,6 +207,7 @@ static int decode_write(AVCodecContext * const avctx,
             goto fail;
         }
         assert(ret==0);
+        nPulledFrames++;
         {
             const auto decode_delay=std::chrono::steady_clock::now()-before;
             std::cout<<"Decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(decode_delay).count()/1000.0f)<<" ms\n";
