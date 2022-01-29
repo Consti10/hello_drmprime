@@ -178,10 +178,10 @@ static int decode_write(AVCodecContext * const avctx,
     int ret = 0;
     unsigned int i;
 
+    std::cout<<"Currently fed frames: "<<feedDecoderTimePoints.size()<<" Currently outputed frames:"<<nTotalPulledFrames<<"\n";
+
     std::cout<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
-
     const auto before=std::chrono::steady_clock::now();
-
     ret = avcodec_send_packet(avctx, packet);
     if (ret < 0) {
         fprintf(stderr, "Error during decoding\n");
