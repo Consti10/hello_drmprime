@@ -113,7 +113,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
                     // compile error fprintf(stderr, "Failed to get frame: %s", av_err2str(ret));
                     fprintf(stderr, "Failed to get frame: ");
                 }
-                goto fail;
+                return;
             }
         }
 
