@@ -119,7 +119,7 @@ static int decode_write(AVCodecContext * const avctx,
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             av_frame_free(&frame);
             av_frame_free(&sw_frame);
-            fprintf(stderr, "Got eagain\n");
+            //fprintf(stderr, "Got eagain\n");
             // Consti10
             // return 0;
             continue;
