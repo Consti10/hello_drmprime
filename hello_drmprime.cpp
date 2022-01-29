@@ -51,6 +51,7 @@ extern "C" {
 
 #include <chrono>
 #include <iostream>
+#include <cassert>
 
 static enum AVPixelFormat hw_pix_fmt;
 static FILE *output_file = NULL;
