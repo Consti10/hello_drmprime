@@ -491,7 +491,7 @@ void drmprime_out_delete(drmprime_out_env_t *de)
 drmprime_out_env_t* drmprime_out_new()
 {
     int rv;
-    drmprime_out_env_t* const de = calloc(1, sizeof(*de));
+    drmprime_out_env_t* const de = (drmprime_out_env_t*)calloc(1, sizeof(*de));
     if (de == NULL)
         return NULL;
 
@@ -505,7 +505,8 @@ drmprime_out_env_t* drmprime_out_new()
 
     if ((de->drm_fd = drmOpen(drm_module, NULL)) < 0) {
         rv = AVERROR(errno);
-        fprintf(stderr, "Failed to drmOpen %s: %s\n", drm_module, av_err2str(rv));
+        // comp error fprintf(stderr, "Failed to drmOpen %s: %s\n", drm_module, av_err2str(rv));
+        fprintf(stderr, "Failed to drmOpen %s: \n", drm_module);
         goto fail_free;
     }
 
@@ -519,7 +520,8 @@ drmprime_out_env_t* drmprime_out_new()
     sem_init(&de->q_sem_out, 0, 0);
     if (pthread_create(&de->q_thread, NULL, display_thread, de)) {
         rv = AVERROR(errno);
-        fprintf(stderr, "Failed to create display thread: %s\n", av_err2str(rv));
+        //comp error fprintf(stderr, "Failed to create display thread: %s\n", av_err2str(rv));
+        fprintf(stderr, "Failed to create display thread:\n");
         goto fail_close;
     }
 
