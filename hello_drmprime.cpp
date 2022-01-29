@@ -211,6 +211,7 @@ static int decode_write(AVCodecContext * const avctx,
             fprintf(stderr, "Got eagain. N Pulled frames: %d\n",nPulledFrames);
             const auto timePulling=std::chrono::steady_clock::now()-pullFramesStartTimePoint;
             if(std::chrono::duration_cast<std::chrono::microseconds>(timePulling)>1000){
+                std::cout<<"Timeout of 1 second reached\n";
                 return 0;
             }
             //return 0; // Consti10
