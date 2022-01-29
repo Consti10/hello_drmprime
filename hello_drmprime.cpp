@@ -166,7 +166,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
 
 
 std::vector<std::chrono::steady_clock::time_point> feedDecoderTimePoints;
-int nTotalPulledFrames;
+int nTotalPulledFrames=0;
 
 static int decode_write(AVCodecContext * const avctx,
                         drmprime_out_env_t * const dpo,
@@ -179,6 +179,7 @@ static int decode_write(AVCodecContext * const avctx,
     unsigned int i;
 
     std::cout<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
+    const float fps=
 
     const auto before=std::chrono::steady_clock::now();
 
@@ -515,12 +516,20 @@ loopy:
 
     /* actual decoding and dump the raw data */
     frames = frame_count;
+    const auto decodingStart=std::chrono::steady_clock::now();
+    int nFeedFrames=0;
     while (ret >= 0) {
         if ((ret = av_read_frame(input_ctx, &packet)) < 0)
             break;
 
-        if (video_stream == packet.stream_index)
+        if (video_stream == packet.stream_index){
             ret = decode_write(decoder_ctx, dpo, &packet);
+            nFeedFrames++:
+            const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
+            const double runTimeS=runTimeMs/1000.0f;
+            const double fps=nFeedFrames/runTimeS;
+            std::cout<<"Fake fps:"<<fps<<"\n";
+        }
 
         av_packet_unref(&packet);
     }
