@@ -90,7 +90,7 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
     return AV_PIX_FMT_NONE;
 }
 
-static void x_push_into_filter_graph(AVFrame *frame,AVFrame* sw_frame,uint8_t *buffer){
+static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *frame,AVFrame* sw_frame,uint8_t *buffer){
     int size;
     int ret=0;
     // push the decoded frame into the filtergraph if it exists
@@ -201,7 +201,7 @@ static int decode_write(AVCodecContext * const avctx,
             std::cout<<"Decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(decode_delay).count()/1000.0f)<<" ms\n";
         }
 
-        x_push_into_filter_graph(frame,sw_frame,buffer);
+        x_push_into_filter_graph(dpo,frame,sw_frame,buffer);
 
         if (frames == 0 || --frames == 0)
             ret = -1;
