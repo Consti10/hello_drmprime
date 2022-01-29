@@ -103,7 +103,7 @@ static int decode_write(AVCodecContext * const avctx,
     if (!(frame = av_frame_alloc()) || !(sw_frame = av_frame_alloc())) {
         fprintf(stderr, "Can not alloc frame\n");
         ret = AVERROR(ENOMEM);
-        goto fail;
+        return ret;
     }
 
     const auto before=std::chrono::steady_clock::now();
