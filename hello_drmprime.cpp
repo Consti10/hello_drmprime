@@ -53,6 +53,8 @@ extern "C" {
 #include <iostream>
 #include <cassert>
 
+#include <vector>
+
 static enum AVPixelFormat hw_pix_fmt;
 static FILE *output_file = NULL;
 static long frames = 0;
@@ -162,6 +164,10 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
 }
 
+
+std::vector<std::chrono::steady_clock::time_point> feedDecoderTimePoints;
+int nTotalPulledFrames;
+
 static int decode_write(AVCodecContext * const avctx,
                         drmprime_out_env_t * const dpo,
                         AVPacket *packet)
@@ -181,8 +187,11 @@ static int decode_write(AVCodecContext * const avctx,
         fprintf(stderr, "Error during decoding\n");
         return ret;
     }
+    //
+    feedDecoderTimePoints.push_back(before);
 
     int nPulledFrames=0;
+    const std::chrono::steady_clock::time_point pullFramesStartTimePoint=std::chrono::steady_clock::now();
 
     for (;;) {
         if (!(frame = av_frame_alloc()) || !(sw_frame = av_frame_alloc())) {
@@ -208,9 +217,16 @@ static int decode_write(AVCodecContext * const avctx,
         }
         assert(ret==0);
         nPulledFrames++;
+        nTotalPulledFrames++;
         {
             const auto decode_delay=std::chrono::steady_clock::now()-before;
             std::cout<<"Decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(decode_delay).count()/1000.0f)<<" ms\n";
+            // check if we have the (put in) time stamp for this frame
+            if(feedDecoderTimePoints.size()>=nPulledFrames){
+                const auto thisFrameFeedDecoderTimePoint=feedDecoderTimePoints.at(nPulledFrames-1);
+                const auto x_delay=std::chrono::steady_clock::now()-thisFrameFeedDecoderTimePoint;
+                std::cout<<"(True) decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(x_delay).count()/1000.0f)<<" ms\n";
+            }
         }
 
         x_push_into_filter_graph(dpo,frame,sw_frame,buffer);
