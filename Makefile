@@ -1,5 +1,5 @@
 _LDFLAGS := $(LDFLAGS) -I/usr/local/include -L/usr/local/lib -lavformat -lm -latomic -lz -lavcodec -pthread -lm -latomic -lz -lswresample -lm -latomic -lswscale -lm -latomic -lavutil -pthread -lm -latomic -ldrm  #`pkg-config --cflags --libs libavformat libswscale`
-_CPPFLAGS := $(CFLAGS)  -std=c++17
+_CPPFLAGS := $(CFLAGS)  #-std=c++17
 
 all: hello_drmprime
 
