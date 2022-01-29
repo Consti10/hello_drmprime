@@ -208,13 +208,13 @@ static int decode_write(AVCodecContext * const avctx,
             av_frame_free(&frame);
             av_frame_free(&sw_frame);
             //fprintf(stderr, "Got eagain. N Pulled frames: %d\n",nPulledFramesThisIteraton);
-            /*const auto timePulling=std::chrono::steady_clock::now()-pullFramesStartTimePoint;
+            const auto timePulling=std::chrono::steady_clock::now()-pullFramesStartTimePoint;
             if(timePulling>std::chrono::milliseconds(1000)){
                 std::cout<<"Timeout of 1 second reached\n";
                 return 0;
-            }*/
-            return 0; // Consti10
-            //continue;
+            }
+            //return 0; // Consti10
+            continue;
         } else if (ret < 0) {
             fprintf(stderr, "Error while decoding\n");
             goto fail;
