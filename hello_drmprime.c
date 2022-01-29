@@ -133,8 +133,10 @@ static int decode_write(AVCodecContext * const avctx,
                     break;
                 }
                 if (ret < 0) {
-                    if (ret != AVERROR_EOF)
-                        fprintf(stderr, "Failed to get frame: %s", av_err2str(ret));
+                    if (ret != AVERROR_EOF){
+                        // compile error fprintf(stderr, "Failed to get frame: %s", av_err2str(ret));
+                        fprintf(stderr, "Failed to get frame: ");
+                    }
                     goto fail;
                 }
             }
@@ -154,9 +156,9 @@ static int decode_write(AVCodecContext * const avctx,
                 } else
                     tmp_frame = frame;
 
-                size = av_image_get_buffer_size(tmp_frame->format, tmp_frame->width,
+                size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
                                                 tmp_frame->height, 1);
-                buffer = av_malloc(size);
+                buffer = (uint8_t*)av_malloc(size);
                 if (!buffer) {
                     fprintf(stderr, "Can not alloc buffer\n");
                     ret = AVERROR(ENOMEM);
@@ -164,7 +166,7 @@ static int decode_write(AVCodecContext * const avctx,
                 }
                 ret = av_image_copy_to_buffer(buffer, size,
                                               (const uint8_t * const *)tmp_frame->data,
-                                              (const int *)tmp_frame->linesize, tmp_frame->format,
+                                              (const int *)tmp_frame->linesize, (AVPixelFormat)tmp_frame->format,
                                               tmp_frame->width, tmp_frame->height, 1);
                 if (ret < 0) {
                     fprintf(stderr, "Can not copy image to buffer\n");
@@ -293,7 +295,7 @@ int main(int argc, char *argv[])
     int video_stream, ret;
     AVStream *video = NULL;
     AVCodecContext *decoder_ctx = NULL;
-    AVCodec *decoder = NULL;
+    const AVCodec *decoder = NULL;
     AVPacket packet;
     enum AVHWDeviceType type;
     const char * in_file;
