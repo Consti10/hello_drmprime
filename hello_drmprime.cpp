@@ -100,12 +100,6 @@ static int decode_write(AVCodecContext * const avctx,
     int ret = 0;
     unsigned int i;
 
-    if (!(frame = av_frame_alloc()) || !(sw_frame = av_frame_alloc())) {
-        fprintf(stderr, "Can not alloc frame\n");
-        ret = AVERROR(ENOMEM);
-        return ret;
-    }
-
     const auto before=std::chrono::steady_clock::now();
 
     ret = avcodec_send_packet(avctx, packet);
@@ -115,6 +109,11 @@ static int decode_write(AVCodecContext * const avctx,
     }
 
     for (;;) {
+        if (!(frame = av_frame_alloc()) || !(sw_frame = av_frame_alloc())) {
+            fprintf(stderr, "Can not alloc frame\n");
+            ret = AVERROR(ENOMEM);
+            goto fail;
+        }
         ret = avcodec_receive_frame(avctx, frame);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             av_frame_free(&frame);
