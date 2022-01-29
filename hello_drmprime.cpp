@@ -174,7 +174,10 @@ static int decode_write(AVCodecContext * const avctx,
     if (!(frame = av_frame_alloc()) || !(sw_frame = av_frame_alloc())) {
         fprintf(stderr, "Can not alloc frame\n");
         ret = AVERROR(ENOMEM);
-        goto fail;
+        av_frame_free(&frame);
+        av_frame_free(&sw_frame);
+        av_freep(&buffer);
+        return ret;
     }
 
     std::cout<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
