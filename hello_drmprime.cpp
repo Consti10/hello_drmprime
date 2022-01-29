@@ -90,6 +90,72 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
     return AV_PIX_FMT_NONE;
 }
 
+static void x_push_into_filter_graph(AVFrame *frame,AVFrame* sw_frame){
+    // push the decoded frame into the filtergraph if it exists
+    if (filter_graph != NULL &&
+        (ret = av_buffersrc_add_frame_flags(buffersrc_ctx, frame, AV_BUFFERSRC_FLAG_KEEP_REF)) < 0) {
+        fprintf(stderr, "Error while feeding the filtergraph\n");
+        goto fail;
+    }
+
+
+    do {
+        if (filter_graph != NULL) {
+            av_frame_unref(frame);
+            ret = av_buffersink_get_frame(buffersink_ctx, frame);
+            if (ret == AVERROR(EAGAIN)) {
+                ret = 0;
+                break;
+            }
+            if (ret < 0) {
+                if (ret != AVERROR_EOF){
+                    // compile error fprintf(stderr, "Failed to get frame: %s", av_err2str(ret));
+                    fprintf(stderr, "Failed to get frame: ");
+                }
+                goto fail;
+            }
+        }
+
+        drmprime_out_display(dpo, frame);
+
+        if (output_file != NULL) {
+            AVFrame *tmp_frame;
+
+            if (frame->format == hw_pix_fmt) {
+                /* retrieve data from GPU to CPU */
+                if ((ret = av_hwframe_transfer_data(sw_frame, frame, 0)) < 0) {
+                    fprintf(stderr, "Error transferring the data to system memory\n");
+                    goto fail;
+                }
+                tmp_frame = sw_frame;
+            } else
+                tmp_frame = frame;
+
+            size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
+                                            tmp_frame->height, 1);
+            buffer = (uint8_t*)av_malloc(size);
+            if (!buffer) {
+                fprintf(stderr, "Can not alloc buffer\n");
+                ret = AVERROR(ENOMEM);
+                goto fail;
+            }
+            ret = av_image_copy_to_buffer(buffer, size,
+                                          (const uint8_t * const *)tmp_frame->data,
+                                          (const int *)tmp_frame->linesize, (AVPixelFormat)tmp_frame->format,
+                                          tmp_frame->width, tmp_frame->height, 1);
+            if (ret < 0) {
+                fprintf(stderr, "Can not copy image to buffer\n");
+                goto fail;
+            }
+
+            if ((ret = fwrite(buffer, 1, size, output_file)) < 0) {
+                fprintf(stderr, "Failed to dump raw data.\n");
+                goto fail;
+            }
+        }
+    } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
+}
+
 static int decode_write(AVCodecContext * const avctx,
                         drmprime_out_env_t * const dpo,
                         AVPacket *packet)
@@ -100,7 +166,7 @@ static int decode_write(AVCodecContext * const avctx,
     int ret = 0;
     unsigned int i;
 
-    std::cout<<"Decode frame:"<<packet->size<<" B\n";
+    std::cout<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
 
     const auto before=std::chrono::steady_clock::now();
 
@@ -117,6 +183,7 @@ static int decode_write(AVCodecContext * const avctx,
             goto fail;
         }
         ret = avcodec_receive_frame(avctx, frame);
+
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             av_frame_free(&frame);
             av_frame_free(&sw_frame);
@@ -133,68 +200,7 @@ static int decode_write(AVCodecContext * const avctx,
             std::cout<<"Decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(decode_delay).count()/1000.0f)<<" ms\n";
         }
 
-        // push the decoded frame into the filtergraph if it exists
-        if (filter_graph != NULL &&
-            (ret = av_buffersrc_add_frame_flags(buffersrc_ctx, frame, AV_BUFFERSRC_FLAG_KEEP_REF)) < 0) {
-            fprintf(stderr, "Error while feeding the filtergraph\n");
-            goto fail;
-        }
-
-        do {
-            if (filter_graph != NULL) {
-                av_frame_unref(frame);
-                ret = av_buffersink_get_frame(buffersink_ctx, frame);
-                if (ret == AVERROR(EAGAIN)) {
-                    ret = 0;
-                    break;
-                }
-                if (ret < 0) {
-                    if (ret != AVERROR_EOF){
-                        // compile error fprintf(stderr, "Failed to get frame: %s", av_err2str(ret));
-                        fprintf(stderr, "Failed to get frame: ");
-                    }
-                    goto fail;
-                }
-            }
-
-            drmprime_out_display(dpo, frame);
-
-            if (output_file != NULL) {
-                AVFrame *tmp_frame;
-
-                if (frame->format == hw_pix_fmt) {
-                    /* retrieve data from GPU to CPU */
-                    if ((ret = av_hwframe_transfer_data(sw_frame, frame, 0)) < 0) {
-                        fprintf(stderr, "Error transferring the data to system memory\n");
-                        goto fail;
-                    }
-                    tmp_frame = sw_frame;
-                } else
-                    tmp_frame = frame;
-
-                size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
-                                                tmp_frame->height, 1);
-                buffer = (uint8_t*)av_malloc(size);
-                if (!buffer) {
-                    fprintf(stderr, "Can not alloc buffer\n");
-                    ret = AVERROR(ENOMEM);
-                    goto fail;
-                }
-                ret = av_image_copy_to_buffer(buffer, size,
-                                              (const uint8_t * const *)tmp_frame->data,
-                                              (const int *)tmp_frame->linesize, (AVPixelFormat)tmp_frame->format,
-                                              tmp_frame->width, tmp_frame->height, 1);
-                if (ret < 0) {
-                    fprintf(stderr, "Can not copy image to buffer\n");
-                    goto fail;
-                }
-
-                if ((ret = fwrite(buffer, 1, size, output_file)) < 0) {
-                    fprintf(stderr, "Failed to dump raw data.\n");
-                    goto fail;
-                }
-            }
-        } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
+        x_push_into_filter_graph(frame,sw_frame);
 
         if (frames == 0 || --frames == 0)
             ret = -1;
