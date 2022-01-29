@@ -233,8 +233,8 @@ static int decode_write(AVCodecContext * const avctx,
                 std::cout<<"(True) decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(x_delay).count()/1000.0f)<<" ms\n";
             }
         }
-
-        x_push_into_filter_graph(dpo,frame,sw_frame,buffer);
+        // tmp test disable
+        //x_push_into_filter_graph(dpo,frame,sw_frame,buffer);
 
         if (frames == 0 || --frames == 0)
             ret = -1;
