@@ -126,6 +126,7 @@ static int decode_write(AVCodecContext * const avctx,
             fprintf(stderr, "Error while decoding\n");
             goto fail;
         }
+        assert(ret==0);
         {
             const auto decode_delay=std::chrono::steady_clock::now()-before;
             std::cout<<"Decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(decode_delay).count()/1000.0f)<<" ms\n";
