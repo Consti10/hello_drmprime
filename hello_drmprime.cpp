@@ -209,8 +209,12 @@ static int decode_write(AVCodecContext * const avctx,
             av_frame_free(&frame);
             av_frame_free(&sw_frame);
             fprintf(stderr, "Got eagain. N Pulled frames: %d\n",nPulledFrames);
-            return 0; // Consti10
-            //continue;
+            const auto timePulling=std::chrono::steady_clock::now()-pullFramesStartTimePoint;
+            if(std::chrono::duration_cast<std::chrono::microseconds>(timePulling)>1000){
+                return 0;
+            }
+            //return 0; // Consti10
+            continue;
         } else if (ret < 0) {
             fprintf(stderr, "Error while decoding\n");
             goto fail;
@@ -428,6 +432,7 @@ int main(int argc, char *argv[])
 
     /* open the file to dump raw data */
     if (out_name != NULL) {
+        std::cout<<"Opening output fle:"<<std::string(out_name)<<"\n";
         if ((output_file = fopen(out_name, "w+")) == NULL) {
             fprintf(stderr, "Failed to open output file %s: %s\n", out_name, strerror(errno));
             return -1;
