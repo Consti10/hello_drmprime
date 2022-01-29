@@ -97,7 +97,8 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
     if (filter_graph != NULL &&
         (ret = av_buffersrc_add_frame_flags(buffersrc_ctx, frame, AV_BUFFERSRC_FLAG_KEEP_REF)) < 0) {
         fprintf(stderr, "Error while feeding the filtergraph\n");
-        goto fail;
+        //goto fail;
+        return;
     }
 
     do {
