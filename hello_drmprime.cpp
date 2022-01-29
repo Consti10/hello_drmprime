@@ -50,6 +50,7 @@ extern "C" {
 #include "drmprime_out.h"
 
 #include <chrono>
+#include <iostream>
 
 static enum AVPixelFormat hw_pix_fmt;
 static FILE *output_file = NULL;
@@ -122,9 +123,10 @@ static int decode_write(AVCodecContext * const avctx,
             fprintf(stderr, "Error while decoding\n");
             goto fail;
         }
-
-        const auto decode_delay=std::chrono::steady_clock::now()-before;
-        std::cout<<"Decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(decode_delay).count()/1000.0f)<<" ms\n";
+        {
+            const auto decode_delay=std::chrono::steady_clock::now()-before;
+            std::cout<<"Decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(decode_delay).count()/1000.0f)<<" ms\n";
+        }
 
         // push the decoded frame into the filtergraph if it exists
         if (filter_graph != NULL &&
