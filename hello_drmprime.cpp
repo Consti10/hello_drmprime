@@ -90,14 +90,15 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
     return AV_PIX_FMT_NONE;
 }
 
-static void x_push_into_filter_graph(AVFrame *frame,AVFrame* sw_frame){
+static void x_push_into_filter_graph(AVFrame *frame,AVFrame* sw_frame,uint8_t *buffer){
+    int size;
+    int ret=0;
     // push the decoded frame into the filtergraph if it exists
     if (filter_graph != NULL &&
         (ret = av_buffersrc_add_frame_flags(buffersrc_ctx, frame, AV_BUFFERSRC_FLAG_KEEP_REF)) < 0) {
         fprintf(stderr, "Error while feeding the filtergraph\n");
         goto fail;
     }
-
 
     do {
         if (filter_graph != NULL) {
@@ -150,7 +151,7 @@ static void x_push_into_filter_graph(AVFrame *frame,AVFrame* sw_frame){
 
             if ((ret = fwrite(buffer, 1, size, output_file)) < 0) {
                 fprintf(stderr, "Failed to dump raw data.\n");
-                goto fail;
+                //goto fail;
             }
         }
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
@@ -200,7 +201,7 @@ static int decode_write(AVCodecContext * const avctx,
             std::cout<<"Decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(decode_delay).count()/1000.0f)<<" ms\n";
         }
 
-        x_push_into_filter_graph(frame,sw_frame);
+        x_push_into_filter_graph(frame,sw_frame,buffer);
 
         if (frames == 0 || --frames == 0)
             ret = -1;
