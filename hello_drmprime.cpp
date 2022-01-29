@@ -126,7 +126,8 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
                 /* retrieve data from GPU to CPU */
                 if ((ret = av_hwframe_transfer_data(sw_frame, frame, 0)) < 0) {
                     fprintf(stderr, "Error transferring the data to system memory\n");
-                    goto fail;
+                    //goto fail;
+                    return;
                 }
                 tmp_frame = sw_frame;
             } else
@@ -138,7 +139,8 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
             if (!buffer) {
                 fprintf(stderr, "Can not alloc buffer\n");
                 ret = AVERROR(ENOMEM);
-                goto fail;
+                //goto fail;
+                return;
             }
             ret = av_image_copy_to_buffer(buffer, size,
                                           (const uint8_t * const *)tmp_frame->data,
@@ -146,12 +148,14 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
                                           tmp_frame->width, tmp_frame->height, 1);
             if (ret < 0) {
                 fprintf(stderr, "Can not copy image to buffer\n");
-                goto fail;
+                //goto fail;
+                return;
             }
 
             if ((ret = fwrite(buffer, 1, size, output_file)) < 0) {
                 fprintf(stderr, "Failed to dump raw data.\n");
                 //goto fail;
+                return;
             }
         }
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
