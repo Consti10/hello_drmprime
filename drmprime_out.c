@@ -32,11 +32,12 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
+extern "C" {
 #include "libavutil/frame.h"
 #include "libavutil/hwcontext.h"
 #include "libavutil/hwcontext_drm.h"
 #include "libavutil/pixdesc.h"
-
+}
 
 #define TRACE_ALL 0
 
