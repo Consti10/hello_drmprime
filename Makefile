@@ -1,10 +1,14 @@
-_LDFLAGS := $(LDFLAGS) -I/usr/local/include -L/usr/local/lib -lavformat -lavfilter -lavutil -lm -latomic -lz -lavcodec -pthread -lm -latomic -lz -lswresample -lm -latomic -lswscale -lm -latomic -lavutil -pthread -lm -latomic -I/usr/include/libdrm -I/usr/include/arm-linux-gnueabihf -L/usr/lib/arm-linux-gnueabihf#`pkg-config --cflags --libs libavformat libswscale`
-_CPPFLAGS := $(CFLAGS)  -std=c++17
+ifndef FFINSTALL
+FFINSTALL=/usr
+endif
+CFLAGS=-I$(FFINSTALL)/include/arm-linux-gnueabihf -I/usr/include/libdrm
+LDFLAGS=-L$(FFINSTALL)/lib/arm-linux-gnueabihf
+LDLIBS=-lavcodec -lavfilter -lavutil -lavformat -ldrm -lpthread
 
 all: hello_drmprime
 
 hello_drmprime: hello_drmprime.c drmprime_out.c
-	$(CXX) -o $@ $^ $(_LDFLAGS) $(_CPPFLAGS)
+	$(CXX) -o $@ $^ $(CFLAGS) $(LDFLAGS) $(LDLIBS)
 
 clean:
 	rm -rf hello_drmprime
