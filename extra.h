@@ -67,7 +67,7 @@ void check_single_nalu(const uint8_t* data,const size_t data_length){
         }
     }
     std::cout<<"N nalus in this buffer:"<<nNALUs<<"\n";
-    assert(nNALUs==1);
+    //assert(nNALUs==1);
 }
 
 
