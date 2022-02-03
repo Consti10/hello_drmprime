@@ -14,8 +14,6 @@ static constexpr auto NALU_MAXLEN=1024*1024*10;
 void check_single_nalu(const uint8_t* data,const size_t data_length){
     size_t nalu_data_position=4;
     int nalu_search_state=0;
-    std::array<uint8_t,NALU_MAXLEN> nalu_data;
-    return;
 
     int nNALUs=0;
     //if(nalu_data== nullptr){
@@ -23,7 +21,8 @@ void check_single_nalu(const uint8_t* data,const size_t data_length){
     //}
     //MLOGD<<"NALU data "<<data_length;
     for (size_t i = 0; i < data_length; ++i) {
-        nalu_data[nalu_data_position++] = data[i];
+        //nalu_data[nalu_data_position++] = data[i];
+        nalu_data_position++;
         if (nalu_data_position >= NALU_MAXLEN - 1) {
             // This should never happen, but rather continue parsing than
             // possibly raising an 'memory access' exception
@@ -42,10 +41,10 @@ void check_single_nalu(const uint8_t* data,const size_t data_length){
                 break;
             case 3:
                 if (data[i] == 1) {
-                    nalu_data[0] = 0;
-                    nalu_data[1] = 0;
-                    nalu_data[2] = 0;
-                    nalu_data[3] = 1;
+                    //nalu_data[0] = 0;
+                    //nalu_data[1] = 0;
+                    //nalu_data[2] = 0;
+                    //nalu_data[3] = 1;
                     // Forward NALU only if it has enough data
                     //if(cb!=nullptr && nalu_data_position>=4){
                     /*if(cb!=nullptr && nalu_data_position>=4 ){
