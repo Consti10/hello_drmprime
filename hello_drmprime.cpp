@@ -170,19 +170,13 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
 }
 
 
-std::vector<std::chrono::steady_clock::time_point> feedDecoderTimePoints;
-int nTotalPulledFrames=0;
-
-// if waitForOutputFrame=true: Sends one frame to the decoder, then waits for the output frame to become available
-
+//Sends one frame to the decoder, then waits for the output frame to become available
 static int decode_and_wait_for_frame(AVCodecContext * const avctx,
                                      drmprime_out_env_t * const dpo,
                                      AVPacket *packet){
     AVFrame *frame = NULL, *sw_frame = NULL;
     uint8_t *buffer_for_something = NULL;
-    int size;
-    int ret = 0;
-    unsigned int i;
+    // testing
     check_single_nalu(packet->data,packet->size);
     std::cout<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
     const auto before=std::chrono::steady_clock::now();
@@ -220,9 +214,13 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
     }
     av_frame_free(&frame);
     av_frame_free(&sw_frame);
+    av_freep(&buffer_for_something);
     return 0;
 }
 
+std::vector<std::chrono::steady_clock::time_point> feedDecoderTimePoints;
+int nTotalPulledFrames=0;
+// testing
 static int decode_write(AVCodecContext * const avctx,
                         drmprime_out_env_t * const dpo,
                         AVPacket *packet)
