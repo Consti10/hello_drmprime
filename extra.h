@@ -7,7 +7,12 @@
 
 // extra code to validate the "no frame buffering" decoder properties
 
+#include <array>
+
 void check_single_nalu(const uint8_t* data,const size_t data_length,const bool isH265){
+    size_t nalu_data_position=4;
+    std::array<uint8_t,1024*1024*10> nalu_data;
+
     int nNALUs=0;
     //if(nalu_data== nullptr){
     //    nalu_data=new uint8_t[NALU::NALU_MAXLEN];
