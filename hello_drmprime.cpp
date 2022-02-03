@@ -173,11 +173,11 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
 std::vector<std::chrono::steady_clock::time_point> feedDecoderTimePoints;
 int nTotalPulledFrames=0;
 
-// if wait=true: Sends one frame to the decoder, then waits for the output frame to become available
+// if waitForOutputFrame=true: Sends one frame to the decoder, then waits for the output frame to become available
 
 static int decode_write(AVCodecContext * const avctx,
                         drmprime_out_env_t * const dpo,
-                        AVPacket *packet)
+                        AVPacket *packet,const bool waitForOutputFrame)
 {
     AVFrame *frame = NULL, *sw_frame = NULL;
     uint8_t *buffer_for_something = NULL;
@@ -541,7 +541,7 @@ loopy:
             auto tmp=getchar();
             // change LED, feed one new frame
             switch_led_on_off();
-            ret = decode_write(decoder_ctx, dpo, &packet);
+            ret = decode_write(decoder_ctx, dpo, &packet,true);
 
             nFeedFrames++;
             const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
@@ -556,7 +556,7 @@ loopy:
     /* flush the decoder */
     packet.data = NULL;
     packet.size = 0;
-    ret = decode_write(decoder_ctx, dpo, &packet);
+    ret = decode_write(decoder_ctx, dpo, &packet,false);
     av_packet_unref(&packet);
 
     if (output_file)
