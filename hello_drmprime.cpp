@@ -175,9 +175,54 @@ int nTotalPulledFrames=0;
 
 // if waitForOutputFrame=true: Sends one frame to the decoder, then waits for the output frame to become available
 
+static int decode_and_wait_for_frame(AVCodecContext * const avctx,
+                                     drmprime_out_env_t * const dpo,
+                                     AVPacket *packet){
+    AVFrame *frame = NULL, *sw_frame = NULL;
+    uint8_t *buffer_for_something = NULL;
+    int size;
+    int ret = 0;
+    unsigned int i;
+    check_single_nalu(packet->data,packet->size);
+    std::cout<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
+    const auto before=std::chrono::steady_clock::now();
+    ret = avcodec_send_packet(avctx, packet);
+    if (ret < 0) {
+        fprintf(stderr, "Error during decoding\n");
+        return ret;
+    }
+    // alloc output frame(s)
+    if (!(frame = av_frame_alloc()) || !(sw_frame = av_frame_alloc())) {
+        fprintf(stderr, "Can not alloc frame\n");
+        ret = AVERROR(ENOMEM);
+        av_frame_free(&frame);
+        av_frame_free(&sw_frame);
+        av_freep(&buffer_for_something);
+        return ret;
+    }
+    // Poll until we get the frame out
+    bool gotFrame=false;
+    while (!gotFrame){
+        ret = avcodec_receive_frame(avctx, frame);
+        if(ret == AVERROR_EOF){
+            std::cout<<"Got EOF\n";
+            return;
+        }else if(ret==0){
+            // we got a new frame
+            const auto x_delay=std::chrono::steady_clock::now()-before;
+            std::cout<<"(True) decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(x_delay).count()/1000.0f)<<" ms\n";
+            gotFrame=true;
+            // display frame
+            x_push_into_filter_graph(dpo,frame,sw_frame,buffer_for_something);
+        }else{
+            std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";
+        }
+    }
+}
+
 static int decode_write(AVCodecContext * const avctx,
                         drmprime_out_env_t * const dpo,
-                        AVPacket *packet,const bool waitForOutputFrame)
+                        AVPacket *packet)
 {
     AVFrame *frame = NULL, *sw_frame = NULL;
     uint8_t *buffer_for_something = NULL;
@@ -541,7 +586,7 @@ loopy:
             auto tmp=getchar();
             // change LED, feed one new frame
             switch_led_on_off();
-            ret = decode_write(decoder_ctx, dpo, &packet,true);
+            ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet);
 
             nFeedFrames++;
             const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
@@ -556,7 +601,7 @@ loopy:
     /* flush the decoder */
     packet.data = NULL;
     packet.size = 0;
-    ret = decode_write(decoder_ctx, dpo, &packet,false);
+    ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet);
     av_packet_unref(&packet);
 
     if (output_file)
