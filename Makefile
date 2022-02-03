@@ -7,7 +7,7 @@ LDLIBS=-lavcodec -lavfilter -lavutil -lavformat -ldrm -lpthread
 
 all: hello_drmprime
 
-hello_drmprime: hello_drmprime.cpp drmprime_out.cpp
+hello_drmprime: hello_drmprime.cpp drmprime_out.cpp extra.h drmprime_out.h
 	$(CXX) -o $@ $^ $(CFLAGS) $(LDFLAGS) $(LDLIBS) -std=c++17
 
 clean:
