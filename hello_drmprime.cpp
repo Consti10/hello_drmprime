@@ -180,7 +180,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
     check_single_nalu(packet->data,packet->size);
     std::cout<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
     const auto before=std::chrono::steady_clock::now();
-    ret = avcodec_send_packet(avctx, packet);
+    int ret = avcodec_send_packet(avctx, packet);
     if (ret < 0) {
         fprintf(stderr, "Error during decoding\n");
         return ret;
@@ -197,7 +197,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
     // Poll until we get the frame out
     bool gotFrame=false;
     while (!gotFrame){
-        int ret = avcodec_receive_frame(avctx, frame);
+        ret = avcodec_receive_frame(avctx, frame);
         if(ret == AVERROR_EOF){
             std::cout<<"Got EOF\n";
             break;
