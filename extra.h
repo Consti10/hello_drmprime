@@ -9,9 +9,12 @@
 
 #include <array>
 
+static constexpr auto NALU_MAXLEN=1024*1024*10;
+
 void check_single_nalu(const uint8_t* data,const size_t data_length,const bool isH265){
     size_t nalu_data_position=4;
-    std::array<uint8_t,1024*1024*10> nalu_data;
+    int nalu_search_state=0;
+    std::array<uint8_t,NALU_MAXLEN> nalu_data;
 
     int nNALUs=0;
     //if(nalu_data== nullptr){
@@ -20,7 +23,7 @@ void check_single_nalu(const uint8_t* data,const size_t data_length,const bool i
     //MLOGD<<"NALU data "<<data_length;
     for (size_t i = 0; i < data_length; ++i) {
         nalu_data[nalu_data_position++] = data[i];
-        if (nalu_data_position >= NALU::NALU_MAXLEN - 1) {
+        if (nalu_data_position >= NALU_MAXLEN - 1) {
             // This should never happen, but rather continue parsing than
             // possibly raising an 'memory access' exception
             nalu_data_position = 0;
@@ -61,7 +64,7 @@ void check_single_nalu(const uint8_t* data,const size_t data_length,const bool i
                 break;
         }
     }
-    std:.cout<<"N nalus in this buffer:"<<nNALUs<<"\n";
+    std::cout<<"N nalus in this buffer:"<<nNALUs<<"\n";
 }
 
 
