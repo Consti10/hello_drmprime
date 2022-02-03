@@ -11,7 +11,7 @@
 
 static constexpr auto NALU_MAXLEN=1024*1024*10;
 
-void check_single_nalu(const uint8_t* data,const size_t data_length,const bool isH265){
+void check_single_nalu(const uint8_t* data,const size_t data_length){
     size_t nalu_data_position=4;
     int nalu_search_state=0;
     std::array<uint8_t,NALU_MAXLEN> nalu_data;

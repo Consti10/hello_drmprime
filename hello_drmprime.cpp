@@ -179,6 +179,7 @@ static int decode_write(AVCodecContext * const avctx,
     int ret = 0;
     unsigned int i;
     std::cout<<"Currently fed frames: "<<feedDecoderTimePoints.size()<<" Currently outputed frames:"<<nTotalPulledFrames<<"\n";
+    check_single_nalu(packet->data,packet->size);
 
     std::cout<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
     const auto before=std::chrono::steady_clock::now();
