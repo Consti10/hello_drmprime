@@ -247,7 +247,8 @@ static int decode_write(AVCodecContext * const avctx,
 
         if (frames == 0 || --frames == 0)
             ret = -1;
-
+        // we got a frame, return (it is 100% sequential this way)
+        return 0;
     fail:
         av_frame_free(&frame);
         av_frame_free(&sw_frame);
