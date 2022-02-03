@@ -9,6 +9,7 @@
 
 #include <array>
 #include <cassert>
+#include <iostream>
 
 static constexpr auto NALU_MAXLEN=1024*1024*10;
 
