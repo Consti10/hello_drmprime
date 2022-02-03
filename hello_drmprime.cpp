@@ -206,7 +206,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
         ret = avcodec_receive_frame(avctx, frame);
         if(ret == AVERROR_EOF){
             std::cout<<"Got EOF\n";
-            return;
+            return 0;
         }else if(ret==0){
             // we got a new frame
             const auto x_delay=std::chrono::steady_clock::now()-before;
