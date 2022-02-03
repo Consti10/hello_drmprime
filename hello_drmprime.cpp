@@ -463,7 +463,7 @@ int main(int argc, char *argv[])
             else if (strcmp(arg, "--deinterlace") == 0) {
                 wants_deinterlace = true;
             }
-            else if if (strcmp(arg, "-k") == 0 || strcmp(arg, "--keyboard") == 0) {
+            else if (strcmp(arg, "-k") == 0 || strcmp(arg, "--keyboard") == 0) {
                 feed_frames_on_keyboard_klick=true;
             }
             else
