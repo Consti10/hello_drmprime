@@ -220,7 +220,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
 
 std::vector<std::chrono::steady_clock::time_point> feedDecoderTimePoints;
 int nTotalPulledFrames=0;
-// testing
+// testing, obsolete
 static int decode_write(AVCodecContext * const avctx,
                         drmprime_out_env_t * const dpo,
                         AVPacket *packet)
