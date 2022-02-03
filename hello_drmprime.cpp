@@ -399,7 +399,7 @@ end:
 
 void usage()
 {
-    fprintf(stderr, "Usage: hello_drmprime [-l loop_count] [-f <frames>] [-o yuv_output_file] [--deinterlace] <input file> [<input_file> ...]\n");
+    fprintf(stderr, "Usage: hello_drmprime [-l loop_count] [-f <frames>] [-o yuv_output_file] [--deinterlace] [--keyboard] <input file> [<input_file> ...]\n");
     exit(1);
 }
 
@@ -424,7 +424,7 @@ int main(int argc, char *argv[])
     const char * out_name = NULL;
     bool wants_deinterlace = false;
     //
-    bool feed_frames_on_keyboard_klick=false;
+    bool feed_frames_on_keyboard_klick=true;
 
 
     {
@@ -463,7 +463,7 @@ int main(int argc, char *argv[])
             else if (strcmp(arg, "--deinterlace") == 0) {
                 wants_deinterlace = true;
             }
-            else if (strcmp(arg, "-k") == 0 || strcmp(arg, "--keyboard") == 0) {
+            else if (strcmp(arg, "--keyboard") == 0) {
                 feed_frames_on_keyboard_klick=true;
             }
             else
