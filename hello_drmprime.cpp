@@ -424,7 +424,7 @@ int main(int argc, char *argv[])
     const char * out_name = NULL;
     bool wants_deinterlace = false;
     //
-    bool feed_frames_on_keyboard_klick=true;
+    bool feed_frames_on_keyboard_klick=false;
 
 
     {
@@ -465,6 +465,7 @@ int main(int argc, char *argv[])
             }
             else if (strcmp(arg, "--keyboard") == 0) {
                 feed_frames_on_keyboard_klick=true;
+                std::cout<<"Feeding frames only on keyboard input enabled\n";
             }
             else
                 break;
