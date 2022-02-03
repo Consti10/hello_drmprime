@@ -215,7 +215,7 @@ static int decode_write(AVCodecContext * const avctx,
                 std::cout<<"Timeout of 1 second reached\n";
                 return 0;
             }*/
-            //return 0; // Consti10
+            return 0; // Consti10
             //continue;
         } else if (ret < 0) {
             fprintf(stderr, "Error while decoding\n");
