@@ -54,6 +54,7 @@ extern "C" {
 #include <cassert>
 
 #include <vector>
+#include "extra.h"
 
 static enum AVPixelFormat hw_pix_fmt;
 static FILE *output_file = NULL;
