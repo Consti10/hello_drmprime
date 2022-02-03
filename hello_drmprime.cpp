@@ -423,6 +423,9 @@ int main(int argc, char *argv[])
     long frame_count = -1;
     const char * out_name = NULL;
     bool wants_deinterlace = false;
+    //
+    bool feed_frames_on_keyboard_klick=false;
+
 
     {
         char * const * a = argv + 1;
@@ -459,6 +462,9 @@ int main(int argc, char *argv[])
             }
             else if (strcmp(arg, "--deinterlace") == 0) {
                 wants_deinterlace = true;
+            }
+            else if if (strcmp(arg, "-k") == 0 || strcmp(arg, "--keyboard") == 0) {
+                feed_frames_on_keyboard_klick=true;
             }
             else
                 break;
@@ -582,11 +588,13 @@ loopy:
             break;
 
         if (video_stream == packet.stream_index){
-            // wait for a keyboard input
-            printf("Press ENTER key to Feed new frame\n");
-            auto tmp=getchar();
-            // change LED, feed one new frame
-            switch_led_on_off();
+            if(feed_frames_on_keyboard_klick){
+                // wait for a keyboard input
+                printf("Press ENTER key to Feed new frame\n");
+                auto tmp=getchar();
+                // change LED, feed one new frame
+                switch_led_on_off();
+            }
             ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet);
 
             nFeedFrames++;
