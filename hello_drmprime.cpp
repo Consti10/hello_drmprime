@@ -218,6 +218,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
             std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";
         }
     }
+    return 0;
 }
 
 static int decode_write(AVCodecContext * const avctx,
