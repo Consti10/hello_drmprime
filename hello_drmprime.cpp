@@ -197,7 +197,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
     // Poll until we get the frame out
     bool gotFrame=false;
     while (!gotFrame){
-        ret = avcodec_receive_frame(avctx, frame);
+        int ret = avcodec_receive_frame(avctx, frame);
         if(ret == AVERROR_EOF){
             std::cout<<"Got EOF\n";
             break;
