@@ -173,6 +173,8 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
 std::vector<std::chrono::steady_clock::time_point> feedDecoderTimePoints;
 int nTotalPulledFrames=0;
 
+// if wait=true: Sends one frame to the decoder, then waits for the output frame to become available
+
 static int decode_write(AVCodecContext * const avctx,
                         drmprime_out_env_t * const dpo,
                         AVPacket *packet)
