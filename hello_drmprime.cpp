@@ -174,7 +174,7 @@ static int decode_write(AVCodecContext * const avctx,
                         AVPacket *packet)
 {
     AVFrame *frame = NULL, *sw_frame = NULL;
-    uint8_t *buffer = NULL;
+    uint8_t *buffer_for_something = NULL;
     int size;
     int ret = 0;
     unsigned int i;
@@ -200,7 +200,7 @@ static int decode_write(AVCodecContext * const avctx,
             ret = AVERROR(ENOMEM);
             av_frame_free(&frame);
             av_frame_free(&sw_frame);
-            av_freep(&buffer);
+            av_freep(&buffer_for_something);
             return ret;
         }
 
@@ -215,7 +215,7 @@ static int decode_write(AVCodecContext * const avctx,
                 std::cout<<"Timeout of 1 second reached\n";
                 return 0;
             }*/
-            return 0; // Consti10
+            //return 0; // Consti10
             //continue;
         } else if (ret < 0) {
             fprintf(stderr, "Error while decoding\n");
@@ -238,7 +238,7 @@ static int decode_write(AVCodecContext * const avctx,
             }
         }
         // tmp test disable
-        x_push_into_filter_graph(dpo,frame,sw_frame,buffer);
+        x_push_into_filter_graph(dpo,frame,sw_frame,buffer_for_something);
 
         if (frames == 0 || --frames == 0)
             ret = -1;
@@ -246,7 +246,7 @@ static int decode_write(AVCodecContext * const avctx,
     fail:
         av_frame_free(&frame);
         av_frame_free(&sw_frame);
-        av_freep(&buffer);
+        av_freep(&buffer_for_something);
         if (ret < 0)
             return ret;
     }
@@ -528,7 +528,13 @@ loopy:
             break;
 
         if (video_stream == packet.stream_index){
+            // wait for a keyboard input
+            // change LED, feed one new frame
+            printf("Press ENTER key to Feed new frame\n");
+            auto tmp=getchar();
+
             ret = decode_write(decoder_ctx, dpo, &packet);
+
             nFeedFrames++;
             const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
             const double runTimeS=runTimeMs/1000.0f;
