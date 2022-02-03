@@ -12,7 +12,7 @@
 static constexpr auto NALU_MAXLEN=1024*1024*10;
 
 void check_single_nalu(const uint8_t* data,const size_t data_length){
-    size_t nalu_data_position=4;
+    size_t nalu_data_position=0;
     int nalu_search_state=0;
 
     int nNALUs=0;
@@ -65,6 +65,7 @@ void check_single_nalu(const uint8_t* data,const size_t data_length){
         }
     }
     std::cout<<"N nalus in this buffer:"<<nNALUs<<"\n";
+    static_assert(nNALUs==1);
 }
 
 
