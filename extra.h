@@ -72,7 +72,9 @@ void check_single_nalu(const uint8_t* data,const size_t data_length){
     //assert(nNALUs==1);
 }
 
+extern "C" {
 #include <wiringPi.h>
+}
 
 static bool initialized=false;
 static bool led_on=false;
