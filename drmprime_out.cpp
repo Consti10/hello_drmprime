@@ -40,7 +40,8 @@ extern "C" {
 }
 #include "common_consti/TimeHelper.hpp"
 
-AvgCalculator avgDrmLatency0{"DRM1"};
+AvgCalculator avgDisplayThreadLatency{"DisplayThread"};
+AvgCalculator avgDrmLatency0{"DRM0"};
 AvgCalculator avgDrmLatency1{"DRM1"};
 AvgCalculator avgDrmLatency2{"DRM2"};
 
@@ -169,9 +170,9 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     drm_aux_t *da = de->aux + de->ano;
     const uint32_t format = desc->layers[0].format;
     int ret = 0;
-    std::stringstream ss;
-    ss<<"do_display0:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
-    std::cout<<ss.str();
+    //std::stringstream ss;
+    //ss<<"do_display0:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
+    //std::cout<<ss.str();
     avgDrmLatency0.addUs(getTimeUs()- frame->pts);
     avgDrmLatency0.printInIntervals(100);
 #if TRACE_ALL
@@ -203,9 +204,9 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
             }
         }
     }*/
-    ss.str("");
-    ss<<"do_display1:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
-    std::cout<<ss.str();
+    //ss.str("");
+    //ss<<"do_display1:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
+    //std::cout<<ss.str();
     avgDrmLatency1.addUs(getTimeUs()- frame->pts);
     avgDrmLatency1.printInIntervals(100);
     da_uninit(de, da);
@@ -290,9 +291,9 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     }
 
     de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
-    ss.str("");
-    ss<<"do_display2:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
-    std::cout<<ss.str();
+    //ss.str("");
+    //ss<<"do_display2:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
+    //std::cout<<ss.str();
     avgDrmLatency2.addUs(getTimeUs()- frame->pts);
     avgDrmLatency2.printInIntervals(100);
     return ret;
@@ -327,9 +328,11 @@ static void* display_thread(void *v)
 
         frame = de->q_next;
         de->q_next = NULL;
-        std::stringstream ss;
-        ss<<"display_thread:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
-        std::cout<<ss.str();
+        //std::stringstream ss;
+        //ss<<"display_thread:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
+        //std::cout<<ss.str();
+        avgDisplayThreadLatency.addUs(getTimeUs()-frame->pts);
+        avgDisplayThreadLatency.printInIntervals(100);
         sem_post(&de->q_sem_out);
 
         do_display(de, frame);
