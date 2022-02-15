@@ -41,10 +41,8 @@ extern "C" {
 #include "common_consti/TimeHelper.hpp"
 
 static int CALCULATOR_LOG_INTERVAL=10;
-AvgCalculator avgDisplayThreadLatency{"DisplayThread"};
-AvgCalculator avgDrmLatency0{"DRM0"};
-AvgCalculator avgDrmLatency1{"DRM1"};
-AvgCalculator avgDrmLatency2{"DRM2"};
+AvgCalculator avgDisplayThreadQueueLatency{"DisplayThreadQueue"};
+AvgCalculator avgTotalDrmLatency{"TotalDrmLatency"};
 Chronometer chronoVsync{"VSYNC"};
 Chronometer chronometer1{"DA_UNINIT"};
 Chronometer chronometer2{"X2"};
@@ -241,7 +239,7 @@ static int updateCRTCFormatIfNeeded(drmprime_out_env_t *const de, AVFrame *frame
     return 0;
 }
 // This was in the original code, but it won't have an effect anyways since swapping the fb aparently does VSYNC anyways nowadays
-static int waitForVSYNC(drmprime_out_env_t *const de){
+static void waitForVSYNC(drmprime_out_env_t *const de){
     chronoVsync.start();
     drmVBlank vbl = {
             .request = {
@@ -251,8 +249,8 @@ static int waitForVSYNC(drmprime_out_env_t *const de){
     };
     while (drmWaitVBlank(de->drm_fd, &vbl)) {
         if (errno != EINTR) {
-// This always fails - don't know why
-//                fprintf(stderr, "drmWaitVBlank failed: %s\n", ERRSTR);
+            // This always fails - don't know why
+            //fprintf(stderr, "drmWaitVBlank failed: %s\n", ERRSTR);
             break;
         }
     }
@@ -266,9 +264,6 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     drm_aux_t *da = de->aux + de->ano;
     const uint32_t format = desc->layers[0].format;
     int ret = 0;
-    avgDrmLatency0.addUs(getTimeUs()- frame->pts);
-    avgDrmLatency0.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    frame->pts=getTimeUs();
 #if TRACE_ALL
     fprintf(stderr, "<<< %s: fd=%d\n", __func__, desc->objects[0].fd);
 #endif
@@ -277,9 +272,6 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     }
     // Not needed / doesn't have the desired effect anyways
     waitForVSYNC(de);
-    avgDrmLatency1.addUs(getTimeUs()- frame->pts);
-    avgDrmLatency1.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    frame->pts=getTimeUs();
     chronometer1.start();
     da_uninit(de, da);
     chronometer1.stop();
@@ -342,8 +334,8 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     da_init(de,da,frame);
 
     de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
-    avgDrmLatency2.addUs(getTimeUs()- frame->pts);
-    avgDrmLatency2.printInIntervals(CALCULATOR_LOG_INTERVAL);
+    avgTotalDrmLatency.addUs(getTimeUs()- frame->pts);
+    avgTotalDrmLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
     return ret;
 }
 
@@ -376,9 +368,9 @@ static void* display_thread(void *v)
 
         frame = de->q_next;
         de->q_next = NULL;
-        avgDisplayThreadLatency.addUs(getTimeUs()-frame->pts);
-        avgDisplayThreadLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
-        frame->pts=getTimeUs();
+        avgDisplayThreadQueueLatency.addUs(getTimeUs()-frame->pts);
+        avgDisplayThreadQueueLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
+        //frame->pts=getTimeUs();
         sem_post(&de->q_sem_out);
 
         do_display(de, frame);
