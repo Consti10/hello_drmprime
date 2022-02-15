@@ -207,7 +207,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
             ss.str("");
             ss<<"(True) decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(x_delay).count()/1000.0f)<<" ms\n";
             avgDecodeTime.add(x_delay);
-            avgDecodeTime.printInIntervals(100);
+            avgDecodeTime.printInIntervals(CALCULATOR_LOG_INTERVAL);
             gotFrame=true;
             const auto now=getTimeUs();
             ss<<"Frame pts:"<<frame->pts<<" Set to:"<<now<<"\n";
