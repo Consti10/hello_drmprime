@@ -14,7 +14,10 @@ public:
     ~Logger(){
         const auto str=stream.str();
         if(!str.empty()){
-            std::cout<<str;
+            if(str.back()!='\n'){
+                ss<<"\n";
+            }
+            std::cout<<stream.str();
         }
     }
     Logger(const Logger& other)=delete;

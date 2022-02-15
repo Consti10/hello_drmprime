@@ -203,7 +203,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     }
     //std::stringstream ss;
     //ss<<"desc->nb_objects:"<<desc->nb_objects<<"desc->nb_"
-    MLOGD<<"Hello\n";
+    MLOGD<<"desc->nb_objects:"<<desc->nb_objects<<"desc->nb_layers\n";
     if (drmModeAddFB2WithModifiers(de->drm_fd,
                                    av_frame_cropped_width(frame),
                                    av_frame_cropped_height(frame),
