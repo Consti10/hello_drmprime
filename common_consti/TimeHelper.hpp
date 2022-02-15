@@ -259,7 +259,10 @@ public:
         const auto now=std::chrono::steady_clock::now();
         if(now-lastLog>interval){
             lastLog=now;
-            std::cout<<(mName)<<"Avg: "<<AvgCalculator::getAvgReadable(avgOnly)<<"\n";
+            // avoid garbled output in multi thread
+            std::stringstream ss;
+            ss<<(mName)<<"Avg: "<<AvgCalculator::getAvgReadable(avgOnly)<<"\n";
+            std::cout<<ss.str();
             reset();
         }
     }
@@ -343,7 +346,10 @@ public:
             const double bytesPerSecond=nBytes/(std::chrono::duration_cast<std::chrono::milliseconds>(delta).count()/1000.0);
             const double mBytesPerSecond=bytesPerSecond/1024.0/1024.0;
             const double mBitsPerSecond=mBytesPerSecond*8.0;
-            std::cout<<"Avg Bitrate:"<<mBitsPerSecond<<" MBit/s\n";
+            // avoid garbled output in multi thread
+            std::stringstream ss;
+            ss<<"Avg Bitrate:"<<mBitsPerSecond<<" MBit/s\n";
+            std::cout<<ss.str();
             nBytes=0;
             begin=std::chrono::steady_clock::now();
         }

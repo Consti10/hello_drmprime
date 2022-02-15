@@ -165,7 +165,9 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     drm_aux_t *da = de->aux + de->ano;
     const uint32_t format = desc->layers[0].format;
     int ret = 0;
-    std::cout<<"do_display0:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
+    std::stringstream ss;
+    ss<<"do_display0:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
+    std::cout<<ss.str();
 #if TRACE_ALL
     fprintf(stderr, "<<< %s: fd=%d\n", __func__, desc->objects[0].fd);
 #endif
@@ -195,8 +197,9 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
             }
         }
     }
-    std::cout<<"do_display1:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
-
+    ss.str("");
+    ss<<"do_display1:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
+    std::cout<<ss.str();
     da_uninit(de, da);
 
     {
@@ -279,8 +282,9 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     }
 
     de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
-    std::cout<<"do_display2:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
-
+    ss.str("");
+    ss<<"do_display2:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
+    std::cout<<ss.str();
     return ret;
 }
 
@@ -313,7 +317,9 @@ static void* display_thread(void *v)
 
         frame = de->q_next;
         de->q_next = NULL;
-        std::cout<<"display_thread:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
+        std::stringstream ss;
+        ss<<"display_thread:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
+        std::cout<<ss.str();
         sem_post(&de->q_sem_out);
 
         do_display(de, frame);
@@ -465,7 +471,9 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
         fprintf(stderr, "Frame (format=%d) not DRM_PRiME\n", src_frame->format);
         return AVERROR(EINVAL);
     }
-    std::cout<<"drmprime_out_display:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
+    std::stringstream ss;
+    ss<<"drmprime_out_display:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
+    std::cout<<ss.str();
     ret = do_sem_wait(&de->q_sem_out, !de->show_all);
     if (ret) {
         av_frame_free(&frame);
