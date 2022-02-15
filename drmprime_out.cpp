@@ -284,7 +284,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
             return -1;
         }
         chronometer2.stop();
-        chronometer2.printInIntervalls(CALCULATOR_LOG_INTERVAL);
+        chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
     }
 
     ret = drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
