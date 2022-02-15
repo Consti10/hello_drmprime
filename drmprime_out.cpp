@@ -237,7 +237,7 @@ static int updateCRTCFormatIfNeeded(drmprime_out_env_t *const de, AVFrame *frame
     }
     return 0;
 }
-// This was in the original code, but it won't have an effect anyways since swapping the fb takes at least until next fb
+// This was in the original code, but it won't have an effect anyways since swapping the fb aparently does VSYNC anyways nowadays
 static int waitForVSYNC(drmprime_out_env_t *const de){
     chronoVsync.start();
     drmVBlank vbl = {
@@ -273,7 +273,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         return -1;
     }
     // Not needed / doesn't have the desired effect anyways
-    //waitForVSYNC(de);
+    waitForVSYNC(de);
     avgDrmLatency1.addUs(getTimeUs()- frame->pts);
     avgDrmLatency1.printInIntervals(CALCULATOR_LOG_INTERVAL);
     frame->pts=getTimeUs();
