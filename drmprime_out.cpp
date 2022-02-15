@@ -39,6 +39,7 @@ extern "C" {
 #include "libavutil/pixdesc.h"
 }
 #include "common_consti/TimeHelper.hpp"
+#include "common_consti/Logger.hpp"
 
 static int CALCULATOR_LOG_INTERVAL=10;
 AvgCalculator avgDisplayThreadQueueLatency{"DisplayThreadQueue"};
@@ -200,6 +201,9 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
             ++n;
         }
     }
+    //std::stringstream ss;
+    //ss<<"desc->nb_objects:"<<desc->nb_objects<<"desc->nb_"
+    MLOGD<<"Hello\n";
     if (drmModeAddFB2WithModifiers(de->drm_fd,
                                    av_frame_cropped_width(frame),
                                    av_frame_cropped_height(frame),
