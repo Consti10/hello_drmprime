@@ -194,7 +194,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         de->setup.out_fourcc = format;
     }
 
-    {
+    /*{
         chronoVsync.start();
         drmVBlank vbl = {
             .request = {
@@ -212,7 +212,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         }
         chronoVsync.stop();
         chronoVsync.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    }
+    }*/
     //ss.str("");
     //ss<<"do_display1:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     //std::cout<<ss.str();
