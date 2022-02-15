@@ -289,7 +289,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     }
     chronometer3.start();
     static bool first=true;
-    /*if(first){
+    if(first){
         ret = drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
                               da->fb_handle, 0,
                               de->setup.compose.x, de->setup.compose.y,
@@ -301,9 +301,9 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         first= false;
     }else{
         da->fb_handle=de->drm_fd;
-    }*/
-    void *dev=NULL;
-    ret=drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,
+    }
+    //void *dev=NULL;
+    //ret=drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,
                         DRM_MODE_PAGE_FLIP_EVENT, dev);
 
     if (ret != 0) {
