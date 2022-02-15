@@ -40,6 +40,7 @@ extern "C" {
 }
 #include "common_consti/TimeHelper.hpp"
 
+static int CALCULATOR_LOG_INTERVAL=100;
 AvgCalculator avgDisplayThreadLatency{"DisplayThread"};
 AvgCalculator avgDrmLatency0{"DRM0"};
 AvgCalculator avgDrmLatency1{"DRM1"};
@@ -176,7 +177,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     //ss<<"do_display0:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     //std::cout<<ss.str();
     avgDrmLatency0.addUs(getTimeUs()- frame->pts);
-    avgDrmLatency0.printInIntervals(100);
+    avgDrmLatency0.printInIntervals(CALCULATOR_LOG_INTERVAL);
     frame->pts=getTimeUs();
 #if TRACE_ALL
     fprintf(stderr, "<<< %s: fd=%d\n", __func__, desc->objects[0].fd);
@@ -211,12 +212,12 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     //ss<<"do_display1:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     //std::cout<<ss.str();
     avgDrmLatency1.addUs(getTimeUs()- frame->pts);
-    avgDrmLatency1.printInIntervals(100);
+    avgDrmLatency1.printInIntervals(CALCULATOR_LOG_INTERVAL);
     frame->pts=getTimeUs();
     chronometer1.start();
     da_uninit(de, da);
     chronometer1.stop();
-    chronometer1.printInIntervals(100);
+    chronometer1.printInIntervals(CALCULATOR_LOG_INTERVAL);
     {
         uint32_t pitches[4] = { 0 };
         uint32_t offsets[4] = { 0 };
@@ -301,7 +302,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     //ss<<"do_display2:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     //std::cout<<ss.str();
     avgDrmLatency2.addUs(getTimeUs()- frame->pts);
-    avgDrmLatency2.printInIntervals(100);
+    avgDrmLatency2.printInIntervals(CALCULATOR_LOG_INTERVAL);
     return ret;
 }
 
@@ -338,7 +339,7 @@ static void* display_thread(void *v)
         //ss<<"display_thread:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
         //std::cout<<ss.str();
         avgDisplayThreadLatency.addUs(getTimeUs()-frame->pts);
-        avgDisplayThreadLatency.printInIntervals(100);
+        avgDisplayThreadLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
         frame->pts=getTimeUs();
         sem_post(&de->q_sem_out);
 
