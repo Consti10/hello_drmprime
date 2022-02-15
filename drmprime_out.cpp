@@ -304,7 +304,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     }
     //void *dev=NULL;
     //ret=drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,
-                        DRM_MODE_PAGE_FLIP_EVENT, dev);
+    //                    DRM_MODE_PAGE_FLIP_EVENT, dev);
 
     if (ret != 0) {
         fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
