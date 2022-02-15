@@ -40,6 +40,9 @@ extern "C" {
 }
 #include "common_consti/TimeHelper.hpp"
 
+AvgCalculator avgDrmLatency1{"DRM1"};
+AvgCalculator avgDrmLatency2{"DRM1"};
+
 #define TRACE_ALL 0
 
 #define DRM_MODULE "vc4"
@@ -181,7 +184,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         de->setup.out_fourcc = format;
     }
 
-    {
+    /*{
         drmVBlank vbl = {
             .request = {
                 .type = DRM_VBLANK_RELATIVE,
@@ -196,7 +199,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
                 break;
             }
         }
-    }
+    }*/
     ss.str("");
     ss<<"do_display1:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     std::cout<<ss.str();
@@ -471,6 +474,7 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
         fprintf(stderr, "Frame (format=%d) not DRM_PRiME\n", src_frame->format);
         return AVERROR(EINVAL);
     }
+    // Here the delay is still neglegible,aka ~0.15ms
     std::stringstream ss;
     ss<<"drmprime_out_display:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     std::cout<<ss.str();
