@@ -1,3 +1,6 @@
+#ifndef CONSTI10_DRMPRIME_OUT
+#define CONSTI10_DRMPRIME_OUT
+
 struct AVFrame;
 typedef struct drmprime_out_env_s drmprime_out_env_t;
 
@@ -6,3 +9,5 @@ void drmprime_out_delete(drmprime_out_env_t * dpo);
 drmprime_out_env_t * drmprime_out_new();
 
 static int CALCULATOR_LOG_INTERVAL=10;
+
+#endif //CONSTI10_DRMPRIME_OUT
