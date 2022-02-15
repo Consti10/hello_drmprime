@@ -288,14 +288,20 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
     }
     chronometer3.start();
-    ret = drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
-                          da->fb_handle, 0,
-                          de->setup.compose.x, de->setup.compose.y,
-                          de->setup.compose.width,
-                          de->setup.compose.height,
-                          0, 0,
-                          av_frame_cropped_width(frame) << 16,
-                          av_frame_cropped_height(frame) << 16);
+    static bool first=true;
+    if(first){
+        ret = drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
+                              da->fb_handle, 0,
+                              de->setup.compose.x, de->setup.compose.y,
+                              de->setup.compose.width,
+                              de->setup.compose.height,
+                              0, 0,
+                              av_frame_cropped_width(frame) << 16,
+                              av_frame_cropped_height(frame) << 16);
+        first= false;
+    }else{
+        de->fb_handle=de->drm_fd;
+    }
 
     if (ret != 0) {
         fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
