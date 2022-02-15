@@ -40,7 +40,7 @@ extern "C" {
 }
 #include "common_consti/TimeHelper.hpp"
 
-static int CALCULATOR_LOG_INTERVAL=100;
+static int CALCULATOR_LOG_INTERVAL=10;
 AvgCalculator avgDisplayThreadLatency{"DisplayThread"};
 AvgCalculator avgDrmLatency0{"DRM0"};
 AvgCalculator avgDrmLatency1{"DRM1"};
