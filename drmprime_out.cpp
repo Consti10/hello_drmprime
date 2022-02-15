@@ -188,7 +188,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         de->setup.out_fourcc = format;
     }
 
-    {
+    /*{
         drmVBlank vbl = {
             .request = {
                 .type = DRM_VBLANK_RELATIVE,
@@ -203,7 +203,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
                 break;
             }
         }
-    }
+    }*/
     //ss.str("");
     //ss<<"do_display1:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     //std::cout<<ss.str();
