@@ -2,3 +2,32 @@
     //    void *dev=NULL;
     //    ret=drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,
     //                        0, nullptr);
+
+
+#if 1 && TRACE_ALL
+        fprintf(stderr, "%dx%d, fmt: %x, boh=%d,%d,%d,%d, pitch=%d,%d,%d,%d,"
+               " offset=%d,%d,%d,%d, mod=%llx,%llx,%llx,%llx\n",
+               av_frame_cropped_width(frame),
+               av_frame_cropped_height(frame),
+               desc->layers[0].format,
+               bo_handles[0],
+               bo_handles[1],
+               bo_handles[2],
+               bo_handles[3],
+               pitches[0],
+               pitches[1],
+               pitches[2],
+               pitches[3],
+               offsets[0],
+               offsets[1],
+               offsets[2],
+               offsets[3],
+               (long long)modifiers[0],
+               (long long)modifiers[1],
+               (long long)modifiers[2],
+               (long long)modifiers[3]
+              );
+#endif
+
+
+ &da->fb_handle, DRM_MODE_FB_MODIFIERS /** 0 if no mods */) != 0) {

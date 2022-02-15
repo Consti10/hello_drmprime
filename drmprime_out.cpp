@@ -151,6 +151,7 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
     return ret;
 }
 
+// ? clears up the drm_aux_t to be reused with a new frame
 static void da_uninit(drmprime_out_env_t *const de, drm_aux_t *da)
 {
     unsigned int i;
@@ -168,6 +169,8 @@ static void da_uninit(drmprime_out_env_t *const de, drm_aux_t *da)
     av_frame_free(&da->frame);
 }
 
+// initializes the drm_aux_to for the new frame, including the raw frame data
+// unfortunately blocks until the ? VSYNC or some VSYNC related time point ?
 static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     chronometerDaInit.start();
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
@@ -281,7 +284,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     da_uninit(de, da);
     chronometer1.stop();
     chronometer1.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    {
+    /*{
         chronometer2.start();
         uint32_t pitches[4] = { 0 };
         uint32_t offsets[4] = { 0 };
@@ -298,7 +301,6 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
                 return -1;
             }
         }
-
         n = 0;
         for (i = 0; i < desc->nb_layers; ++i) {
             for (j = 0; j < desc->layers[i].nb_planes; ++j) {
@@ -311,38 +313,12 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
                 ++n;
             }
         }
-
-#if 1 && TRACE_ALL
-        fprintf(stderr, "%dx%d, fmt: %x, boh=%d,%d,%d,%d, pitch=%d,%d,%d,%d,"
-               " offset=%d,%d,%d,%d, mod=%llx,%llx,%llx,%llx\n",
-               av_frame_cropped_width(frame),
-               av_frame_cropped_height(frame),
-               desc->layers[0].format,
-               bo_handles[0],
-               bo_handles[1],
-               bo_handles[2],
-               bo_handles[3],
-               pitches[0],
-               pitches[1],
-               pitches[2],
-               pitches[3],
-               offsets[0],
-               offsets[1],
-               offsets[2],
-               offsets[3],
-               (long long)modifiers[0],
-               (long long)modifiers[1],
-               (long long)modifiers[2],
-               (long long)modifiers[3]
-              );
-#endif
-
         if (drmModeAddFB2WithModifiers(de->drm_fd,
                                        av_frame_cropped_width(frame),
                                        av_frame_cropped_height(frame),
                                        desc->layers[0].format, bo_handles,
                                        pitches, offsets, modifiers,
-                                       &da->fb_handle, DRM_MODE_FB_MODIFIERS /** 0 if no mods */) != 0) {
+                                       &da->fb_handle, DRM_MODE_FB_MODIFIERS) != 0) {
             fprintf(stderr, "drmModeAddFB2WithModifiers failed: %s\n", ERRSTR);
             return -1;
         }
@@ -362,7 +338,8 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
     }
     chronometer3.stop();
-    chronometer3.printInIntervals(CALCULATOR_LOG_INTERVAL);
+    chronometer3.printInIntervals(CALCULATOR_LOG_INTERVAL);*/
+    da_init(de,da,frame);
 
     de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
     avgDrmLatency2.addUs(getTimeUs()- frame->pts);
