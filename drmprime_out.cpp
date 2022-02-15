@@ -195,7 +195,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
             return -1;
         }
         de->setup.out_fourcc = format;
-        fprintf("Changed drm_setup(aka CRTC) format to %#x\n",de->setup.out_fourcc);
+        printf("Changed drm_setup(aka CRTC) format to %#x\n",de->setup.out_fourcc);
     }
 
     /*{
