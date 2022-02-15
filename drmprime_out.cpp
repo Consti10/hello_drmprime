@@ -46,7 +46,7 @@ AvgCalculator avgDrmLatency0{"DRM0"};
 AvgCalculator avgDrmLatency1{"DRM1"};
 AvgCalculator avgDrmLatency2{"DRM2"};
 Chronometer chronoVsync{"VSYNC"};
-Chronometer chronometer1{"X1"};
+Chronometer chronometer1{"DA_UNINIT"};
 Chronometer chronometer2{"X2"};
 Chronometer chronometer3{"X3"};
 
@@ -80,7 +80,7 @@ typedef struct drm_aux_s
 // Aux size should only need to be 2, but on a few streams (Hobbit) under FKMS
 // we get initial flicker probably due to dodgy drm timing
 //#define AUX_SIZE 3
-#define AUX_SIZE 1
+#define AUX_SIZE 5
 typedef struct drmprime_out_env_s
 {
     AVClass *classx;
