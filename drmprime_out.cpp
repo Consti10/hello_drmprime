@@ -221,6 +221,21 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     return 0;
 }
 
+// If the crtc plane we have for video is not updated to use the same frame format (yet),
+// do so. Only needs to be done once.
+static int updateCRTCFormatIfNeeded(drmprime_out_env_t *const de, AVFrame *frame){
+    if (de->setup.out_fourcc != format) {
+        if (find_plane(de->drm_fd, de->setup.crtcIdx, format, &de->setup.planeId)) {
+            av_frame_free(&frame);
+            fprintf(stderr, "No plane for format: %#x\n", format);
+            return -1;
+        }
+        de->setup.out_fourcc = format;
+        printf("Changed drm_setup(aka CRTC) format to %#x\n",de->setup.out_fourcc);
+    }
+    return 0;
+}
+
 static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
 {
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
@@ -236,18 +251,9 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
 #if TRACE_ALL
     fprintf(stderr, "<<< %s: fd=%d\n", __func__, desc->objects[0].fd);
 #endif
-    // If the crtc plane we have for video is not updated to use the same frame format (yet),
-    // do so. Only needs to be done once.
-    if (de->setup.out_fourcc != format) {
-        if (find_plane(de->drm_fd, de->setup.crtcIdx, format, &de->setup.planeId)) {
-            av_frame_free(&frame);
-            fprintf(stderr, "No plane for format: %#x\n", format);
-            return -1;
-        }
-        de->setup.out_fourcc = format;
-        printf("Changed drm_setup(aka CRTC) format to %#x\n",de->setup.out_fourcc);
+    if(updateCRTCFormatIfNeeded(de,frame)!=0){
+        return -1;
     }
-
     /*{
         chronoVsync.start();
         drmVBlank vbl = {
@@ -346,8 +352,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
     }
     chronometer3.start();
-    //if(first){
-        ret = drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
+    ret = drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
                               da->fb_handle, 0,
                               de->setup.compose.x, de->setup.compose.y,
                               de->setup.compose.width,
@@ -355,14 +360,6 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
                               0, 0,
                               av_frame_cropped_width(frame) << 16,
                               av_frame_cropped_height(frame) << 16);
-        //first= false;
-    //}else{
-        //da->fb_handle=de->drm_fd;
-    //    void *dev=NULL;
-    //    ret=drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,
-    //                        0, nullptr);
-    //}
-
     if (ret != 0) {
         fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
     }

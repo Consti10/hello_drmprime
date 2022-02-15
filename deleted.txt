@@ -1,0 +1,4 @@
+//da->fb_handle=de->drm_fd;
+    //    void *dev=NULL;
+    //    ret=drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,
+    //                        0, nullptr);
