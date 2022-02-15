@@ -222,11 +222,11 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
         fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
         return -1;
     }
-    drmModeSetCrtc
     chronometerDaInit.stop();
     chronometerDaInit.printInIntervals(CALCULATOR_LOG_INTERVAL);
     return 0;
 }
+
 
 
 // If the crtc plane we have for video is not updated to use the same frame format (yet),
