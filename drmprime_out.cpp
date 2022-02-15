@@ -175,6 +175,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     //std::cout<<ss.str();
     avgDrmLatency0.addUs(getTimeUs()- frame->pts);
     avgDrmLatency0.printInIntervals(100);
+    frame->pts=getTimeUs();
 #if TRACE_ALL
     fprintf(stderr, "<<< %s: fd=%d\n", __func__, desc->objects[0].fd);
 #endif
@@ -209,6 +210,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     //std::cout<<ss.str();
     avgDrmLatency1.addUs(getTimeUs()- frame->pts);
     avgDrmLatency1.printInIntervals(100);
+    frame->pts=getTimeUs();
     da_uninit(de, da);
 
     {
@@ -333,6 +335,7 @@ static void* display_thread(void *v)
         //std::cout<<ss.str();
         avgDisplayThreadLatency.addUs(getTimeUs()-frame->pts);
         avgDisplayThreadLatency.printInIntervals(100);
+        frame->pts=getTimeUs();
         sem_post(&de->q_sem_out);
 
         do_display(de, frame);
