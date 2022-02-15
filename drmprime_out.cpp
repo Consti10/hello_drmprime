@@ -302,13 +302,13 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
                               0, 0,
                               av_frame_cropped_width(frame) << 16,
                               av_frame_cropped_height(frame) << 16);
-        //first= false;
+        first= false;
     }else{
-        da->fb_handle=de->drm_fd;
+        //da->fb_handle=de->drm_fd;
+        void *dev=NULL;
+        ret=drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,
+                            DRM_MODE_PAGE_FLIP_EVENT, dev);
     }
-    //void *dev=NULL;
-    //ret=drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,
-    //                    DRM_MODE_PAGE_FLIP_EVENT, dev);
 
     if (ret != 0) {
         fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
