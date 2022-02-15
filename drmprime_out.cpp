@@ -169,6 +169,7 @@ static void da_uninit(drmprime_out_env_t *const de, drm_aux_t *da)
     av_frame_free(&da->frame);
 }
 
+static bool first=true;
 static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
 {
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
@@ -292,7 +293,6 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
     }
     chronometer3.start();
-    static bool first=true;
     if(first){
         ret = drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
                               da->fb_handle, 0,
@@ -316,7 +316,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     chronometer3.stop();
     chronometer3.printInIntervals(CALCULATOR_LOG_INTERVAL);
 
-    de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
+    //de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
     //ss.str("");
     //ss<<"do_display2:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     //std::cout<<ss.str();
