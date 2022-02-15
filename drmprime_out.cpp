@@ -263,9 +263,6 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     drm_aux_t *da = de->aux + de->ano;
     const uint32_t format = desc->layers[0].format;
     int ret = 0;
-    //std::stringstream ss;
-    //ss<<"do_display0:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
-    //std::cout<<ss.str();
     avgDrmLatency0.addUs(getTimeUs()- frame->pts);
     avgDrmLatency0.printInIntervals(CALCULATOR_LOG_INTERVAL);
     frame->pts=getTimeUs();
@@ -277,9 +274,6 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     }
     // Not needed / doesn't have the desired effect anyways
     //waitForVSYNC(de);
-    //ss.str("");
-    //ss<<"do_display1:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
-    //std::cout<<ss.str();
     avgDrmLatency1.addUs(getTimeUs()- frame->pts);
     avgDrmLatency1.printInIntervals(CALCULATOR_LOG_INTERVAL);
     frame->pts=getTimeUs();
@@ -371,9 +365,6 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     chronometer3.printInIntervals(CALCULATOR_LOG_INTERVAL);
 
     de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
-    //ss.str("");
-    //ss<<"do_display2:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
-    //std::cout<<ss.str();
     avgDrmLatency2.addUs(getTimeUs()- frame->pts);
     avgDrmLatency2.printInIntervals(CALCULATOR_LOG_INTERVAL);
     return ret;
@@ -408,9 +399,6 @@ static void* display_thread(void *v)
 
         frame = de->q_next;
         de->q_next = NULL;
-        //std::stringstream ss;
-        //ss<<"display_thread:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
-        //std::cout<<ss.str();
         avgDisplayThreadLatency.addUs(getTimeUs()-frame->pts);
         avgDisplayThreadLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
         frame->pts=getTimeUs();
