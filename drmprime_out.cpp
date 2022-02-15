@@ -44,7 +44,7 @@ static int CALCULATOR_LOG_INTERVAL=10;
 AvgCalculator avgDisplayThreadQueueLatency{"DisplayThreadQueue"};
 AvgCalculator avgTotalDrmLatency{"TotalDrmLatency"};
 Chronometer chronoVsync{"VSYNC"};
-Chronometer chronometer1{"DA_UNINIT"};
+Chronometer chronometerDaUninit{"DA_UNINIT"};
 Chronometer chronometer2{"X2"};
 Chronometer chronometer3{"X3"};
 Chronometer chronometerDaInit{"DA_INIT"};
@@ -152,6 +152,7 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
 // ? clears up the drm_aux_t to be reused with a new frame
 static void da_uninit(drmprime_out_env_t *const de, drm_aux_t *da)
 {
+    chronometerDaUninit.start();
     unsigned int i;
     if (da->fb_handle != 0) {
         drmModeRmFB(de->drm_fd, da->fb_handle);
@@ -165,12 +166,15 @@ static void da_uninit(drmprime_out_env_t *const de, drm_aux_t *da)
         }
     }
     av_frame_free(&da->frame);
+    chronometerDaUninit.stop();
+    chronometerDaUninit.printInIntervals(CALCULATOR_LOG_INTERVAL);
 }
 
 // initializes the drm_aux_to for the new frame, including the raw frame data
 // unfortunately blocks until the ? VSYNC or some VSYNC related time point ?
 static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     chronometerDaInit.start();
+    chronometer2.start();
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
     uint32_t pitches[4] = { 0 };
     uint32_t offsets[4] = { 0 };
@@ -206,6 +210,8 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
         fprintf(stderr, "drmModeAddFB2WithModifiers failed: %s\n", ERRSTR);
         return -1;
     }
+    chronometer2.stop();
+    chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
     if(drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
                           da->fb_handle, 0,
                           de->setup.compose.x, de->setup.compose.y,
@@ -221,6 +227,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     chronometerDaInit.printInIntervals(CALCULATOR_LOG_INTERVAL);
     return 0;
 }
+
 
 // If the crtc plane we have for video is not updated to use the same frame format (yet),
 // do so. Only needs to be done once.
@@ -272,10 +279,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     }
     // Not needed / doesn't have the desired effect anyways
     waitForVSYNC(de);
-    chronometer1.start();
     da_uninit(de, da);
-    chronometer1.stop();
-    chronometer1.printInIntervals(CALCULATOR_LOG_INTERVAL);
     /*{
         chronometer2.start();
         uint32_t pitches[4] = { 0 };
@@ -332,7 +336,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     chronometer3.stop();
     chronometer3.printInIntervals(CALCULATOR_LOG_INTERVAL);*/
     da_init(de,da,frame);
-
+    // use another de aux for the next frame
     de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
     avgTotalDrmLatency.addUs(getTimeUs()- frame->pts);
     avgTotalDrmLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
