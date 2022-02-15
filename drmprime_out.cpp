@@ -47,6 +47,7 @@ AvgCalculator avgDrmLatency1{"DRM1"};
 AvgCalculator avgDrmLatency2{"DRM2"};
 Chronometer chronometer1{"X1"};
 Chronometer chronometer2{"X2"};
+Chronometer chronometer3{"X3"};
 
 #define TRACE_ALL 0
 
@@ -286,7 +287,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         chronometer2.stop();
         chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
     }
-
+    chronometer3.start();
     ret = drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
                           da->fb_handle, 0,
                           de->setup.compose.x, de->setup.compose.y,
@@ -299,6 +300,8 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     if (ret != 0) {
         fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
     }
+    chronometer3.stop();
+    chronometer3.printInIntervals(CALCULATOR_LOG_INTERVAL);
 
     de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
     //ss.str("");
