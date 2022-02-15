@@ -40,8 +40,9 @@ extern "C" {
 }
 #include "common_consti/TimeHelper.hpp"
 
+AvgCalculator avgDrmLatency0{"DRM1"};
 AvgCalculator avgDrmLatency1{"DRM1"};
-AvgCalculator avgDrmLatency2{"DRM1"};
+AvgCalculator avgDrmLatency2{"DRM2"};
 
 #define TRACE_ALL 0
 
@@ -171,6 +172,8 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     std::stringstream ss;
     ss<<"do_display0:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     std::cout<<ss.str();
+    avgDrmLatency0.addUs(getTimeUs()- frame->pts);
+    avgDrmLatency0.printInIntervals(100);
 #if TRACE_ALL
     fprintf(stderr, "<<< %s: fd=%d\n", __func__, desc->objects[0].fd);
 #endif
