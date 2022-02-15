@@ -131,7 +131,9 @@ public:
     }
     void printInIntervals(const int intervalSize,bool resetSamples=true){
         if(getNSamples()>=intervalSize){
-            std::cout<<"Avg "<<name<<":"<<getAvgReadable();
+            std::stringstream ss;
+            ss<<"Avg "<<name<<":"<<getAvgReadable()<<"\n";
+            std::cout<<ss.str();
             if(resetSamples)reset();
         }
     }
