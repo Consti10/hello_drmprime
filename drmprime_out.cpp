@@ -298,7 +298,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
                               0, 0,
                               av_frame_cropped_width(frame) << 16,
                               av_frame_cropped_height(frame) << 16);
-        first= false;
+        //first= false;
     }else{
         da->fb_handle=de->drm_fd;
     }
