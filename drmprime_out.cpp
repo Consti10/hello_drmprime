@@ -73,13 +73,14 @@ typedef struct drm_aux_s
 {
     unsigned int fb_handle;
     uint32_t bo_handles[AV_DRM_MAX_PLANES];
-
     AVFrame *frame;
 } drm_aux_t;
 
+
 // Aux size should only need to be 2, but on a few streams (Hobbit) under FKMS
 // we get initial flicker probably due to dodgy drm timing
-#define AUX_SIZE 3
+//#define AUX_SIZE 3
+#define AUX_SIZE 1
 typedef struct drmprime_out_env_s
 {
     AVClass *classx;
@@ -185,7 +186,8 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
 #if TRACE_ALL
     fprintf(stderr, "<<< %s: fd=%d\n", __func__, desc->objects[0].fd);
 #endif
-
+    // If the crtc plane we have for video is not updated to use the same frame format (yet),
+    // do so. Only needs to be done once.
     if (de->setup.out_fourcc != format) {
         if (find_plane(de->drm_fd, de->setup.crtcIdx, format, &de->setup.planeId)) {
             av_frame_free(&frame);
@@ -193,6 +195,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
             return -1;
         }
         de->setup.out_fourcc = format;
+        fprintf("Changed drm_setup(aka CRTC) format to %#x\n",de->setup.out_fourcc);
     }
 
     /*{
@@ -302,7 +305,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
                               0, 0,
                               av_frame_cropped_width(frame) << 16,
                               av_frame_cropped_height(frame) << 16);
-        first= false;
+        //first= false;
     }else{
         //da->fb_handle=de->drm_fd;
         void *dev=NULL;
@@ -316,7 +319,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     chronometer3.stop();
     chronometer3.printInIntervals(CALCULATOR_LOG_INTERVAL);
 
-    //de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
+    de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
     //ss.str("");
     //ss<<"do_display2:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     //std::cout<<ss.str();
