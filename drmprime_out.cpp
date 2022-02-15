@@ -254,7 +254,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
             }
         }
 
-#if 1 && TRACE_ALL
+//#if 1 && TRACE_ALL
         fprintf(stderr, "%dx%d, fmt: %x, boh=%d,%d,%d,%d, pitch=%d,%d,%d,%d,"
                " offset=%d,%d,%d,%d, mod=%llx,%llx,%llx,%llx\n",
                av_frame_cropped_width(frame),
@@ -277,7 +277,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
                (long long)modifiers[2],
                (long long)modifiers[3]
               );
-#endif
+//#endif
 
         if (drmModeAddFB2WithModifiers(de->drm_fd,
                                        av_frame_cropped_width(frame),
