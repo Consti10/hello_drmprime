@@ -55,6 +55,7 @@ extern "C" {
 
 #include <vector>
 #include "extra.h"
+#include "common_consti/TimeHelper.hpp"
 
 static enum AVPixelFormat hw_pix_fmt;
 static FILE *output_file = NULL;
@@ -93,7 +94,47 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
     return AV_PIX_FMT_NONE;
 }
 
-static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *frame,AVFrame* sw_frame,uint8_t *buffer){
+static void save_frame_to_file_if_enabled(AVFrame *frame){
+    if (output_file != NULL) {
+        int ret=0;
+        AVFrame* sw_frame;
+        AVFrame *tmp_frame;
+        if (frame->format == hw_pix_fmt) {
+            if(!(sw_frame = av_frame_alloc())){
+                fprintf(stderr,"Cannot alloc frame\n");
+                return;
+            }
+            /* retrieve data from GPU to CPU */
+            if ((ret = av_hwframe_transfer_data(sw_frame, frame, 0)) < 0) {
+                fprintf(stderr, "Error transferring the data to system memory\n");
+                av_frame_free(&sw_frame);
+                return;
+            }
+            tmp_frame = sw_frame;
+        } else
+            tmp_frame = frame;
+        int size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
+                                        tmp_frame->height, 1);
+        uint8_t buffer[size];
+        ret = av_image_copy_to_buffer(buffer, size,
+                                      (const uint8_t * const *)tmp_frame->data,
+                                      (const int *)tmp_frame->linesize, (AVPixelFormat)tmp_frame->format,
+                                      tmp_frame->width, tmp_frame->height, 1);
+        if (ret < 0) {
+            fprintf(stderr, "Can not copy image to buffer\n");
+            av_frame_free(&sw_frame);
+            return;
+        }
+        if ((ret = fwrite(buffer, 1, size, output_file)) < 0) {
+            fprintf(stderr, "Failed to dump raw data.\n");
+            av_frame_free(&sw_frame);
+            return;
+        }
+        av_frame_free(&sw_frame);
+    }
+}
+
+static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *frame){
     int size;
     int ret=0;
     // push the decoded frame into the filtergraph if it exists
@@ -103,7 +144,6 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
         //goto fail;
         return;
     }
-
     do {
         if (filter_graph != NULL) {
             av_frame_unref(frame);
@@ -120,48 +160,10 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
                 return;
             }
         }
-
+        std::cout<<"x_push_into_filter_graph:pts:"<<frame->pts<<"\n";
         drmprime_out_display(dpo, frame);
+        save_frame_to_file_if_enabled(frame);
 
-        if (output_file != NULL) {
-            AVFrame *tmp_frame;
-
-            if (frame->format == hw_pix_fmt) {
-                /* retrieve data from GPU to CPU */
-                if ((ret = av_hwframe_transfer_data(sw_frame, frame, 0)) < 0) {
-                    fprintf(stderr, "Error transferring the data to system memory\n");
-                    //goto fail;
-                    return;
-                }
-                tmp_frame = sw_frame;
-            } else
-                tmp_frame = frame;
-
-            size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
-                                            tmp_frame->height, 1);
-            buffer = (uint8_t*)av_malloc(size);
-            if (!buffer) {
-                fprintf(stderr, "Can not alloc buffer\n");
-                ret = AVERROR(ENOMEM);
-                //goto fail;
-                return;
-            }
-            ret = av_image_copy_to_buffer(buffer, size,
-                                          (const uint8_t * const *)tmp_frame->data,
-                                          (const int *)tmp_frame->linesize, (AVPixelFormat)tmp_frame->format,
-                                          tmp_frame->width, tmp_frame->height, 1);
-            if (ret < 0) {
-                fprintf(stderr, "Can not copy image to buffer\n");
-                //goto fail;
-                return;
-            }
-
-            if ((ret = fwrite(buffer, 1, size, output_file)) < 0) {
-                fprintf(stderr, "Failed to dump raw data.\n");
-                //goto fail;
-                return;
-            }
-        }
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
 }
 
@@ -170,8 +172,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
 static int decode_and_wait_for_frame(AVCodecContext * const avctx,
                                      drmprime_out_env_t * const dpo,
                                      AVPacket *packet){
-    AVFrame *frame = NULL, *sw_frame = NULL;
-    uint8_t *buffer_for_something = NULL;
+    AVFrame *frame = NULL;
     // testing
     check_single_nalu(packet->data,packet->size);
     std::cout<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
@@ -182,12 +183,10 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
         return ret;
     }
     // alloc output frame(s)
-    if (!(frame = av_frame_alloc()) || !(sw_frame = av_frame_alloc())) {
+    if (!(frame = av_frame_alloc())) {
         fprintf(stderr, "Can not alloc frame\n");
         ret = AVERROR(ENOMEM);
         av_frame_free(&frame);
-        av_frame_free(&sw_frame);
-        av_freep(&buffer_for_something);
         return ret;
     }
     // Poll until we get the frame out
@@ -202,15 +201,16 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
             const auto x_delay=std::chrono::steady_clock::now()-before;
             std::cout<<"(True) decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(x_delay).count()/1000.0f)<<" ms\n";
             gotFrame=true;
+            const auto now=getTimeUs();
+            std::cout<<"Frame pts:"<<frame->pts<<" Set to:"<<now<<"\n";
+            frame->pts=now;
             // display frame
-            x_push_into_filter_graph(dpo,frame,sw_frame,buffer_for_something);
+            x_push_into_filter_graph(dpo,frame);
         }else{
             std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";
         }
     }
     av_frame_free(&frame);
-    av_frame_free(&sw_frame);
-    av_freep(&buffer_for_something);
     return 0;
 }
 
@@ -287,7 +287,7 @@ static int decode_write(AVCodecContext * const avctx,
             }
         }
         // tmp test disable
-        x_push_into_filter_graph(dpo,frame,sw_frame,buffer_for_something);
+        x_push_into_filter_graph(dpo,frame);
 
         if (frames == 0 || --frames == 0)
             ret = -1;

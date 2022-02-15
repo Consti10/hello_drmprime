@@ -38,6 +38,7 @@ extern "C" {
 #include "libavutil/hwcontext_drm.h"
 #include "libavutil/pixdesc.h"
 }
+#include "common_consti/TimeHelper.hpp"
 
 #define TRACE_ALL 0
 
@@ -164,7 +165,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     drm_aux_t *da = de->aux + de->ano;
     const uint32_t format = desc->layers[0].format;
     int ret = 0;
-
+    std::cout<<"do_display0:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
 #if TRACE_ALL
     fprintf(stderr, "<<< %s: fd=%d\n", __func__, desc->objects[0].fd);
 #endif
@@ -194,6 +195,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
             }
         }
     }
+    std::cout<<"do_display1:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
 
     da_uninit(de, da);
 
@@ -277,6 +279,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     }
 
     de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
+    std::cout<<"do_display2:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
 
     return ret;
 }
@@ -310,6 +313,7 @@ static void* display_thread(void *v)
 
         frame = de->q_next;
         de->q_next = NULL;
+        std::cout<<"display_thread:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
         sem_post(&de->q_sem_out);
 
         do_display(de, frame);
@@ -447,7 +451,9 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
     if (src_frame->format == AV_PIX_FMT_DRM_PRIME) {
         frame = av_frame_alloc();
         av_frame_ref(frame, src_frame);
+        printf("format == AV_PIX_FMT_DRM_PRIME\n");
     } else if (src_frame->format == AV_PIX_FMT_VAAPI) {
+        printf("format == AV_PIX_FMT_VAAPI\n");
         frame = av_frame_alloc();
         frame->format = AV_PIX_FMT_DRM_PRIME;
         if (av_hwframe_map(frame, src_frame, 0) != 0) {
@@ -459,7 +465,7 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
         fprintf(stderr, "Frame (format=%d) not DRM_PRiME\n", src_frame->format);
         return AVERROR(EINVAL);
     }
-
+    std::cout<<"drmprime_out_display:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     ret = do_sem_wait(&de->q_sem_out, !de->show_all);
     if (ret) {
         av_frame_free(&frame);
