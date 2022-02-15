@@ -203,6 +203,8 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     ss.str("");
     ss<<"do_display1:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     std::cout<<ss.str();
+    avgDrmLatency1.addUs(getTimeUs()- frame->pts);
+    avgDrmLatency1.printInIntervals(100);
     da_uninit(de, da);
 
     {
@@ -288,6 +290,8 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     ss.str("");
     ss<<"do_display2:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     std::cout<<ss.str();
+    avgDrmLatency2.addUs(getTimeUs()- frame->pts);
+    avgDrmLatency2.printInIntervals(100);
     return ret;
 }
 
