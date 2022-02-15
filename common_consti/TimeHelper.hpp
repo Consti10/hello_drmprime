@@ -248,7 +248,7 @@ public:
 
 class Chronometer:public AvgCalculator {
 public:
-    explicit Chronometer(std::string name="Unknown"):mName(std::move(name)){}
+    explicit Chronometer(std::string name="Unknown"):mName(name), AvgCalculator(name){}
     void start(){
         startTS=std::chrono::steady_clock::now();
     }

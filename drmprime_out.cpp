@@ -44,6 +44,8 @@ AvgCalculator avgDisplayThreadLatency{"DisplayThread"};
 AvgCalculator avgDrmLatency0{"DRM0"};
 AvgCalculator avgDrmLatency1{"DRM1"};
 AvgCalculator avgDrmLatency2{"DRM2"};
+Chronometer chronometer1{"X1"};
+Chronometer chronometer2{"X2"};
 
 #define TRACE_ALL 0
 
@@ -211,8 +213,10 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     avgDrmLatency1.addUs(getTimeUs()- frame->pts);
     avgDrmLatency1.printInIntervals(100);
     frame->pts=getTimeUs();
+    chronometer1.start();
     da_uninit(de, da);
-
+    chronometer1.stop();
+    chronometer1.printInIntervals(100);
     {
         uint32_t pitches[4] = { 0 };
         uint32_t offsets[4] = { 0 };
