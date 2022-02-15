@@ -15,7 +15,7 @@ public:
         const auto str=stream.str();
         if(!str.empty()){
             if(str.back()!='\n'){
-                ss<<"\n";
+                stream<<"\n";
             }
             std::cout<<stream.str();
         }
