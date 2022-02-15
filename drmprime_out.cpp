@@ -237,6 +237,25 @@ static int updateCRTCFormatIfNeeded(drmprime_out_env_t *const de, AVFrame *frame
     }
     return 0;
 }
+// This was in the original code, but it won't have an effect anyways since swapping the fb takes at least until next fb
+static int waitForVSYNC(drmprime_out_env_t *const de){
+    chronoVsync.start();
+    drmVBlank vbl = {
+            .request = {
+                    .type = DRM_VBLANK_RELATIVE,
+                    .sequence = 0
+            }
+    };
+    while (drmWaitVBlank(de->drm_fd, &vbl)) {
+        if (errno != EINTR) {
+// This always fails - don't know why
+//                fprintf(stderr, "drmWaitVBlank failed: %s\n", ERRSTR);
+            break;
+        }
+    }
+    chronoVsync.stop();
+    chronoVsync.printInIntervals(CALCULATOR_LOG_INTERVAL);
+}
 
 static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
 {
@@ -256,25 +275,8 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     if(updateCRTCFormatIfNeeded(de,frame)!=0){
         return -1;
     }
-    /*{
-        chronoVsync.start();
-        drmVBlank vbl = {
-            .request = {
-                .type = DRM_VBLANK_RELATIVE,
-                .sequence = 0
-            }
-        };
-
-        while (drmWaitVBlank(de->drm_fd, &vbl)) {
-            if (errno != EINTR) {
-// This always fails - don't know why
-//                fprintf(stderr, "drmWaitVBlank failed: %s\n", ERRSTR);
-                break;
-            }
-        }
-        chronoVsync.stop();
-        chronoVsync.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    }*/
+    // Not needed / doesn't have the desired effect anyways
+    //waitForVSYNC(de);
     //ss.str("");
     //ss<<"do_display1:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
     //std::cout<<ss.str();
