@@ -224,6 +224,8 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
 // If the crtc plane we have for video is not updated to use the same frame format (yet),
 // do so. Only needs to be done once.
 static int updateCRTCFormatIfNeeded(drmprime_out_env_t *const de, AVFrame *frame){
+    const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
+    const uint32_t format = desc->layers[0].format;
     if (de->setup.out_fourcc != format) {
         if (find_plane(de->drm_fd, de->setup.crtcIdx, format, &de->setup.planeId)) {
             av_frame_free(&frame);
