@@ -307,7 +307,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         //da->fb_handle=de->drm_fd;
         void *dev=NULL;
         ret=drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,
-                            DRM_MODE_PAGE_FLIP_EVENT, dev);
+                            0, nullptr);
     }
 
     if (ret != 0) {
