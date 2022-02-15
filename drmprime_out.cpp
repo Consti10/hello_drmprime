@@ -49,6 +49,7 @@ Chronometer chronoVsync{"VSYNC"};
 Chronometer chronometer1{"DA_UNINIT"};
 Chronometer chronometer2{"X2"};
 Chronometer chronometer3{"X3"};
+Chronometer chronometerDaInit{"DA_INIT"};
 
 #define TRACE_ALL 0
 
@@ -153,12 +154,10 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
 static void da_uninit(drmprime_out_env_t *const de, drm_aux_t *da)
 {
     unsigned int i;
-
     if (da->fb_handle != 0) {
         drmModeRmFB(de->drm_fd, da->fb_handle);
         da->fb_handle = 0;
     }
-
     for (i = 0; i != AV_DRM_MAX_PLANES; ++i) {
         if (da->bo_handles[i]) {
             struct drm_gem_close gem_close = {.handle = da->bo_handles[i]};
@@ -166,11 +165,62 @@ static void da_uninit(drmprime_out_env_t *const de, drm_aux_t *da)
             da->bo_handles[i] = 0;
         }
     }
-
     av_frame_free(&da->frame);
 }
 
-static bool first=true;
+static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
+    chronometerDaInit.start();
+    const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
+    uint32_t pitches[4] = { 0 };
+    uint32_t offsets[4] = { 0 };
+    uint64_t modifiers[4] = { 0 };
+    uint32_t bo_handles[4] = { 0 };
+    int i, j, n;
+    da->frame = frame;
+    memset(da->bo_handles, 0, sizeof(da->bo_handles));
+    for (i = 0; i < desc->nb_objects; ++i) {
+        if (drmPrimeFDToHandle(de->drm_fd, desc->objects[i].fd, da->bo_handles + i) != 0) {
+            fprintf(stderr, "drmPrimeFDToHandle[%d](%d) failed: %s\n", i, desc->objects[i].fd, ERRSTR);
+            return -1;
+        }
+    }
+    n = 0;
+    for (i = 0; i < desc->nb_layers; ++i) {
+        for (j = 0; j < desc->layers[i].nb_planes; ++j) {
+            const AVDRMPlaneDescriptor *const p = desc->layers[i].planes + j;
+            const AVDRMObjectDescriptor *const obj = desc->objects + p->object_index;
+            pitches[n] = p->pitch;
+            offsets[n] = p->offset;
+            modifiers[n] = obj->format_modifier;
+            bo_handles[n] = da->bo_handles[p->object_index];
+            ++n;
+        }
+    }
+    if (drmModeAddFB2WithModifiers(de->drm_fd,
+                                   av_frame_cropped_width(frame),
+                                   av_frame_cropped_height(frame),
+                                   desc->layers[0].format, bo_handles,
+                                   pitches, offsets, modifiers,
+                                   &da->fb_handle, DRM_MODE_FB_MODIFIERS /** 0 if no mods */) != 0) {
+        fprintf(stderr, "drmModeAddFB2WithModifiers failed: %s\n", ERRSTR);
+        return -1;
+    }
+    if(drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
+                          da->fb_handle, 0,
+                          de->setup.compose.x, de->setup.compose.y,
+                          de->setup.compose.width,
+                          de->setup.compose.height,
+                          0, 0,
+                          av_frame_cropped_width(frame) << 16,
+                          av_frame_cropped_height(frame) << 16)!=0){
+        fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
+        return -1;
+    }
+    chronometerDaInit.stop();
+    chronometerDaInit.printInIntervals(CALCULATOR_LOG_INTERVAL);
+    return 0;
+}
+
 static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
 {
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
@@ -258,7 +308,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
             }
         }
 
-//#if 1 && TRACE_ALL
+#if 1 && TRACE_ALL
         fprintf(stderr, "%dx%d, fmt: %x, boh=%d,%d,%d,%d, pitch=%d,%d,%d,%d,"
                " offset=%d,%d,%d,%d, mod=%llx,%llx,%llx,%llx\n",
                av_frame_cropped_width(frame),
@@ -281,7 +331,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
                (long long)modifiers[2],
                (long long)modifiers[3]
               );
-//#endif
+#endif
 
         if (drmModeAddFB2WithModifiers(de->drm_fd,
                                        av_frame_cropped_width(frame),
@@ -296,7 +346,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
     }
     chronometer3.start();
-    if(first){
+    //if(first){
         ret = drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
                               da->fb_handle, 0,
                               de->setup.compose.x, de->setup.compose.y,
@@ -306,12 +356,12 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
                               av_frame_cropped_width(frame) << 16,
                               av_frame_cropped_height(frame) << 16);
         //first= false;
-    }else{
+    //}else{
         //da->fb_handle=de->drm_fd;
-        void *dev=NULL;
-        ret=drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,
-                            0, nullptr);
-    }
+    //    void *dev=NULL;
+    //    ret=drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,
+    //                        0, nullptr);
+    //}
 
     if (ret != 0) {
         fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
