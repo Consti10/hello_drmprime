@@ -219,6 +219,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     chronometer1.stop();
     chronometer1.printInIntervals(CALCULATOR_LOG_INTERVAL);
     {
+        chronometer2.start();
         uint32_t pitches[4] = { 0 };
         uint32_t offsets[4] = { 0 };
         uint64_t modifiers[4] = { 0 };
@@ -282,6 +283,8 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
             fprintf(stderr, "drmModeAddFB2WithModifiers failed: %s\n", ERRSTR);
             return -1;
         }
+        chronometer2.stop();
+        chronometer2.printInIntervalls(CALCULATOR_LOG_INTERVAL);
     }
 
     ret = drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
