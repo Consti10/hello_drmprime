@@ -71,8 +71,9 @@ private:
     long nSamples=0;
     std::chrono::nanoseconds min=std::chrono::nanoseconds::max();
     std::chrono::nanoseconds max{};
+    const std::string name;
 public:
-    AvgCalculator(){reset();};
+    AvgCalculator(std::string name1=""):name(name1){reset();};
     void add(const std::chrono::nanoseconds& value){
         if(value<std::chrono::nanoseconds(0)){
             std::cout<<"Cannot add negative value\n";
@@ -127,6 +128,12 @@ public:
     }
     float getAvg_ms(){
         return (float)(std::chrono::duration_cast<std::chrono::microseconds>(getAvg()).count())/1000.0f;
+    }
+    void printInIntervals(const int intervalSize,bool resetSamples=true){
+        if(getNSamples()>=intervalSize){
+            std::cout<<"Avg "<<name<<":"<<getAvgReadable();
+            if(resetSamples)reset();
+        }
     }
 };
 
@@ -342,6 +349,5 @@ public:
         }
     }
 };
-
 
 #endif //LIVEVIDEO10MS_TIMEHELPER_HPP

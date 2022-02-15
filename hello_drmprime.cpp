@@ -96,6 +96,7 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
 
 static void save_frame_to_file_if_enabled(AVFrame *frame){
     if (output_file != NULL) {
+        std::cout<<"Saving frame to file\n";
         int ret=0;
         AVFrame* sw_frame;
         AVFrame *tmp_frame;
@@ -167,7 +168,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
 }
 
-
+static AvgCalculator avgDecodeTime{"DecodeTime"};
 //Sends one frame to the decoder, then waits for the output frame to become available
 static int decode_and_wait_for_frame(AVCodecContext * const avctx,
                                      drmprime_out_env_t * const dpo,
@@ -200,6 +201,8 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
             // we got a new frame
             const auto x_delay=std::chrono::steady_clock::now()-before;
             std::cout<<"(True) decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(x_delay).count()/1000.0f)<<" ms\n";
+            avgDecodeTime.add(x_delay);
+            avgDecodeTime.printInIntervals(100);
             gotFrame=true;
             const auto now=getTimeUs();
             std::cout<<"Frame pts:"<<frame->pts<<" Set to:"<<now<<"\n";
