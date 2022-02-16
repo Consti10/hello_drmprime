@@ -48,6 +48,81 @@ public:
         std::lock_guard<std::mutex> lock(mutex_);
         queue_.push(std::move(item));
     }
+    // get the most recently added element (if there is any)
+    // and then reduce the queue size to 0
+    std::shared_ptr<T> getMostRecentIfAvailable(){
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (queue_.empty()) {
+            return std::shared_ptr<T>(nullptr);
+        }
+        auto tmp=queue_.back();
+        while(!queue_.empty()) {
+            queue_.pop();
+        }
+        return tmp;
+    }
+    // blocks until the queue is empty
+    // or "exit" is set to true
+    void waitUntilEmpty(bool& exit){
+        while (true){
+            std::lock_guard<std::mutex> lock(mutex_);
+            if(queue_.empty()){
+                break;
+            }
+        }
+    }
+};
+
+
+// Not sure how to call this, from drmprime example
+// blocking, cannot put a new message in until the last message has been consumed
+// after creation, you can put in a buffer immediately
+// Then, you have to wait until this buffer has been consumed before you can put in the next buffer
+template<typename T>
+class ThreadsafeSingleBuffer{
+public:
+    ThreadsafeSingleBuffer(){
+        sem_init(&q_sem_in, 0, 0);
+        sem_init(&q_sem_out, 0, 0);
+        // in the beginning, we can accept a new buffer immediately
+        sem_post(&q_sem_in);
+    }
+    ~ThreadsafeSingleBuffer(){
+        sem_destroy(&q_sem_in);
+        sem_destroy(&q_sem_out);
+    }
+    // blocks until message is available
+    // or terminate() has been called from another thread
+    T getBuffer(){
+        sem_wait(&q_sem_in);
+        auto ret=q_buffer;
+        q_buffer=NULL;
+        sem_post(&q_sem_out);
+        return ret;
+    }
+    // blocks until the current buffer has been consumed
+    // and therefore can be updated to a new value
+    void setBuffer(T newBuffer){
+        sem_wait(&q_sem_out);
+        //assert(message==NULL);
+        q_buffer=newBuffer;
+        sem_post(&q_sem_in);
+    }
+    // terminate, any blocking call will return immediately
+    void terminate(){
+        q_terminate= true;
+        sem_post(&q_sem_in);
+    }
+    // returns true when terminated
+    bool terminated(){
+        return q_terminate;
+    }
+private:
+    sem_t q_sem_in;
+    sem_t q_sem_out;
+    // terminate
+    bool q_terminate=false;
+    T q_buffer=NULL;
 };
 
 
