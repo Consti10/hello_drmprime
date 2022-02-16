@@ -105,8 +105,8 @@ typedef struct drmprime_out_env_s
     drm_aux_t aux[AUX_SIZE];
 
     pthread_t q_thread;
-    sem_t q_sem_in;
-    sem_t q_sem_out;
+    //Xsem_t q_sem_in;
+    //Xsem_t q_sem_out;
     int q_terminate;
     AVFrame *q_next;
     ThreadsafeQueue<AVFrameHolder> queue;
@@ -321,10 +321,10 @@ static void* display_thread(void *v)
     fprintf(stderr, "<<< %s\n", __func__);
 #endif
 
-    sem_post(&de->q_sem_out);
+    //Xsem_post(&de->q_sem_out);
 
     for (;;) {
-        /*AVFrame *frame;
+        /*XAVFrame *frame;
 
         do_sem_wait(&de->q_sem_in, 0);
 
@@ -503,7 +503,7 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
     }
     // Here the delay is still neglegible,aka ~0.15ms
     MLOGD<<"drmprime_out_display:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
-    /*ret = do_sem_wait(&de->q_sem_out, !de->show_all);
+    /*Xret = do_sem_wait(&de->q_sem_out, !de->show_all);
     if (ret) {
         av_frame_free(&frame);
     } else {
@@ -517,12 +517,12 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
 
 void drmprime_out_delete(drmprime_out_env_t *de)
 {
-    //de->q_terminate = 1;
-    //sem_post(&de->q_sem_in);
+    //Xde->q_terminate = 1;
+    //Xsem_post(&de->q_sem_in);
     de->sbQueue.terminate();
     pthread_join(de->q_thread, NULL);
-    //sem_destroy(&de->q_sem_in);
-    //sem_destroy(&de->q_sem_out);
+    //Xsem_destroy(&de->q_sem_in);
+    //Xsem_destroy(&de->q_sem_out);
 
     av_frame_free(&de->q_next);
 
@@ -562,8 +562,8 @@ drmprime_out_env_t* drmprime_out_new()
         goto fail_close;
     }
 
-    sem_init(&de->q_sem_in, 0, 0);
-    sem_init(&de->q_sem_out, 0, 0);
+    //Xsem_init(&de->q_sem_in, 0, 0);
+    //Xsem_init(&de->q_sem_out, 0, 0);
     if (pthread_create(&de->q_thread, NULL, display_thread, de)) {
         rv = AVERROR(errno);
         //comp error fprintf(stderr, "Failed to create display thread: %s\n", av_err2str(rv));

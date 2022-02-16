@@ -88,7 +88,9 @@ public:
         // in the beginning, we can accept a new buffer immediately
         int ret=sem_post(&q_sem_out);
         if(ret!=0){
-            std::cout<<"Error\n";
+            MLOGD<<"Error\n";
+        }else{
+            MLOGD<<"Success\n";
         }
     }
     ~ThreadsafeSingleBuffer(){
