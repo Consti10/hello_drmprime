@@ -85,7 +85,7 @@ public:
         sem_init(&q_sem_in, 0, 0);
         sem_init(&q_sem_out, 0, 0);
         // in the beginning, we can accept a new buffer immediately
-        sem_post(&q_sem_in);
+        sem_post(&q_sem_out);
     }
     ~ThreadsafeSingleBuffer(){
         sem_destroy(&q_sem_in);
