@@ -670,7 +670,9 @@ static void modeset_draw(void)
 	b = rand() % 0xff;
 	r_up = g_up = b_up = true;
 
-	for (i = 0; i < 50; ++i) {
+    const int N_FRAMES_DRAWN=drawFramesOnKeyboardClick ? 1000000 : 50;
+
+	for (i = 0; i < N_FRAMES_DRAWN; ++i) {
         if(drawFramesOnKeyboardClick){
             // wait for a keyboard input
             printf("Press ENTER key to draw new frame, press X to exit\n");
