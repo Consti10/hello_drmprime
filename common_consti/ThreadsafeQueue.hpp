@@ -76,7 +76,7 @@ public:
 
 
 // Not sure how to call this, from drmprime example
-// blocking, cannot put a new message in until the last message has been consumed
+// blocking, cannot put a new buffer in until the last buffer has been consumed
 // after creation, you can put in a buffer immediately
 // Then, you have to wait until this buffer has been consumed before you can put in the next buffer
 template<typename T>
@@ -86,7 +86,10 @@ public:
         sem_init(&q_sem_in, 0, 0);
         sem_init(&q_sem_out, 0, 0);
         // in the beginning, we can accept a new buffer immediately
-        sem_post(&q_sem_out);
+        int ret=sem_post(&q_sem_out);
+        if(ret!=0){
+            std::cout<<"Error\n";
+        }
     }
     ~ThreadsafeSingleBuffer(){
         sem_destroy(&q_sem_in);
