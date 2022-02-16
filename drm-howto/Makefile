@@ -8,7 +8,7 @@ uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 ifeq ($(uname_S),Linux)
 	uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
 	ifeq ($(uname_M),armv7l)
- 		_CFLAGS += -mfpu=neon -march=armv7-a -marm
+ 		#_CFLAGS += -mfpu=neon -march=armv7-a -marm
 	endif
 endif
 
