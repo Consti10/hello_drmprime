@@ -669,7 +669,7 @@ static void modeset_draw(void)
 		b = next_color(&b_up, b, 5);
         const uint32_t rgb=(r << 16) | (g << 8) | b;*/
         const uint32_t rgb= createColor(i);
-        int nModsets=0;
+        //int nModsets=0;
 		for (iter = modeset_list; iter; iter = iter->next) {
 			for (int j = 0; j < iter->height; ++j) {
                 const int offsetStride=iter->stride * j;
@@ -680,9 +680,9 @@ static void modeset_draw(void)
                     *(uint32_t*)&iter->map[off] =rgb;
 				}
 			}
-            nModsets++;
+            //nModsets++;
 		}
-        std::cout<<"N modsets is:"<<nModsets<<"\n";
+        //std::cout<<"N modsets is:"<<nModsets<<"\n";
         avgCpuDrawTime.stop();
         avgCpuDrawTime.printInIntervals(LOG_INTERVALL);
 		usleep(100000);
