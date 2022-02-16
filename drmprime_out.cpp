@@ -106,13 +106,11 @@ typedef struct drmprime_out_env_s
     drm_aux_t aux[AUX_SIZE];
 
     pthread_t q_thread;
-    //Xsem_t q_sem_in;
-    //Xsem_t q_sem_out;
-    //Xint q_terminate;
-    //AVFrame *q_next;
     bool terminate=false;
-    std::unique_ptr<ThreadsafeQueue<AVFrameHolder>> queue;
+    // used when frame drops are not wanted
     std::unique_ptr<ThreadsafeSingleBuffer<AVFrame*>> sbQueue;
+    // allows frame drops (higher video fps than display refresh)
+    std::unique_ptr<ThreadsafeQueue<AVFrameHolder>> queue;
 } drmprime_out_env_t;
 
 
@@ -283,6 +281,7 @@ static void waitForVSYNC(drmprime_out_env_t *const de){
 
 static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
 {
+    assert(frame!=NULL);
     avgDisplayThreadQueueLatency.addUs(getTimeUs()-frame->pts);
     avgDisplayThreadQueueLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
@@ -321,20 +320,19 @@ static void* display_thread(void *v)
 #if TRACE_ALL
     fprintf(stderr, "<<< %s\n", __func__);
 #endif
-
-    //Xsem_post(&de->q_sem_out);
-
     for (;;) {
         if(de->terminate)break;
         if(DROP_FRAMES){
-            int nDropped=0;
-            const std::shared_ptr<AVFrameHolder> tmp=de->queue->getMostRecentIfAvailable(nDropped);
-            MLOGD<<"N dropped:"<<nDropped<<"\n";
-            if(tmp){
-                AVFrame* frame=tmp->frame;
-                if(frame!=NULL){
-                    do_display(de, frame);
+            const auto allBuffers=de->queue->getAllAndClear();
+            if(allBuffers.size()>0){
+                const int nDroppedFrames=allBuffers.size()-1;
+                MLOGD<<"N dropped:"<<nDroppedFrames<<"\n";
+                // don't forget to free the dropped frames
+                for(int i=0;i<nDroppedFrames;i++){
+                    av_frame_free(&allBuffers[i]->frame);
                 }
+                const auto mostRecent=allBuffers[nDroppedFrames];
+                do_display(de, mostRecent->frame);
             }
         }else{
             AVFrame* frame=de->sbQueue->getBuffer();
@@ -347,16 +345,11 @@ static void* display_thread(void *v)
             do_display(de, frame);
         }
     }
-
 #if TRACE_ALL
     fprintf(stderr, ">>> %s\n", __func__);
 #endif
-
     for (i = 0; i != AUX_SIZE; ++i)
         da_uninit(de, de->aux + i);
-
-    //Xav_frame_free(&de->q_next);
-
     return NULL;
 }
 
@@ -495,38 +488,40 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
         return AVERROR(EINVAL);
     }
     // Here the delay is still neglegible,aka ~0.15ms
-    MLOGD<<"drmprime_out_display:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
-    /*Xret = do_sem_wait(&de->q_sem_out, !de->show_all);
-    if (ret) {
-        av_frame_free(&frame);
-    } else {
-        de->q_next = frame;
-        sem_post(&de->q_sem_in);
-    }*/
-    // wait for the last buffer to be processed, then update
+    const auto delayBeforeDisplayQueueUs=getTimeUs()-frame->pts;
+    MLOGD<<"delayBeforeDisplayQueue:"<<frame->pts<<" delay:"<<(delayBeforeDisplayQueueUs/1000.0)<<" ms\n";
     if(DROP_FRAMES){
+        // push it immediately, even though frame(s) might already be inside the queue
         de->queue->push(std::make_shared<AVFrameHolder>(frame));
     }else{
+        // wait for the last buffer to be processed, then update
         de->sbQueue->setBuffer(frame);
     }
-
     return 0;
 }
 
 void drmprime_out_delete(drmprime_out_env_t *de)
 {
-    //Xde->q_terminate = 1;
-    //Xsem_post(&de->q_sem_in);
+    de->terminate=true;
     de->sbQueue->terminate();
     pthread_join(de->q_thread, NULL);
-    //Xsem_destroy(&de->q_sem_in);
-    //Xsem_destroy(&de->q_sem_out);
-    //Xav_frame_free(&de->q_next);
+    // free any frames that might be inside some queues - since the queue thread
+    // is now stopped, we don't have to worry about any synchronization
+    if(de->sbQueue->unsafeGetFrame()!=NULL){
+        AVFrame* frame=de->sbQueue->unsafeGetFrame();
+        av_frame_free(&frame);
+    }
+    auto tmp=de->queue->getAllAndClear();
+    for(int i=0;i<tmp.size();i++){
+        auto element=tmp[i];
+        av_frame_free(&element->frame);
+    }
     if (de->drm_fd >= 0) {
         close(de->drm_fd);
         de->drm_fd = -1;
     }
     de->sbQueue.reset();
+    de->queue.reset();
     free(de);
 }
 
@@ -545,7 +540,7 @@ drmprime_out_env_t* drmprime_out_new()
     de->drm_fd = -1;
     de->con_id = 0;
     de->setup = (struct drm_setup) { 0 };
-    //Xde->q_terminate = 0;
+    de->terminate=false;
     de->show_all = 1;
 
     if ((de->drm_fd = drmOpen(drm_module, NULL)) < 0) {
@@ -561,8 +556,6 @@ drmprime_out_env_t* drmprime_out_new()
         goto fail_close;
     }
 
-    //Xsem_init(&de->q_sem_in, 0, 0);
-    //Xsem_init(&de->q_sem_out, 0, 0);
     if (pthread_create(&de->q_thread, NULL, display_thread, de)) {
         rv = AVERROR(errno);
         //comp error fprintf(stderr, "Failed to create display thread: %s\n", av_err2str(rv));

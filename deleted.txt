@@ -53,3 +53,26 @@
         if(tmp){
             do_display(de,tmp->frame);
         }*/
+
+/*Xret = do_sem_wait(&de->q_sem_out, !de->show_all);
+    if (ret) {
+        av_frame_free(&frame);
+    } else {
+        de->q_next = frame;
+        sem_post(&de->q_sem_in);
+    }*/
+
+// get the most recently added element (if there is any)
+    // and then reduce the queue size to 0
+    std::shared_ptr<T> getMostRecentIfAvailable(int& countDropped){
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (queue_.empty()) {
+            return std::shared_ptr<T>(nullptr);
+        }
+        auto tmp=queue_.back();
+        while(!queue_.empty()) {
+            queue_.pop();
+            countDropped++;
+        }
+        return tmp;
+    }

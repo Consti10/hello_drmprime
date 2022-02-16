@@ -49,29 +49,16 @@ public:
         std::lock_guard<std::mutex> lock(mutex_);
         queue_.push(std::move(item));
     }
-    // get the most recently added element (if there is any)
-    // and then reduce the queue size to 0
-    std::shared_ptr<T> getMostRecentIfAvailable(int& countDropped){
+    // returns a list of all buffers currently inside the queue and removes them from the queue
+    // The first element in the returned list is the oldest element in the queue
+    std::vector<std::shared_ptr<T>> getAllAndClear(){
         std::lock_guard<std::mutex> lock(mutex_);
-        if (queue_.empty()) {
-            return std::shared_ptr<T>(nullptr);
-        }
-        auto tmp=queue_.back();
-        while(!queue_.empty()) {
+        std::vector<std::shared_ptr<T>> ret;
+        while (!queue_.empty()){
+            ret.push_back(queue_.front());
             queue_.pop();
-            countDropped++;
         }
-        return tmp;
-    }
-    // blocks until the queue is empty
-    // or "exit" is set to true
-    void waitUntilEmpty(bool& exit){
-        while (true){
-            std::lock_guard<std::mutex> lock(mutex_);
-            if(queue_.empty()){
-                break;
-            }
-        }
+        return ret;
     }
 };
 
@@ -127,6 +114,10 @@ public:
     // returns true when terminated
     bool terminated(){
         return q_terminate;
+    }
+    // be carefully, not synchronized at all
+    T unsafeGetFrame(){
+        return q_buffer;
     }
 private:
     sem_t q_sem_in;
