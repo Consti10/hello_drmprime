@@ -87,11 +87,11 @@ public:
         sem_init(&q_sem_out, 0, 0);
         // in the beginning, we can accept a new buffer immediately
         int ret=sem_post(&q_sem_out);
-        if(ret!=0){
+        /*if(ret!=0){
             MLOGD<<"Error\n";
         }else{
             MLOGD<<"Success\n";
-        }
+        }*/
     }
     ~ThreadsafeSingleBuffer(){
         sem_destroy(&q_sem_in);
@@ -100,25 +100,25 @@ public:
     // blocks until message is available
     // or terminate() has been called from another thread
     T getBuffer(){
-        MLOGD<<"A1\n";
+        //MLOGD<<"A1\n";
         sem_wait(&q_sem_in);
         auto ret=q_buffer;
         q_buffer=NULL;
         sem_post(&q_sem_out);
-        MLOGD<<"A2\n";
+        //MLOGD<<"A2\n";
         return ret;
     }
     // blocks until the current buffer has been consumed
     // and therefore can be updated to a new value
     void setBuffer(T newBuffer){
-        MLOGD<<"X1\n";
+        //MLOGD<<"X1\n";
         sem_wait(&q_sem_out);
         //assert(message==NULL);
         q_buffer=newBuffer;
         sem_post(&q_sem_in);
-        MLOGD<<"X2\n";
+        //MLOGD<<"X2\n";
     }
-    // terminate, any blocking call will return immediately
+    // terminate, getBuffer() will return immediately
     void terminate(){
         q_terminate= true;
         sem_post(&q_sem_in);

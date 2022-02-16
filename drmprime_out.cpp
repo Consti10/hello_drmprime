@@ -107,8 +107,8 @@ typedef struct drmprime_out_env_s
     pthread_t q_thread;
     //Xsem_t q_sem_in;
     //Xsem_t q_sem_out;
-    int q_terminate;
-    AVFrame *q_next;
+    //Xint q_terminate;
+    //AVFrame *q_next;
     ThreadsafeQueue<AVFrameHolder> queue;
     std::unique_ptr<ThreadsafeSingleBuffer<AVFrame*>> sbQueue;
 } drmprime_out_env_t;
@@ -350,7 +350,7 @@ static void* display_thread(void *v)
             MLOGD<<"Got NULL frame\n";
             break;
         }else{
-            MLOGD<<"Got frame\n";
+            //MLOGD<<"Got frame\n";
         }
         do_display(de, frame);
     }
@@ -362,7 +362,7 @@ static void* display_thread(void *v)
     for (i = 0; i != AUX_SIZE; ++i)
         da_uninit(de, de->aux + i);
 
-    av_frame_free(&de->q_next);
+    //Xav_frame_free(&de->q_next);
 
     return NULL;
 }
@@ -524,7 +524,7 @@ void drmprime_out_delete(drmprime_out_env_t *de)
     //Xsem_destroy(&de->q_sem_in);
     //Xsem_destroy(&de->q_sem_out);
 
-    av_frame_free(&de->q_next);
+    //Xav_frame_free(&de->q_next);
 
     if (de->drm_fd >= 0) {
         close(de->drm_fd);
@@ -548,7 +548,7 @@ drmprime_out_env_t* drmprime_out_new()
     de->drm_fd = -1;
     de->con_id = 0;
     de->setup = (struct drm_setup) { 0 };
-    de->q_terminate = 0;
+    //Xde->q_terminate = 0;
     de->show_all = 1;
 
     if ((de->drm_fd = drmOpen(drm_module, NULL)) < 0) {
