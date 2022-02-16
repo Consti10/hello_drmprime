@@ -7,3 +7,4 @@ all:
 	gcc -o modeset-double-buffered modeset-double-buffered.c $(FLAGS)
 	gcc -o modeset-vsync modeset-vsync.c $(FLAGS)
 	gcc -o modeset-atomic modeset-atomic.c $(FLAGS)
+	$(CXX) -o modeset_latency modeset_latency.cpp $(FLAGS)

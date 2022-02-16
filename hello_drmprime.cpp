@@ -56,6 +56,7 @@ extern "C" {
 #include <vector>
 #include "extra.h"
 #include "common_consti/TimeHelper.hpp"
+#include "common_consti/LEDSwap.h"
 
 static enum AVPixelFormat hw_pix_fmt;
 static FILE *output_file = NULL;

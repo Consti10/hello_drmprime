@@ -72,32 +72,4 @@ void check_single_nalu(const uint8_t* data,const size_t data_length){
     //assert(nNALUs==1);
 }
 
-//extern "C" {
-//#include <wiringPi.h>
-//}
-#include <stdlib.h>
-
-static bool initialized=false;
-static bool led_on=false;
-
-void switch_led_on_off(){
-    /*if(!initialized){
-        if (wiringPiSetup () == -1){
-            std::cout<<"Cannot setup wiringPi\n";
-            return;
-        }
-        pinMode (0, OUTPUT) ;
-        initialized=true;
-    }*/
-    led_on=!led_on;
-    //digitalWrite (0, led_on ? 1 : 0);
-    if(led_on){
-        system("echo 1 > /sys/class/leds/led1/brightness");
-    }else{
-        system("echo 0 > /sys/class/leds/led1/brightness");
-    }
-    printf("Switched LED %s \n",led_on ? "on":"off");
-}
-
-
 #endif //HELLO_DRMPRIME_EXTRA_H
