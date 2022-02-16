@@ -8,6 +8,7 @@
 #include <queue>
 #include <mutex>
 #include <memory>
+#include "Logger.hpp"
 
 // NOTE: the item is wrapped as std::shared_ptr
 template<typename T>
@@ -94,19 +95,23 @@ public:
     // blocks until message is available
     // or terminate() has been called from another thread
     T getBuffer(){
+        MLOGD<<"A1\n";
         sem_wait(&q_sem_in);
         auto ret=q_buffer;
         q_buffer=NULL;
         sem_post(&q_sem_out);
+        MLOGD<<"A2\n";
         return ret;
     }
     // blocks until the current buffer has been consumed
     // and therefore can be updated to a new value
     void setBuffer(T newBuffer){
+        MLOGD<<"X1\n";
         sem_wait(&q_sem_out);
         //assert(message==NULL);
         q_buffer=newBuffer;
         sem_post(&q_sem_in);
+        MLOGD<<"X2\n";
     }
     // terminate, any blocking call will return immediately
     void terminate(){
