@@ -45,6 +45,7 @@
 
 #include "../common_consti/LEDSwap.h"
 #include "../common_consti/TimeHelper.hpp"
+#include "modeset_args.h"
 
 struct modeset_dev;
 static int modeset_find_crtc(int fd, drmModeRes *res, drmModeConnector *conn,
@@ -57,7 +58,7 @@ static int modeset_prepare(int fd);
 static void modeset_draw(void);
 static void modeset_cleanup(int fd);
 
-static bool drawFramesOnKeyboardClick=false;
+static modeset_options options;
 static const int LOG_INTERVALL=10;
 static Chronometer avgCpuDrawTime{"CPUDraw"};
 
@@ -551,36 +552,14 @@ err_destroy:
 int main(int argc, char **argv)
 {
 	int ret, fd;
-	const char *card="/dev/dri/card0";
 	struct modeset_dev *iter;
 
-    int opt;
-    while ((opt = getopt(argc, argv, "d:l")) != -1) {
-        switch (opt) {
-            case 'd':
-                card=optarg;
-                break;
-            case 'l':
-                drawFramesOnKeyboardClick=true;
-                break;
-            default: /* '?' */
-            show_usage:
-                fprintf(stderr,"Usage: -d device/card to open -l enable LED\n");
-                return 1;
-        }
+    if(modesetParseArguments(argc,argv,options)!=0){
+        return 1;
     }
 
-	/* check which DRM device to open */
-	/*if (argc > 1){
-        card = argv[1];
-    }else{
-        card = "/dev/dri/card0";
-    }*/
-	fprintf(stderr, "using card '%s'\n", card);
-    fprintf(stderr,"Enable led and redraw on keyboard click:%s\n",drawFramesOnKeyboardClick ? "Y":"N");
-
 	/* open the DRM device */
-	ret = modeset_open(&fd, card);
+	ret = modeset_open(&fd, options.card);
 	if (ret)
 		goto out_return;
 
@@ -670,10 +649,10 @@ static void modeset_draw(void)
 	b = rand() % 0xff;
 	r_up = g_up = b_up = true;
 
-    const int N_FRAMES_DRAWN=drawFramesOnKeyboardClick ? 1000000 : 50;
+    const int N_FRAMES_DRAWN=options.drawFramesOnKeyboardClick ? 1000000 : 50;
 
 	for (i = 0; i < N_FRAMES_DRAWN; ++i) {
-        if(drawFramesOnKeyboardClick){
+        if(options.drawFramesOnKeyboardClick){
             // wait for a keyboard input
             printf("Press ENTER key to draw new frame, press X to exit\n");
             auto tmp=getchar();
