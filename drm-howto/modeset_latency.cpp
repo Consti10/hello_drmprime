@@ -56,7 +56,10 @@ static int modeset_open(int *out, const char *node);
 static int modeset_prepare(int fd);
 static void modeset_draw(void);
 static void modeset_cleanup(int fd);
-static bool enableLed=false;
+
+static bool drawFramesOnKeyboardClick=false;
+static const int LOG_INTERVALL=10;
+static Chronometer avgCpuDrawTime{"CPUDraw"};
 
 /*
  * When the linux kernel detects a graphics-card on your machine, it loads the
@@ -558,7 +561,7 @@ int main(int argc, char **argv)
                 card=optarg;
                 break;
             case 'l':
-                enableLed=true;
+                drawFramesOnKeyboardClick=true;
                 break;
             default: /* '?' */
             show_usage:
@@ -574,7 +577,7 @@ int main(int argc, char **argv)
         card = "/dev/dri/card0";
     }*/
 	fprintf(stderr, "using card '%s'\n", card);
-    fprintf(stderr,"Enable led %s\n",enableLed ? "Y":"N");
+    fprintf(stderr,"Enable led and redraw on keyboard click:%s\n",drawFramesOnKeyboardClick ? "Y":"N");
 
 	/* open the DRM device */
 	ret = modeset_open(&fd, card);
@@ -668,6 +671,18 @@ static void modeset_draw(void)
 	r_up = g_up = b_up = true;
 
 	for (i = 0; i < 50; ++i) {
+        if(drawFramesOnKeyboardClick){
+            // wait for a keyboard input
+            printf("Press ENTER key to draw new frame, press X to exit\n");
+            auto tmp=getchar();
+            if(tmp=='X'){
+                break;
+            }
+            // change LED, feed one new frame
+            switch_led_on_off();
+        }
+
+        avgCpuDrawTime.start();
 		r = next_color(&r_up, r, 20);
 		g = next_color(&g_up, g, 10);
 		b = next_color(&b_up, b, 5);
@@ -681,7 +696,8 @@ static void modeset_draw(void)
 				}
 			}
 		}
-
+        avgCpuDrawTime.stop();
+        avgCpuDrawTime.printInIntervals(LOG_INTERVALL);
 		usleep(100000);
 	}
 }
