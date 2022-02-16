@@ -40,6 +40,7 @@ extern "C" {
 }
 #include "common_consti/TimeHelper.hpp"
 #include "common_consti/Logger.hpp"
+#include "common_consti/ThreadsafeQueue.hpp"
 
 static int CALCULATOR_LOG_INTERVAL=10;
 AvgCalculator avgDisplayThreadQueueLatency{"DisplayThreadQueue"};
@@ -71,10 +72,20 @@ struct drm_setup
 typedef struct drm_aux_s
 {
     unsigned int fb_handle;
+    // buffer out handles - set to the drm prime handles of the frame
     uint32_t bo_handles[AV_DRM_MAX_PLANES];
     AVFrame *frame;
 } drm_aux_t;
 
+
+class AVFrameHolder{
+public:
+    AVFrameHolder(AVFrame* f):frame(f){};
+    ~AVFrameHolder(){
+        //av_frame_free(f)
+    };
+    AVFrame* frame;
+};
 
 // Aux size should only need to be 2, but on a few streams (Hobbit) under FKMS
 // we get initial flicker probably due to dodgy drm timing
@@ -98,7 +109,8 @@ typedef struct drmprime_out_env_s
     sem_t q_sem_out;
     int q_terminate;
     AVFrame *q_next;
-
+    ThreadsafeQueue<AVFrameHolder> queue;
+    ThreadsafeSingleBuffer<AVFrame*> sbQueue;
 } drmprime_out_env_t;
 
 
@@ -201,8 +213,6 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
             ++n;
         }
     }
-    //std::stringstream ss;
-    //ss<<"desc->nb_objects:"<<desc->nb_objects<<"desc->nb_"
     MLOGD<<"desc->nb_objects:"<<desc->nb_objects<<"desc->nb_layers"<<desc->nb_layers<<"\n";
     if (drmModeAddFB2WithModifiers(de->drm_fd,
                                    av_frame_cropped_width(frame),
@@ -314,7 +324,7 @@ static void* display_thread(void *v)
     sem_post(&de->q_sem_out);
 
     for (;;) {
-        AVFrame *frame;
+        /*AVFrame *frame;
 
         do_sem_wait(&de->q_sem_in, 0);
 
@@ -328,6 +338,18 @@ static void* display_thread(void *v)
         //frame->pts=getTimeUs();
         sem_post(&de->q_sem_out);
 
+        do_display(de, frame);*/
+        /*if (de->q_terminate)
+            break;
+        auto tmp=de->queue.popIfAvailable();
+        if(tmp){
+            do_display(de,tmp->frame);
+        }*/
+        AVFrame* frame=de->sbQueue.getBuffer();
+        if(frame==NULL){
+            MLOGD<<"Got NULL frame\n";
+            break;
+        }
         do_display(de, frame);
     }
 
@@ -478,27 +500,27 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
         return AVERROR(EINVAL);
     }
     // Here the delay is still neglegible,aka ~0.15ms
-    std::stringstream ss;
-    ss<<"drmprime_out_display:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
-    std::cout<<ss.str();
-    ret = do_sem_wait(&de->q_sem_out, !de->show_all);
+    MLOGD<<"drmprime_out_display:"<<frame->pts<<" delay:"<<((getTimeUs()-frame->pts)/1000.0)<<" ms\n";
+    /*ret = do_sem_wait(&de->q_sem_out, !de->show_all);
     if (ret) {
         av_frame_free(&frame);
     } else {
         de->q_next = frame;
         sem_post(&de->q_sem_in);
-    }
+    }*/
+    de->sbQueue.setBuffer(frame);
 
     return 0;
 }
 
 void drmprime_out_delete(drmprime_out_env_t *de)
 {
-    de->q_terminate = 1;
-    sem_post(&de->q_sem_in);
+    //de->q_terminate = 1;
+    //sem_post(&de->q_sem_in);
+    de->sbQueue.terminate();
     pthread_join(de->q_thread, NULL);
-    sem_destroy(&de->q_sem_in);
-    sem_destroy(&de->q_sem_out);
+    //sem_destroy(&de->q_sem_in);
+    //sem_destroy(&de->q_sem_out);
 
     av_frame_free(&de->q_next);
 
