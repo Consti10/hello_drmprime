@@ -89,19 +89,16 @@ public:
 // Aux size should only need to be 2, but on a few streams (Hobbit) under FKMS
 // we get initial flicker probably due to dodgy drm timing
 //#define AUX_SIZE 3
-#define AUX_SIZE 10
+#define AUX_SIZE 5
 typedef struct drmprime_out_env_s{
-    AVClass *classx;
-
     int drm_fd;
     uint32_t con_id;
     struct drm_setup setup;
     enum AVPixelFormat avfmt;
-    int show_all;
-
+    // multiple (frame buffer?) objects such that we can create a new one without worrying about the last one still in use.
     unsigned int ano;
     drm_aux_t aux[AUX_SIZE];
-
+    // the thread hat handles the drm display update, decoupled from decoder thread
     pthread_t q_thread;
     bool terminate=false;
     // used when frame drops are not wanted, aka how the original implementation was done
@@ -508,7 +505,6 @@ drmprime_out_env_t* drmprime_out_new(bool dropFrames)
     de->con_id = 0;
     de->setup = (struct drm_setup) { 0 };
     de->terminate=false;
-    de->show_all = 1;
 
     if ((de->drm_fd = drmOpen(drm_module, NULL)) < 0) {
         rv = AVERROR(errno);
