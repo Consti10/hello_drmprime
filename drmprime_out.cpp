@@ -110,7 +110,7 @@ typedef struct drmprime_out_env_s
     int q_terminate;
     AVFrame *q_next;
     ThreadsafeQueue<AVFrameHolder> queue;
-    ThreadsafeSingleBuffer<AVFrame*> sbQueue;
+    std::unique_ptr<ThreadsafeSingleBuffer<AVFrame*>> sbQueue;
 } drmprime_out_env_t;
 
 
@@ -345,7 +345,7 @@ static void* display_thread(void *v)
         if(tmp){
             do_display(de,tmp->frame);
         }*/
-        AVFrame* frame=de->sbQueue.getBuffer();
+        AVFrame* frame=de->sbQueue->getBuffer();
         if(frame==NULL){
             MLOGD<<"Got NULL frame\n";
             break;
@@ -510,7 +510,7 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
         de->q_next = frame;
         sem_post(&de->q_sem_in);
     }*/
-    de->sbQueue.setBuffer(frame);
+    de->sbQueue->setBuffer(frame);
 
     return 0;
 }
@@ -519,7 +519,7 @@ void drmprime_out_delete(drmprime_out_env_t *de)
 {
     //Xde->q_terminate = 1;
     //Xsem_post(&de->q_sem_in);
-    de->sbQueue.terminate();
+    de->sbQueue->terminate();
     pthread_join(de->q_thread, NULL);
     //Xsem_destroy(&de->q_sem_in);
     //Xsem_destroy(&de->q_sem_out);
@@ -540,6 +540,8 @@ drmprime_out_env_t* drmprime_out_new()
     drmprime_out_env_t* const de = (drmprime_out_env_t*)calloc(1, sizeof(*de));
     if (de == NULL)
         return NULL;
+
+    de->sbQueue=std::make_unique<ThreadsafeSingleBuffer<AVFrame*>>();
 
     const char *drm_module = DRM_MODULE;
 
