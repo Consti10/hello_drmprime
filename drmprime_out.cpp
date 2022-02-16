@@ -50,7 +50,7 @@ Chronometer chronometerDaUninit{"DA_UNINIT"};
 Chronometer chronometer2{"X2"};
 Chronometer chronometer3{"X3"};
 Chronometer chronometerDaInit{"DA_INIT"};
-static const bool DROP_FRAMES=false;
+static const bool DROP_FRAMES= true;
 
 #define TRACE_ALL 0
 
