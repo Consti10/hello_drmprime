@@ -2,3 +2,4 @@ modeset
 modeset-atomic
 modeset-double-buffered
 modeset-vsync
+modeset_latency
