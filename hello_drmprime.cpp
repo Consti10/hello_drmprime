@@ -430,6 +430,7 @@ int main(int argc, char *argv[])
     bool wants_deinterlace = false;
     //
     bool feed_frames_on_keyboard_klick=false;
+    bool drop_frames=false;
 
 
     {
@@ -471,6 +472,9 @@ int main(int argc, char *argv[])
             else if (strcmp(arg, "--keyboard") == 0) {
                 feed_frames_on_keyboard_klick=true;
                 std::cout<<"Feeding frames only on keyboard input enabled\n";
+            }else if(strcmp(arg,"--drop_frames")==0){
+                drop_frames=true;
+                std::cout<<"Drop-frames enabled\n";
             }
             else
                 break;
@@ -495,7 +499,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    dpo = drmprime_out_new();
+    dpo = drmprime_out_new(drop_frames);
     if (dpo == NULL) {
         fprintf(stderr, "Failed to open drmprime output\n");
         return 1;

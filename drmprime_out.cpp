@@ -50,7 +50,7 @@ Chronometer chronometerDaUninit{"DA_UNINIT"};
 Chronometer chronometer2{"X2"};
 Chronometer chronometer3{"X3"};
 Chronometer chronometerDaInit{"DA_INIT"};
-static const bool DROP_FRAMES= false;
+static bool DROP_FRAMES= false;
 
 #define TRACE_ALL 0
 
@@ -491,7 +491,7 @@ void drmprime_out_delete(drmprime_out_env_t *de)
     free(de);
 }
 
-drmprime_out_env_t* drmprime_out_new()
+drmprime_out_env_t* drmprime_out_new(bool dropFrames)
 {
     int rv;
     drmprime_out_env_t* const de = (drmprime_out_env_t*)calloc(1, sizeof(*de));
@@ -500,6 +500,7 @@ drmprime_out_env_t* drmprime_out_new()
 
     de->sbQueue=std::make_unique<ThreadsafeSingleBuffer<AVFrame*>>();
     de->queue=std::make_unique<ThreadsafeQueue<AVFrameHolder>>();
+    DROP_FRAMES=dropFrames;
 
     const char *drm_module = DRM_MODULE;
 
