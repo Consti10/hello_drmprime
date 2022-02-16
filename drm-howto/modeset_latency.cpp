@@ -688,13 +688,15 @@ static void modeset_draw(void)
 		r = next_color(&r_up, r, 20);
 		g = next_color(&g_up, g, 10);
 		b = next_color(&b_up, b, 5);
+        const uint32_t rgb=(r << 16) | (g << 8) | b;
 
 		for (iter = modeset_list; iter; iter = iter->next) {
 			for (j = 0; j < iter->height; ++j) {
 				for (k = 0; k < iter->width; ++k) {
 					off = iter->stride * j + k * 4;
-					*(uint32_t*)&iter->map[off] =
-						     (r << 16) | (g << 8) | b;
+					//*(uint32_t*)&iter->map[off] =
+					//	     (r << 16) | (g << 8) | b;
+                    *(uint32_t*)&iter->map[off] =rgb;
 				}
 			}
 		}
