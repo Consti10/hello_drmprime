@@ -85,7 +85,7 @@ public:
         sem_destroy(&q_sem_in);
         sem_destroy(&q_sem_out);
     }
-    // blocks until message is available
+    // blocks until buffer is available
     // or terminate() has been called from another thread
     T getBuffer(){
         //MLOGD<<"A1\n";
