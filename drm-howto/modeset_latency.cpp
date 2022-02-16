@@ -671,6 +671,7 @@ static void modeset_draw(void)
         const uint32_t rgb= createColor(i);
         //int nModsets=0;
 		for (iter = modeset_list; iter; iter = iter->next) {
+            std::cout<<"Stride:"<<iter->stride<<"\n";
 			for (int j = 0; j < iter->height; ++j) {
                 const int offsetStride=iter->stride * j;
 				for (int k = 0; k < iter->width; ++k) {

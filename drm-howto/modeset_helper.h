@@ -57,5 +57,19 @@ static uint32_t createColor(const int idx){
     return rgb;
 }
 
+// fill a RGB(A) frame buffer with alternating solid colors
+static void writeFrame(uint8_t* dest,const int width,const int height,const int stride,const int colorIdx){
+    const uint32_t rgb= createColor(colorIdx);
+    for (int j = 0; j < height; ++j) {
+        const int offsetStride=stride * j;
+        for (int k = 0; k < width; ++k) {
+            const int off = offsetStride + k * 4;
+            //*(uint32_t*)&iter->map[off] =
+            //	     (r << 16) | (g << 8) | b;
+            *(uint32_t*)&dest[off] =rgb;
+        }
+    }
+}
+
 
 #endif //HELLO_DRMPRIME_MODESET_ARGS_H
