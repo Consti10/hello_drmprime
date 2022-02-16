@@ -3,7 +3,7 @@ FLAGS+=-Wall -O0 -g
 #FLAGS+=-Wall -g
 FLAGS+=-D_FILE_OFFSET_BITS=64
 
-_CFLAGS=-O3
+#_CFLAGS=-O3
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 ifeq ($(uname_S),Linux)
 	uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
