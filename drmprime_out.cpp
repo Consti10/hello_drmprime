@@ -349,6 +349,8 @@ static void* display_thread(void *v)
         if(frame==NULL){
             MLOGD<<"Got NULL frame\n";
             break;
+        }else{
+            MLOGD<<"Got frame\n";
         }
         do_display(de, frame);
     }
