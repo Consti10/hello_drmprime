@@ -50,8 +50,8 @@ static uint32_t createColor(const int idx){
         b=0;
     }else{
         r=0;
-        g=255;
-        b=0;
+        g=0;
+        b=255;
     }
     const uint32_t rgb=(r << 16) | (g << 8) | b;
     return rgb;
