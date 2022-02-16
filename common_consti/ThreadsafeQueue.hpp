@@ -51,7 +51,7 @@ public:
     }
     // get the most recently added element (if there is any)
     // and then reduce the queue size to 0
-    std::shared_ptr<T> getMostRecentIfAvailable(){
+    std::shared_ptr<T> getMostRecentIfAvailable(int& countDropped){
         std::lock_guard<std::mutex> lock(mutex_);
         if (queue_.empty()) {
             return std::shared_ptr<T>(nullptr);
@@ -59,6 +59,7 @@ public:
         auto tmp=queue_.back();
         while(!queue_.empty()) {
             queue_.pop();
+            countDropped++;
         }
         return tmp;
     }

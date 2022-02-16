@@ -50,6 +50,7 @@ Chronometer chronometerDaUninit{"DA_UNINIT"};
 Chronometer chronometer2{"X2"};
 Chronometer chronometer3{"X3"};
 Chronometer chronometerDaInit{"DA_INIT"};
+static const bool DROP_FRAMES=false;
 
 #define TRACE_ALL 0
 
@@ -109,7 +110,8 @@ typedef struct drmprime_out_env_s
     //Xsem_t q_sem_out;
     //Xint q_terminate;
     //AVFrame *q_next;
-    ThreadsafeQueue<AVFrameHolder> queue;
+    bool terminate=false;
+    std::unique_ptr<ThreadsafeQueue<AVFrameHolder>> queue;
     std::unique_ptr<ThreadsafeSingleBuffer<AVFrame*>> sbQueue;
 } drmprime_out_env_t;
 
@@ -281,13 +283,12 @@ static void waitForVSYNC(drmprime_out_env_t *const de){
 
 static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
 {
+    avgDisplayThreadQueueLatency.addUs(getTimeUs()-frame->pts);
+    avgDisplayThreadQueueLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
     drm_aux_t *da = de->aux + de->ano;
     const uint32_t format = desc->layers[0].format;
     int ret = 0;
-#if TRACE_ALL
-    fprintf(stderr, "<<< %s: fd=%d\n", __func__, desc->objects[0].fd);
-#endif
     if(updateCRTCFormatIfNeeded(de,frame)!=0){
         return -1;
     }
@@ -324,35 +325,27 @@ static void* display_thread(void *v)
     //Xsem_post(&de->q_sem_out);
 
     for (;;) {
-        /*XAVFrame *frame;
-
-        do_sem_wait(&de->q_sem_in, 0);
-
-        if (de->q_terminate)
-            break;
-
-        frame = de->q_next;
-        de->q_next = NULL;
-        avgDisplayThreadQueueLatency.addUs(getTimeUs()-frame->pts);
-        avgDisplayThreadQueueLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
-        //frame->pts=getTimeUs();
-        sem_post(&de->q_sem_out);
-
-        do_display(de, frame);*/
-        /*if (de->q_terminate)
-            break;
-        auto tmp=de->queue.popIfAvailable();
-        if(tmp){
-            do_display(de,tmp->frame);
-        }*/
-        AVFrame* frame=de->sbQueue->getBuffer();
-        if(frame==NULL){
-            MLOGD<<"Got NULL frame\n";
-            break;
+        if(de->terminate)break;
+        if(DROP_FRAMES){
+            int nDropped=0;
+            const std::shared_ptr<AVFrameHolder> tmp=de->queue->getMostRecentIfAvailable(nDropped);
+            MLOGD<<"N dropped:"<<nDropped<<"\n";
+            if(tmp){
+                AVFrame* frame=tmp->frame;
+                if(frame!=NULL){
+                    do_display(de, frame);
+                }
+            }
         }else{
-            //MLOGD<<"Got frame\n";
+            AVFrame* frame=de->sbQueue->getBuffer();
+            if(frame==NULL){
+                MLOGD<<"Got NULL frame\n";
+                break;
+            }else{
+                //MLOGD<<"Got frame\n";
+            }
+            do_display(de, frame);
         }
-        do_display(de, frame);
     }
 
 #if TRACE_ALL
@@ -510,7 +503,12 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
         de->q_next = frame;
         sem_post(&de->q_sem_in);
     }*/
-    de->sbQueue->setBuffer(frame);
+    // wait for the last buffer to be processed, then update
+    if(DROP_FRAMES){
+        de->queue->push(std::make_shared<AVFrameHolder>(frame));
+    }else{
+        de->sbQueue->setBuffer(frame);
+    }
 
     return 0;
 }
@@ -523,14 +521,12 @@ void drmprime_out_delete(drmprime_out_env_t *de)
     pthread_join(de->q_thread, NULL);
     //Xsem_destroy(&de->q_sem_in);
     //Xsem_destroy(&de->q_sem_out);
-
     //Xav_frame_free(&de->q_next);
-
     if (de->drm_fd >= 0) {
         close(de->drm_fd);
         de->drm_fd = -1;
     }
-
+    de->sbQueue.reset();
     free(de);
 }
 
@@ -542,6 +538,7 @@ drmprime_out_env_t* drmprime_out_new()
         return NULL;
 
     de->sbQueue=std::make_unique<ThreadsafeSingleBuffer<AVFrame*>>();
+    de->queue=std::make_unique<ThreadsafeQueue<AVFrameHolder>>();
 
     const char *drm_module = DRM_MODULE;
 

@@ -31,3 +31,25 @@
 
 
  &da->fb_handle, DRM_MODE_FB_MODIFIERS /** 0 if no mods */) != 0) {
+
+/*XAVFrame *frame;
+
+        do_sem_wait(&de->q_sem_in, 0);
+
+        if (de->q_terminate)
+            break;
+
+        frame = de->q_next;
+        de->q_next = NULL;
+        avgDisplayThreadQueueLatency.addUs(getTimeUs()-frame->pts);
+        avgDisplayThreadQueueLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
+        //frame->pts=getTimeUs();
+        sem_post(&de->q_sem_out);
+
+        do_display(de, frame);*/
+        /*if (de->q_terminate)
+            break;
+        auto tmp=de->queue.popIfAvailable();
+        if(tmp){
+            do_display(de,tmp->frame);
+        }*/
