@@ -58,8 +58,7 @@ static const bool DROP_FRAMES= false;
 
 #define ERRSTR strerror(errno)
 
-struct drm_setup
-{
+struct drm_setup{
     int conId;
     uint32_t crtcId;
     int crtcIdx;
@@ -70,8 +69,7 @@ struct drm_setup
     } compose;
 };
 
-typedef struct drm_aux_s
-{
+typedef struct drm_aux_s{
     unsigned int fb_handle;
     // buffer out handles - set to the drm prime handles of the frame
     uint32_t bo_handles[AV_DRM_MAX_PLANES];
@@ -92,8 +90,7 @@ public:
 // we get initial flicker probably due to dodgy drm timing
 //#define AUX_SIZE 3
 #define AUX_SIZE 3
-typedef struct drmprime_out_env_s
-{
+typedef struct drmprime_out_env_s{
     AVClass *classx;
 
     int drm_fd;
@@ -107,63 +104,53 @@ typedef struct drmprime_out_env_s
 
     pthread_t q_thread;
     bool terminate=false;
-    // used when frame drops are not wanted
+    // used when frame drops are not wanted, aka how the original implementation was done
     std::unique_ptr<ThreadsafeSingleBuffer<AVFrame*>> sbQueue;
-    // allows frame drops (higher video fps than display refresh)
+    // allows frame drops (higher video fps than display refresh).
     std::unique_ptr<ThreadsafeQueue<AVFrameHolder>> queue;
 } drmprime_out_env_t;
 
 
 static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
-                      uint32_t *const pplane_id)
-{
+                      uint32_t *const pplane_id){
     drmModePlaneResPtr planes;
     drmModePlanePtr plane;
     unsigned int i;
     unsigned int j;
     int ret = 0;
-
     planes = drmModeGetPlaneResources(drmfd);
     if (!planes) {
         fprintf(stderr, "drmModeGetPlaneResources failed: %s\n", ERRSTR);
         return -1;
     }
-
     for (i = 0; i < planes->count_planes; ++i) {
         plane = drmModeGetPlane(drmfd, planes->planes[i]);
         if (!planes) {
             fprintf(stderr, "drmModeGetPlane failed: %s\n", ERRSTR);
             break;
         }
-
         if (!(plane->possible_crtcs & (1 << crtcidx))) {
             drmModeFreePlane(plane);
             continue;
         }
-
         for (j = 0; j < plane->count_formats; ++j) {
             if (plane->formats[j] == format) break;
         }
-
         if (j == plane->count_formats) {
             drmModeFreePlane(plane);
             continue;
         }
-
         *pplane_id = plane->plane_id;
         drmModeFreePlane(plane);
         break;
     }
-
     if (i == planes->count_planes) ret = -1;
-
     drmModeFreePlaneResources(planes);
     return ret;
 }
 
 // ? clears up the drm_aux_t to be reused with a new frame
-static void da_uninit(drmprime_out_env_t *const de, drm_aux_t *da)
-{
+static void da_uninit(drmprime_out_env_t *const de, drm_aux_t *da){
     chronometerDaUninit.start();
     unsigned int i;
     if (da->fb_handle != 0) {
@@ -359,39 +346,32 @@ static int find_crtc(int drmfd, struct drm_setup *s, uint32_t *const pConId)
     int i;
     drmModeRes *res = drmModeGetResources(drmfd);
     drmModeConnector *c;
-
     if (!res) {
         printf("drmModeGetResources failed: %s\n", ERRSTR);
         return -1;
     }
-
     if (res->count_crtcs <= 0) {
         printf("drm: no crts\n");
         goto fail_res;
     }
-
     if (!s->conId) {
         fprintf(stderr,
                 "No connector ID specified.  Choosing default from list:\n");
-
         for (i = 0; i < res->count_connectors; i++) {
             drmModeConnector *con =
                 drmModeGetConnector(drmfd, res->connectors[i]);
             drmModeEncoder *enc = NULL;
             drmModeCrtc *crtc = NULL;
-
             if (con->encoder_id) {
                 enc = drmModeGetEncoder(drmfd, con->encoder_id);
                 if (enc->crtc_id) {
                     crtc = drmModeGetCrtc(drmfd, enc->crtc_id);
                 }
             }
-
             if (!s->conId && crtc) {
                 s->conId = con->connector_id;
                 s->crtcId = crtc->crtc_id;
             }
-
             fprintf(stderr, "Connector %d (crtc %d): type %d, %dx%d%s\n",
                    con->connector_id,
                    crtc ? crtc->crtc_id : 0,
@@ -401,44 +381,36 @@ static int find_crtc(int drmfd, struct drm_setup *s, uint32_t *const pConId)
                    (s->conId == (int)con->connector_id ?
                     " (chosen)" : ""));
         }
-
         if (!s->conId) {
             fprintf(stderr,
                    "No suitable enabled connector found.\n");
             return -1;;
         }
     }
-
     s->crtcIdx = -1;
-
     for (i = 0; i < res->count_crtcs; ++i) {
         if (s->crtcId == res->crtcs[i]) {
             s->crtcIdx = i;
             break;
         }
     }
-
     if (s->crtcIdx == -1) {
         fprintf(stderr, "drm: CRTC %u not found\n", s->crtcId);
         goto fail_res;
     }
-
     if (res->count_connectors <= 0) {
         fprintf(stderr, "drm: no connectors\n");
         goto fail_res;
     }
-
     c = drmModeGetConnector(drmfd, s->conId);
     if (!c) {
         fprintf(stderr, "drmModeGetConnector failed: %s\n", ERRSTR);
         goto fail_res;
     }
-
     if (!c->count_modes) {
         fprintf(stderr, "connector supports no mode\n");
         goto fail_conn;
     }
-
     {
         drmModeCrtc *crtc = drmModeGetCrtc(drmfd, s->crtcId);
         s->compose.x = crtc->x;
@@ -447,16 +419,12 @@ static int find_crtc(int drmfd, struct drm_setup *s, uint32_t *const pConId)
         s->compose.height = crtc->height;
         drmModeFreeCrtc(crtc);
     }
-
     if (pConId) *pConId = c->connector_id;
     ret = 0;
-
 fail_conn:
     drmModeFreeConnector(c);
-
 fail_res:
     drmModeFreeResources(res);
-
     return ret;
 }
 
@@ -464,12 +432,10 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
 {
     AVFrame *frame;
     int ret;
-
     if ((src_frame->flags & AV_FRAME_FLAG_CORRUPT) != 0) {
         fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", src_frame->format, src_frame->pts);
         return 0;
     }
-
     if (src_frame->format == AV_PIX_FMT_DRM_PRIME) {
         frame = av_frame_alloc();
         av_frame_ref(frame, src_frame);
