@@ -1,6 +1,6 @@
 FLAGS=`pkg-config --cflags --libs libdrm`
-#FLAGS+=-Wall -O0 -g
-FLAGS+=-Wall -g
+FLAGS+=-Wall -O0 -g
+#FLAGS+=-Wall -g
 FLAGS+=-D_FILE_OFFSET_BITS=64
 
 _CFLAGS=-O3
