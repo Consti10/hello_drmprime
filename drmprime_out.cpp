@@ -90,7 +90,7 @@ public:
 // Aux size should only need to be 2, but on a few streams (Hobbit) under FKMS
 // we get initial flicker probably due to dodgy drm timing
 //#define AUX_SIZE 3
-#define AUX_SIZE 5
+#define AUX_SIZE 3
 typedef struct drmprime_out_env_s
 {
     AVClass *classx;
