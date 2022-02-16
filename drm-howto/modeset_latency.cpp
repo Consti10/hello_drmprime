@@ -45,7 +45,7 @@
 
 #include "../common_consti/LEDSwap.h"
 #include "../common_consti/TimeHelper.hpp"
-#include "modeset_args.h"
+#include "modeset_helper.h"
 
 struct modeset_dev;
 static int modeset_find_crtc(int fd, drmModeRes *res, drmModeConnector *conn,
@@ -640,7 +640,7 @@ static void modeset_draw(void)
 {
 	uint8_t r, g, b;
 	bool r_up, g_up, b_up;
-	unsigned int i, j, k, off;
+	//unsigned int i, j, k, off;
 	struct modeset_dev *iter;
 
 	srand(time(NULL));
@@ -651,7 +651,7 @@ static void modeset_draw(void)
 
     const int N_FRAMES_DRAWN=options.drawFramesOnKeyboardClick ? 1000000 : 50;
 
-	for (i = 0; i < N_FRAMES_DRAWN; ++i) {
+	for (int i = 0; i < N_FRAMES_DRAWN; ++i) {
         if(options.drawFramesOnKeyboardClick){
             // wait for a keyboard input
             printf("Press ENTER key to draw new frame, press X to exit\n");
@@ -664,21 +664,25 @@ static void modeset_draw(void)
         }
 
         avgCpuDrawTime.start();
-		r = next_color(&r_up, r, 20);
+		/*r = next_color(&r_up, r, 20);
 		g = next_color(&g_up, g, 10);
 		b = next_color(&b_up, b, 5);
-        const uint32_t rgb=(r << 16) | (g << 8) | b;
-
+        const uint32_t rgb=(r << 16) | (g << 8) | b;*/
+        const uint32_t rgb= createColor(i);
+        int nModsets=0;
 		for (iter = modeset_list; iter; iter = iter->next) {
-			for (j = 0; j < iter->height; ++j) {
-				for (k = 0; k < iter->width; ++k) {
-					off = iter->stride * j + k * 4;
+			for (int j = 0; j < iter->height; ++j) {
+                const int offsetStride=iter->stride * j;
+				for (int k = 0; k < iter->width; ++k) {
+					const int off = offsetStride + k * 4;
 					//*(uint32_t*)&iter->map[off] =
 					//	     (r << 16) | (g << 8) | b;
                     *(uint32_t*)&iter->map[off] =rgb;
 				}
 			}
+            nModsets++;
 		}
+        std::cout<<"N modsets is:"<<nModsets<<"\n";
         avgCpuDrawTime.stop();
         avgCpuDrawTime.printInIntervals(LOG_INTERVALL);
 		usleep(100000);
