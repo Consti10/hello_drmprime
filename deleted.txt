@@ -76,3 +76,9 @@
         }
         return tmp;
     }
+
+
+/*for (int k = 0; k < width; ++k) {
+            const int off = offsetStride + k * 4;
+            *(uint32_t*)&dest[off] =rgb;
+        }*/

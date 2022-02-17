@@ -78,19 +78,15 @@ static inline void memset32_fast(uint32_t* dest,const uint32_t value,int num){
     memset32_neon(dest,value,num);
 }
 
+
 // fill a RGBA frame buffer with a specific color, taking stride into account
 static void fillFrame(uint8_t* dest,const int width,const int height,const int stride,const uint32_t rgb){
-    for (int j = 0; j < height; ++j) {
+    /*for (int j = 0; j < height; ++j) {
         const int offsetStride=stride * j;
         uint32_t* lineStart=(uint32_t*)&dest[offsetStride];
         memset32_fast(lineStart,rgb,width);
-        /*for (int k = 0; k < width; ++k) {
-            const int off = offsetStride + k * 4;
-            //*(uint32_t*)&iter->map[off] =
-            //	     (r << 16) | (g << 8) | b;
-            *(uint32_t*)&dest[off] =rgb;
-        }*/
-    }
+    }*/
+    memset32_fast((uint32_t*)dest,rgb,height*width);
 }
 
 static void fillFrame2(uint8_t* dest,const int width,const int height,const int stride,const uint32_t rgb){
