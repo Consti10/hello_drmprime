@@ -687,7 +687,7 @@ static void modeset_draw(void)
         //std::cout<<"N modsets is:"<<nModsets<<"\n";
         avgCpuDrawTime.stop();
         avgCpuDrawTime.printInIntervals(LOG_INTERVALL);
-		usleep(100000);
+		//usleep(100000);
 	}
 }
 
