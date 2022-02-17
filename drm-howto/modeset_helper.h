@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <assert.h>
 
 //args pretty much stay the same
 struct modeset_options{
@@ -58,20 +59,24 @@ static uint32_t createColor(const int idx){
     return rgb;
 }
 
+static inline void memset32_loop(uint32_t* dest,const uint32_t value,int num){
+    for ( ; num ; dest+=1, num-=1) {
+        *dest=value;
+    }
+}
 
 #include <arm_neon.h>
-
-static void memset32_fast(uint32_t* dest,const uint32_t value,int num){
-    //for ( ; num ; dest+=1, num-=1) {
-    //    *dest=value;
-    //}
-    //uint8x32_t in;
+static inline void memset32_neon(uint32_t* dest,const uint32_t value,int num){
+    assert(num % 4 ==0);
     uint32x4_t in=vdupq_n_u32(value);
     for ( ; num ; dest+=4, num-=4) {
         vst1q_u32(dest,in);
     }
 }
 
+static inline void memset32_fast(uint32_t* dest,const uint32_t value,int num){
+    memset32_neon(dest,value,num);
+}
 
 // fill a RGBA frame buffer with a specific color, taking stride into account
 static void fillFrame(uint8_t* dest,const int width,const int height,const int stride,const uint32_t rgb){
