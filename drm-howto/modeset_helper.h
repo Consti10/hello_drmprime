@@ -68,7 +68,6 @@ static void memset32_fast(uint32_t* dest,const uint32_t value,int num){
     //uint8x32_t in;
     uint32x4_t in=vdupq_n_u32(value);
     for ( ; num ; dest+=4, num-=4) {
-        *dest=value;
         vst1q_u32(dest,in);
     }
 }
