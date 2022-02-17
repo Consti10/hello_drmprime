@@ -5,7 +5,8 @@
 #ifndef HELLO_DRMPRIME_MODESET_ARGS_H
 #define HELLO_DRMPRIME_MODESET_ARGS_H
 
-#include "stdio.h"
+#include <stdint.h>
+#include <stdio.h>
 
 //args pretty much stay the same
 struct modeset_options{
@@ -57,16 +58,25 @@ static uint32_t createColor(const int idx){
     return rgb;
 }
 
+static void memset_fast(uint32_t* dest,uint32_t value,int num){
+    for ( ; num ; dest+=1, num-=1) {
+        *dest=value;
+    }
+}
+
+
 // fill a RGBA frame buffer with a specific color, taking stride into account
 static void fillFrame(uint8_t* dest,const int width,const int height,const int stride,const uint32_t rgb){
     for (int j = 0; j < height; ++j) {
         const int offsetStride=stride * j;
-        for (int k = 0; k < width; ++k) {
+        uint32_t* lineStart=(uint32_t*)&dest[offsetStride];
+        memset_fast(lineStart,rgb,width);
+        /*for (int k = 0; k < width; ++k) {
             const int off = offsetStride + k * 4;
             //*(uint32_t*)&iter->map[off] =
             //	     (r << 16) | (g << 8) | b;
             *(uint32_t*)&dest[off] =rgb;
-        }
+        }*/
     }
 }
 
