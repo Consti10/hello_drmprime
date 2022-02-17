@@ -81,17 +81,17 @@ static inline void memset32_fast(uint32_t* dest,const uint32_t value,int num){
 
 // fill a RGBA frame buffer with a specific color, taking stride into account
 static void fillFrame(uint8_t* dest,const int width,const int height,const int stride,const uint32_t rgb){
-    /*for (int j = 0; j < height; ++j) {
-        const int offsetStride=stride * j;
-        uint32_t* lineStart=(uint32_t*)&dest[offsetStride];
-        memset32_fast(lineStart,rgb,width);
-    }*/
-    memset32_fast((uint32_t*)dest,rgb,10);
+    if(stride==height*4){
+        memset32_fast((uint32_t*)dest,rgb,height*width);
+    }else{
+        for (int j = 0; j < height; ++j) {
+            const int offsetStride=stride * j;
+            uint32_t* lineStart=(uint32_t*)&dest[offsetStride];
+            memset32_fast(lineStart,rgb,width);
+        }
+    }
 }
 
-static void fillFrame2(uint8_t* dest,const int width,const int height,const int stride,const uint32_t rgb){
-    // with NEON we can write chunks of
-}
 
 
 #endif //HELLO_DRMPRIME_MODESET_ARGS_H
