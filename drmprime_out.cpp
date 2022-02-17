@@ -268,9 +268,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     assert(frame!=NULL);
     avgDisplayThreadQueueLatency.addUs(getTimeUs()-frame->pts);
     avgDisplayThreadQueueLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
     drm_aux_t *da = de->aux + de->ano;
-    const uint32_t format = desc->layers[0].format;
     int ret = 0;
     if(updateCRTCFormatIfNeeded(de,frame)!=0){
         return -1;
