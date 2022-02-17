@@ -649,7 +649,7 @@ static void modeset_draw(void)
 	b = rand() % 0xff;
 	r_up = g_up = b_up = true;
 
-    const int N_FRAMES_DRAWN=options.drawFramesOnKeyboardClick ? 1000000 : 50;
+    const int N_FRAMES_DRAWN=options.drawFramesOnKeyboardClick ? 1000000 : 50000;
 
 	for (int i = 0; i < N_FRAMES_DRAWN; ++i) {
         if(options.drawFramesOnKeyboardClick){
