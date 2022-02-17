@@ -58,9 +58,18 @@ static uint32_t createColor(const int idx){
     return rgb;
 }
 
-static void memset_fast(uint32_t* dest,uint32_t value,int num){
-    for ( ; num ; dest+=1, num-=1) {
+
+#include <arm_neon.h>
+
+static void memset32_fast(uint32_t* dest,const uint32_t value,int num){
+    //for ( ; num ; dest+=1, num-=1) {
+    //    *dest=value;
+    //}
+    //uint8x32_t in;
+    uint32x4_t in=vdupq_n_u32(value);
+    for ( ; num ; dest+=4, num-=4) {
         *dest=value;
+        vst1q_u32(dest,in);
     }
 }
 
@@ -70,7 +79,7 @@ static void fillFrame(uint8_t* dest,const int width,const int height,const int s
     for (int j = 0; j < height; ++j) {
         const int offsetStride=stride * j;
         uint32_t* lineStart=(uint32_t*)&dest[offsetStride];
-        memset_fast(lineStart,rgb,width);
+        memset32_fast(lineStart,rgb,width);
         /*for (int k = 0; k < width; ++k) {
             const int off = offsetStride + k * 4;
             //*(uint32_t*)&iter->map[off] =
