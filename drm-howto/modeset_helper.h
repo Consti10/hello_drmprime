@@ -86,7 +86,7 @@ static void fillFrame(uint8_t* dest,const int width,const int height,const int s
         uint32_t* lineStart=(uint32_t*)&dest[offsetStride];
         memset32_fast(lineStart,rgb,width);
     }*/
-    memset32_fast((uint32_t*)dest,rgb,height*width);
+    memset32_fast((uint32_t*)dest,rgb,10);
 }
 
 static void fillFrame2(uint8_t* dest,const int width,const int height,const int stride,const uint32_t rgb){
