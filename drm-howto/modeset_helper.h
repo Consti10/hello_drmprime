@@ -57,9 +57,8 @@ static uint32_t createColor(const int idx){
     return rgb;
 }
 
-// fill a RGB(A) frame buffer with alternating solid colors
-static void writeFrame(uint8_t* dest,const int width,const int height,const int stride,const int colorIdx){
-    const uint32_t rgb= createColor(colorIdx);
+// fill a RGBA frame buffer with a specific color, taking stride into account
+static void fillFrame(uint8_t* dest,const int width,const int height,const int stride,const uint32_t rgb){
     for (int j = 0; j < height; ++j) {
         const int offsetStride=stride * j;
         for (int k = 0; k < width; ++k) {
@@ -69,6 +68,10 @@ static void writeFrame(uint8_t* dest,const int width,const int height,const int 
             *(uint32_t*)&dest[off] =rgb;
         }
     }
+}
+
+static void fillFrame2(uint8_t* dest,const int width,const int height,const int stride,const uint32_t rgb){
+    // with NEON we can write chunks of
 }
 
 
