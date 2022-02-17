@@ -84,7 +84,7 @@ static void fillFrame(uint8_t* dest,const int width,const int height,const int s
     if(stride==width*4){
         memset32_fast((uint32_t*)dest,rgb,height*width);
     }else{
-        std::cout<<stride<<" "<<width<<"\n";
+        //std::cout<<stride<<" "<<width<<"\n";
         for (int j = 0; j < height; ++j) {
             const int offsetStride=stride * j;
             uint32_t* lineStart=(uint32_t*)&dest[offsetStride];
