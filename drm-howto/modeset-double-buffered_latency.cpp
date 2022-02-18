@@ -551,6 +551,7 @@ static void modeset_draw(int fd)
     modeset_buf* backBuffer=&modeset_list->bufs[1];
     fillFrame(frontBuffer->map,frontBuffer->width,frontBuffer->height,frontBuffer->stride, createColor(0));
     fillFrame(backBuffer->map,backBuffer->width,backBuffer->height,backBuffer->stride, createColor(1));
+    // swap them, optionally on keyboard press.
     for(int i=0;i<100000;i++){
         if(options.drawFramesOnKeyboardClick){
             // wait for a keyboard input
