@@ -65,17 +65,18 @@ static inline void memset32_loop(uint32_t* dest,const uint32_t value,int num){
     }
 }
 
-#include <arm_neon.h>
+/*#include <arm_neon.h>
 static inline void memset32_neon(uint32_t* dest,const uint32_t value,int num){
     assert(num % 4 ==0);
     uint32x4_t in=vdupq_n_u32(value);
     for ( ; num ; dest+=4, num-=4) {
         vst1q_u32(dest,in);
     }
-}
+}*/
 
 static inline void memset32_fast(uint32_t* dest,const uint32_t value,int num){
-    memset32_neon(dest,value,num);
+    //memset32_neon(dest,value,num);
+    memset32_loop(dest,value,num);
 }
 
 
