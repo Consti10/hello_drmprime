@@ -993,13 +993,13 @@ static int modeset_perform_modeset(int fd)
 	}
 
 	/* perform test-only atomic commit */
-	/*flags = DRM_MODE_ATOMIC_TEST_ONLY | DRM_MODE_ATOMIC_ALLOW_MODESET;
+	flags = DRM_MODE_ATOMIC_TEST_ONLY | DRM_MODE_ATOMIC_ALLOW_MODESET;
 	ret = drmModeAtomicCommit(fd, req, flags, NULL);
 	if (ret < 0) {
 		fprintf(stderr, "test-only atomic commit failed, %d\n", errno);
 		drmModeAtomicFree(req);
 		return ret;
-	}*/
+	}
 
 	/* draw on back framebuffer of all outputs */
 	for (iter = output_list; iter; iter = iter->next) {

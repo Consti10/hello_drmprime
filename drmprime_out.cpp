@@ -203,7 +203,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
                                    av_frame_cropped_height(frame),
                                    desc->layers[0].format, bo_handles,
                                    pitches, offsets, modifiers,
-                                   &da->fb_handle, DRM_MODE_FB_MODIFIERS /** 0 if no mods */) != 0) {
+                                   &da->fb_handle, DRM_MODE_FB_MODIFIERS | DRM_MODE_PAGE_FLIP_ASYNC /** 0 if no mods */) != 0) {
         fprintf(stderr, "drmModeAddFB2WithModifiers failed: %s\n", ERRSTR);
         return -1;
     }
