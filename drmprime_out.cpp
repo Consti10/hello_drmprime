@@ -214,7 +214,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     memset(da->bo_handles, 0, sizeof(da->bo_handles));
     //for (int i = 0; i < desc->nb_objects; ++i) {
     if (drmPrimeFDToHandle(de->drm_fd, desc->objects[0].fd, da->bo_handles) != 0) {
-        fprintf(stderr, "drmPrimeFDToHandle[%d](%d) failed: %s\n", 0, desc->objects[i].fd, ERRSTR);
+        fprintf(stderr, "drmPrimeFDToHandle[%d](%d) failed: %s\n", 0, desc->objects[0].fd, ERRSTR);
         return -1;
     }
     //}
