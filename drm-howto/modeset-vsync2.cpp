@@ -581,11 +581,11 @@ static void modeset_draw(int fd)
 		modeset_draw_dev(fd, iter);
 	}
 
-	/* wait 5s for VBLANK or input events */
+	/* wait 50s for VBLANK or input events */
 	while (time(&cur) < start + 5) {
 		FD_SET(0, &fds);
 		FD_SET(fd, &fds);
-		v.tv_sec = start + 5 - cur;
+		v.tv_sec = start + 50 - cur;
 
 		ret = select(fd + 1, &fds, NULL, NULL, &v);
 		if (ret < 0) {
