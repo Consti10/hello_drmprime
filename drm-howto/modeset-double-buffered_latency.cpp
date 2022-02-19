@@ -569,6 +569,8 @@ static void modeset_draw(int fd)
 
         const auto ret = drmModeSetCrtc(fd, modeset_list->crtc, currBuff->fb, 0, 0,
                              &modeset_list->conn, 1, &modeset_list->mode);
+        drmModeAtomicReqPtr x;
+
         avgSwapTime.stop();
         avgSwapTime.printInIntervals(LOG_INTERVALL);
         if (ret)
