@@ -245,8 +245,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
     countLol++;
     if(countLol>20){
-        if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,
-                              DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC,de)!=0){
+        if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_ASYNC,de)!=0){
             fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
             return -1;
         }
