@@ -688,7 +688,7 @@ static void modeset_draw_dev(int fd, struct modeset_dev *dev)
     buf = &dev->bufs[dev->front_buf ^ 1];
     avgPageFlipRequest.start();
 	ret = drmModePageFlip(fd, dev->crtc, buf->fb,
-			      DRM_MODE_PAGE_FLIP_EVENT, dev);
+			      DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC, dev);
     avgPageFlipRequest.stop();
     avgPageFlipRequest.printInIntervals(100);
     if(first){
