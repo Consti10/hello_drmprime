@@ -670,7 +670,7 @@ static void modeset_draw_dev(int fd, struct modeset_dev *dev)
         firstTime= false;
     }
 
-	/*dev->r = next_color(&dev->r_up, dev->r, 20);
+	dev->r = next_color(&dev->r_up, dev->r, 20);
 	dev->g = next_color(&dev->g_up, dev->g, 10);
 	dev->b = next_color(&dev->b_up, dev->b, 5);
 
@@ -681,7 +681,7 @@ static void modeset_draw_dev(int fd, struct modeset_dev *dev)
 			*(uint32_t*)&buf->map[off] =
 				     (dev->r << 16) | (dev->g << 8) | dev->b;
 		}
-	}*/
+	}
     avgSwapTime.start();
 	ret = drmModePageFlip(fd, dev->crtc, buf->fb,
 			      DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC, dev);
