@@ -19,6 +19,7 @@ all:
 	gcc -o modeset-atomic modeset-atomic.c $(FLAGS)
 	$(CXX) -o modeset_latency modeset_latency.cpp $(FLAGS) $(_CFLAGS)
 	$(CXX) -o modeset-double-buffered_latency modeset-double-buffered_latency.cpp $(FLAGS) $(_CFLAGS)
+	$(CXX) -o modeset-vsync2 modeset-vsync2.cpp $(FLAGS) $(_CFLAGS)
 
 clean:
 	rm -rf modeset modeset-atomic modeset-double-buffered modeset-vsync modeset_latency

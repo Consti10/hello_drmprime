@@ -153,7 +153,7 @@ static int modeset_prepare(int fd)
 		}
 
 		/* create a device structure */
-		dev = malloc(sizeof(*dev));
+		dev = ( modeset_dev *)malloc(sizeof(*dev));
 		memset(dev, 0, sizeof(*dev));
 		dev->conn = conn->connector_id;
 
@@ -371,7 +371,7 @@ static int modeset_create_fb(int fd, struct modeset_buf *buf)
 	}
 
 	/* perform actual memory mapping */
-	buf->map = mmap(0, buf->size, PROT_READ | PROT_WRITE, MAP_SHARED,
+	buf->map = (uint8_t*)mmap(0, buf->size, PROT_READ | PROT_WRITE, MAP_SHARED,
 		        fd, mreq.offset);
 	if (buf->map == MAP_FAILED) {
 		fprintf(stderr, "cannot mmap dumb buffer (%d): %m\n",
@@ -486,7 +486,7 @@ static void modeset_page_flip_event(int fd, unsigned int frame,
 				    unsigned int sec, unsigned int usec,
 				    void *data)
 {
-	struct modeset_dev *dev = data;
+	struct modeset_dev *dev = (modeset_dev *)data;
 
 	dev->pflip_pending = false;
 	if (!dev->cleanup)
@@ -668,7 +668,7 @@ static void modeset_draw_dev(int fd, struct modeset_dev *dev)
 	}
 
 	ret = drmModePageFlip(fd, dev->crtc, buf->fb,
-			      DRM_MODE_PAGE_FLIP_EVENT, dev);
+			      DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC, dev);
 	if (ret) {
 		fprintf(stderr, "cannot flip CRTC for connector %u (%d): %m\n",
 			dev->conn, errno);
