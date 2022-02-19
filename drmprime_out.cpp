@@ -242,7 +242,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     }
     chronometer2.stop();
     chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    //countLol++;
+    countLol++;
     if(countLol>20){
         //int ret = drmModeSetCrtc(de->drm_fd,de->setup.crtcId,da->fb_handle, 0, 0,
         //                         &iter->conn, 1, &iter->mode);
