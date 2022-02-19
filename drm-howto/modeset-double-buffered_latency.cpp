@@ -565,6 +565,8 @@ static void modeset_draw(int fd)
         }
         avgSwapTime.start();
         modeset_buf* currBuff = i % 2==0 ? frontBuffer : backBuffer;
+        modeset_list->mode.flags=DRM_MODE_PAGE_FLIP_ASYNC;
+
         const auto ret = drmModeSetCrtc(fd, modeset_list->crtc, currBuff->fb, 0, 0,
                              &modeset_list->conn, 1, &modeset_list->mode);
         avgSwapTime.stop();
@@ -573,46 +575,6 @@ static void modeset_draw(int fd)
             fprintf(stderr, "cannot flip CRTC for connector %u (%d): %m\n",
                     modeset_list->conn, errno);
     }
-
-    /*int ret;
-    uint8_t r, g, b;
-    bool r_up, g_up, b_up;
-    unsigned int i, j, k, off;
-    struct modeset_dev *iter;
-    struct modeset_buf *buf;
-
-	srand(time(NULL));
-	r = rand() % 0xff;
-	g = rand() % 0xff;
-	b = rand() % 0xff;
-	r_up = g_up = b_up = true;
-
-	for (i = 0; i < 50; ++i) {
-		r = next_color(&r_up, r, 20);
-		g = next_color(&g_up, g, 10);
-		b = next_color(&b_up, b, 5);
-
-		for (iter = modeset_list; iter; iter = iter->next) {
-			buf = &iter->bufs[iter->front_buf ^ 1];
-			for (j = 0; j < buf->height; ++j) {
-				for (k = 0; k < buf->width; ++k) {
-					off = buf->stride * j + k * 4;
-					*(uint32_t*)&buf->map[off] =
-						     (r << 16) | (g << 8) | b;
-				}
-			}
-
-			ret = drmModeSetCrtc(fd, iter->crtc, buf->fb, 0, 0,
-					     &iter->conn, 1, &iter->mode);
-			if (ret)
-				fprintf(stderr, "cannot flip CRTC for connector %u (%d): %m\n",
-					iter->conn, errno);
-			else
-				iter->front_buf ^= 1;
-		}
-
-		usleep(100000);
-	}*/
 }
 
 /*

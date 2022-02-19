@@ -210,7 +210,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     chronometer2.stop();
     chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
     if(drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
-                          da->fb_handle, 0,
+                          da->fb_handle, DRM_MODE_PAGE_FLIP_ASYNC,
                           de->setup.compose.x, de->setup.compose.y,
                           de->setup.compose.width,
                           de->setup.compose.height,
@@ -263,6 +263,7 @@ static void waitForVSYNC(drmprime_out_env_t *const de){
     chronoVsync.printInIntervals(CALCULATOR_LOG_INTERVAL);
 }
 
+static bool first=true;
 static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
 {
     assert(frame!=NULL);
