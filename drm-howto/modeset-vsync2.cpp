@@ -53,6 +53,7 @@ static void modeset_cleanup(int fd);
 #include "../common_consti/TimeHelper.hpp"
 #include "modeset_helper.h"
 
+// This is not the actual swap time
 static Chronometer avgSwapTime{"SwapBuffers"};
 
 /*
