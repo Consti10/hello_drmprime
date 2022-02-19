@@ -214,13 +214,13 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     memset(da->bo_handles, 0, sizeof(da->bo_handles));
     //for (int i = 0; i < desc->nb_objects; ++i) {
     if (drmPrimeFDToHandle(de->drm_fd, desc->objects[0].fd, da->bo_handles) != 0) {
-        fprintf(stderr, "drmPrimeFDToHandle[%d](%d) failed: %s\n", i, desc->objects[i].fd, ERRSTR);
+        fprintf(stderr, "drmPrimeFDToHandle[%d](%d) failed: %s\n", 0, desc->objects[i].fd, ERRSTR);
         return -1;
     }
     //}
     int n = 0;
     //for (int i = 0; i < desc->nb_layers; ++i) {
-    for (int j = 0; j < desc->layers[i].nb_planes; ++j) {
+    for (int j = 0; j < desc->layers[0].nb_planes; ++j) {
         const AVDRMPlaneDescriptor *const p = desc->layers[0].planes + j;
         const AVDRMObjectDescriptor *const obj = desc->objects + p->object_index;
         pitches[n] = p->pitch;
