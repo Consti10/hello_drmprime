@@ -55,6 +55,7 @@ static void modeset_cleanup(int fd);
 
 // This is not the actual swap time
 static Chronometer avgSwapTime{"SwapBuffers"};
+static Chronometer avgFrameDelta{"FrameDelta"};
 
 /*
  * modeset_open() stays the same.
@@ -655,20 +656,21 @@ static uint8_t next_color(bool *up, uint8_t cur, unsigned int mod)
  * did, too.
  */
 
-static bool firstTime= true;
+static bool colorsWritten=false;
+static bool first=true;
 
 static void modeset_draw_dev(int fd, struct modeset_dev *dev)
 {
 	struct modeset_buf *buf;
 	unsigned int j, k, off;
 	int ret;
-    if(firstTime){
+    if(!colorsWritten){
         // draw different colors into the front and back buffer
         modeset_buf* frontBuffer=&dev->bufs[0];
         modeset_buf* backBuffer=&dev->bufs[1];
         fillFrame(frontBuffer->map,frontBuffer->width,frontBuffer->height,frontBuffer->stride, createColor(0));
         fillFrame(backBuffer->map,backBuffer->width,backBuffer->height,backBuffer->stride, createColor(1));
-        firstTime= false;
+        colorsWritten=true;
     }
 
 	/*dev->r = next_color(&dev->r_up, dev->r, 20);
@@ -689,6 +691,14 @@ static void modeset_draw_dev(int fd, struct modeset_dev *dev)
 			      DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC, dev);
     avgSwapTime.stop();
     avgSwapTime.printInIntervals(10);
+    if(first){
+        avgFrameDelta.start();
+        first=false;
+    }else{
+        avgFrameDelta.stop();
+        avgFrameDelta.printInIntervals(10);
+        avgFrameDelta.start();
+    }
 	if (ret) {
 		fprintf(stderr, "cannot flip CRTC for connector %u (%d): %m\n",
 			dev->conn, errno);
