@@ -210,27 +210,26 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     uint32_t offsets[4] = { 0 };
     uint64_t modifiers[4] = { 0 };
     uint32_t bo_handles[4] = { 0 };
-    int i, j, n;
     da->frame = frame;
     memset(da->bo_handles, 0, sizeof(da->bo_handles));
-    for (i = 0; i < desc->nb_objects; ++i) {
-        if (drmPrimeFDToHandle(de->drm_fd, desc->objects[i].fd, da->bo_handles + i) != 0) {
-            fprintf(stderr, "drmPrimeFDToHandle[%d](%d) failed: %s\n", i, desc->objects[i].fd, ERRSTR);
-            return -1;
-        }
+    //for (int i = 0; i < desc->nb_objects; ++i) {
+    if (drmPrimeFDToHandle(de->drm_fd, desc->objects[0].fd, da->bo_handles) != 0) {
+        fprintf(stderr, "drmPrimeFDToHandle[%d](%d) failed: %s\n", i, desc->objects[i].fd, ERRSTR);
+        return -1;
     }
-    n = 0;
-    for (i = 0; i < desc->nb_layers; ++i) {
-        for (j = 0; j < desc->layers[i].nb_planes; ++j) {
-            const AVDRMPlaneDescriptor *const p = desc->layers[i].planes + j;
-            const AVDRMObjectDescriptor *const obj = desc->objects + p->object_index;
-            pitches[n] = p->pitch;
-            offsets[n] = p->offset;
-            modifiers[n] = obj->format_modifier;
-            bo_handles[n] = da->bo_handles[p->object_index];
-            ++n;
-        }
+    //}
+    int n = 0;
+    //for (int i = 0; i < desc->nb_layers; ++i) {
+    for (int j = 0; j < desc->layers[i].nb_planes; ++j) {
+        const AVDRMPlaneDescriptor *const p = desc->layers[0].planes + j;
+        const AVDRMObjectDescriptor *const obj = desc->objects + p->object_index;
+        pitches[n] = p->pitch;
+        offsets[n] = p->offset;
+        modifiers[n] = obj->format_modifier;
+        bo_handles[n] = da->bo_handles[p->object_index];
+        ++n;
     }
+    //}
     MLOGD<<"desc->nb_objects:"<<desc->nb_objects<<"desc->nb_layers"<<desc->nb_layers<<"\n";
     if (drmModeAddFB2WithModifiers(de->drm_fd,
                                    av_frame_cropped_width(frame),
@@ -243,9 +242,11 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     }
     chronometer2.stop();
     chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    countLol++;
+    //countLol++;
     if(countLol>20){
-        if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_ASYNC,de)!=0){
+        //int ret = drmModeSetCrtc(de->drm_fd,de->setup.crtcId,da->fb_handle, 0, 0,
+        //                         &iter->conn, 1, &iter->mode);
+        if(drmModePageFlip(de->drm_fd,de->setup.planeId,da->fb_handle,DRM_MODE_PAGE_FLIP_ASYNC,de)!=0){
             fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
             return -1;
         }
