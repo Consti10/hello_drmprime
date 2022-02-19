@@ -690,13 +690,13 @@ static void modeset_draw_dev(int fd, struct modeset_dev *dev)
 	ret = drmModePageFlip(fd, dev->crtc, buf->fb,
 			      DRM_MODE_PAGE_FLIP_EVENT, dev);
     avgPageFlipRequest.stop();
-    avgPageFlipRequest.printInIntervals(10);
+    avgPageFlipRequest.printInIntervals(100);
     if(first){
         avgFrameDelta.start();
         first=false;
     }else{
         avgFrameDelta.stop();
-        avgFrameDelta.printInIntervals(10);
+        avgFrameDelta.printInIntervals(100);
         avgFrameDelta.start();
     }
 	if (ret) {
