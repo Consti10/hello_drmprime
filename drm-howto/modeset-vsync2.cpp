@@ -49,6 +49,12 @@ static void modeset_draw(int fd);
 static void modeset_draw_dev(int fd, struct modeset_dev *dev);
 static void modeset_cleanup(int fd);
 
+#include "../common_consti/LEDSwap.h"
+#include "../common_consti/TimeHelper.hpp"
+#include "modeset_helper.h"
+
+static Chronometer avgSwapTime{"SwapBuffers"};
+
 /*
  * modeset_open() stays the same.
  */
@@ -666,9 +672,11 @@ static void modeset_draw_dev(int fd, struct modeset_dev *dev)
 				     (dev->r << 16) | (dev->g << 8) | dev->b;
 		}
 	}
-
+    avgSwapTime.start();
 	ret = drmModePageFlip(fd, dev->crtc, buf->fb,
 			      DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC, dev);
+    avgSwapTime.stop();
+    avgSwapTime.printInIntervals(10);
 	if (ret) {
 		fprintf(stderr, "cannot flip CRTC for connector %u (%d): %m\n",
 			dev->conn, errno);
