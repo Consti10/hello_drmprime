@@ -166,6 +166,39 @@ static void da_uninit(drmprime_out_env_t *const de, drm_aux_t *da){
     chronometerDaUninit.printInIntervals(CALCULATOR_LOG_INTERVAL);
 }
 
+#define Xmemclear(s) memset(&s, 0, sizeof(s))
+
+static inline int XDRM_IOCTL(int fd, unsigned long cmd, void *arg)
+{
+    int ret = drmIoctl(fd, cmd, arg);
+    return ret < 0 ? -errno : ret;
+}
+
+static int XdrmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
+                    uint32_t fb_id, uint32_t flags,
+                    int32_t crtc_x, int32_t crtc_y,
+                    uint32_t crtc_w, uint32_t crtc_h,
+                    uint32_t src_x, uint32_t src_y,
+                    uint32_t src_w, uint32_t src_h)
+{
+    struct drm_mode_set_plane s;
+    Xmemclear(s);
+    s.plane_id = plane_id;
+    s.crtc_id = crtc_id;
+    s.fb_id = fb_id;
+    s.flags = flags;
+    s.crtc_x = crtc_x;
+    s.crtc_y = crtc_y;
+    s.crtc_w = crtc_w;
+    s.crtc_h = crtc_h;
+    s.src_x = src_x;
+    s.src_y = src_y;
+    s.src_w = src_w;
+    s.src_h = src_h;
+    return XDRM_IOCTL(fd, DRM_IOCTL_MODE_SETPLANE, &s);
+}
+
+
 // initializes the drm_aux_to for the new frame, including the raw frame data
 // unfortunately blocks until the ? VSYNC or some VSYNC related time point ?
 static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
@@ -203,7 +236,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
                                    av_frame_cropped_height(frame),
                                    desc->layers[0].format, bo_handles,
                                    pitches, offsets, modifiers,
-                                   &da->fb_handle, DRM_MODE_FB_MODIFIERS | DRM_MODE_PAGE_FLIP_ASYNC /** 0 if no mods */) != 0) {
+                                   &da->fb_handle, DRM_MODE_FB_MODIFIERS /** 0 if no mods */) != 0) {
         fprintf(stderr, "drmModeAddFB2WithModifiers failed: %s\n", ERRSTR);
         return -1;
     }
@@ -224,8 +257,6 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     chronometerDaInit.printInIntervals(CALCULATOR_LOG_INTERVAL);
     return 0;
 }
-
-
 
 // If the crtc plane we have for video is not updated to use the same frame format (yet),
 // do so. Only needs to be done once.
