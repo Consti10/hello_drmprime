@@ -654,7 +654,7 @@ static uint8_t next_color(bool *up, uint8_t cur, unsigned int mod)
  * did, too.
  */
 
-static bool firstTime=false;
+static bool firstTime= true;
 
 static void modeset_draw_dev(int fd, struct modeset_dev *dev)
 {
