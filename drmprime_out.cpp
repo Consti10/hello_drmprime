@@ -243,7 +243,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     chronometer2.stop();
     chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
     if(drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
-                          da->fb_handle, DRM_MODE_PAGE_FLIP_ASYNC,
+                          da->fb_handle, DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK,
                           de->setup.compose.x, de->setup.compose.y,
                           de->setup.compose.width,
                           de->setup.compose.height,
