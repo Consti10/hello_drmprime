@@ -663,8 +663,8 @@ static void modeset_draw_dev(int fd, struct modeset_dev *dev)
 	int ret;
     if(firstTime){
         // draw different colors into the front and back buffer
-        modeset_buf* frontBuffer=&modeset_list->bufs[0];
-        modeset_buf* backBuffer=&modeset_list->bufs[1];
+        modeset_buf* frontBuffer=&dev->bufs[0];
+        modeset_buf* backBuffer=&dev->bufs[1];
         fillFrame(frontBuffer->map,frontBuffer->width,frontBuffer->height,frontBuffer->stride, createColor(0));
         fillFrame(backBuffer->map,backBuffer->width,backBuffer->height,backBuffer->stride, createColor(1));
         firstTime= false;
