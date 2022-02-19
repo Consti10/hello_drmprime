@@ -198,6 +198,7 @@ static int XdrmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
     return XDRM_IOCTL(fd, DRM_IOCTL_MODE_SETPLANE, &s);
 }
 
+static int countLol=0;
 
 // initializes the drm_aux_to for the new frame, including the raw frame data
 // unfortunately blocks until the ? VSYNC or some VSYNC related time point ?
@@ -242,16 +243,25 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     }
     chronometer2.stop();
     chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    if(drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
-                          da->fb_handle, DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK,
-                          de->setup.compose.x, de->setup.compose.y,
-                          de->setup.compose.width,
-                          de->setup.compose.height,
-                          0, 0,
-                          av_frame_cropped_width(frame) << 16,
-                          av_frame_cropped_height(frame) << 16)!=0){
-        fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
-        return -1;
+    countLol++;
+    if(countLol>20){
+        if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,
+                              DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC,NULL)!=0){
+            fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
+            return -1;
+        }
+    }else{
+        if(drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
+                           da->fb_handle, DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK,
+                           de->setup.compose.x, de->setup.compose.y,
+                           de->setup.compose.width,
+                           de->setup.compose.height,
+                           0, 0,
+                           av_frame_cropped_width(frame) << 16,
+                           av_frame_cropped_height(frame) << 16)!=0){
+            fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
+            return -1;
+        }
     }
     chronometerDaInit.stop();
     chronometerDaInit.printInIntervals(CALCULATOR_LOG_INTERVAL);
