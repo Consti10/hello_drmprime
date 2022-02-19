@@ -654,13 +654,23 @@ static uint8_t next_color(bool *up, uint8_t cur, unsigned int mod)
  * did, too.
  */
 
+static bool firstTime=false;
+
 static void modeset_draw_dev(int fd, struct modeset_dev *dev)
 {
 	struct modeset_buf *buf;
 	unsigned int j, k, off;
 	int ret;
+    if(firstTime){
+        // draw different colors into the front and back buffer
+        modeset_buf* frontBuffer=&modeset_list->bufs[0];
+        modeset_buf* backBuffer=&modeset_list->bufs[1];
+        fillFrame(frontBuffer->map,frontBuffer->width,frontBuffer->height,frontBuffer->stride, createColor(0));
+        fillFrame(backBuffer->map,backBuffer->width,backBuffer->height,backBuffer->stride, createColor(1));
+        firstTime= false;
+    }
 
-	dev->r = next_color(&dev->r_up, dev->r, 20);
+	/*dev->r = next_color(&dev->r_up, dev->r, 20);
 	dev->g = next_color(&dev->g_up, dev->g, 10);
 	dev->b = next_color(&dev->b_up, dev->b, 5);
 
@@ -671,7 +681,7 @@ static void modeset_draw_dev(int fd, struct modeset_dev *dev)
 			*(uint32_t*)&buf->map[off] =
 				     (dev->r << 16) | (dev->g << 8) | dev->b;
 		}
-	}
+	}*/
     avgSwapTime.start();
 	ret = drmModePageFlip(fd, dev->crtc, buf->fb,
 			      DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC, dev);
