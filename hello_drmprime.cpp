@@ -68,6 +68,7 @@ static AVFilterContext *buffersink_ctx = NULL;
 static AVFilterContext *buffersrc_ctx = NULL;
 static AVFilterGraph *filter_graph = NULL;
 
+static Chronometer transferCpuGpu{"Transfer"};
 static Chronometer copyDataChrono{"CopyData"};
 
 static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
@@ -104,24 +105,27 @@ static void save_frame_to_file_if_enabled(AVFrame *frame){
     copyDataChrono.start();
         std::cout<<"Saving frame to file\n";
         int ret=0;
-        AVFrame* sw_frame;
-        AVFrame *tmp_frame;
+        AVFrame* sw_frame=NULL;
+        AVFrame *tmp_frame=NULL;
         if (frame->format == hw_pix_fmt) {
             MLOGD<<"Is hw_pix_fmt\n";
             if(!(sw_frame = av_frame_alloc())){
                 fprintf(stderr,"Cannot alloc frame\n");
                 return;
             }
+            transferCpuGpu.start();
             /* retrieve data from GPU to CPU */
             if ((ret = av_hwframe_transfer_data(sw_frame, frame, 0)) < 0) {
                 fprintf(stderr, "Error transferring the data to system memory\n");
                 av_frame_free(&sw_frame);
                 return;
             }
+            transferCpuGpu.stop();
+            transferCpuGpu.printInIntervals(10);
             tmp_frame = sw_frame;
         } else
             tmp_frame = frame;
-        int size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
+        const int size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
                                         tmp_frame->height, 1);
         MLOGD<<"Frame size in Bytes:"<<size<<"\n";
         std::unique_ptr<std::vector<uint8_t>> buffer=std::make_unique<std::vector<uint8_t>>(size);
