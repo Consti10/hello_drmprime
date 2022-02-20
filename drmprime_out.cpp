@@ -322,7 +322,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         da_init(de,da,frame);
         first=false;
     }else{
-        if(av_hwframe_map(da->frame,frame,0)){
+        if(av_hwframe_map(da->frame,frame,0)!=0){
             MLOGD<<"av_hwframe_map error\n";
         }
     }
