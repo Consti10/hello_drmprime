@@ -132,7 +132,7 @@ static void save_frame_to_file_if_enabled(AVFrame *frame){
         MLOGD<<"Frame size in Bytes:"<<size<<"\n";
         if(size>buffer->size()){
             MLOGD<<"Resize to "<<size<<"\n";
-            buffer->resize(size):
+            buffer->resize(size);
         }
         //uint8_t buffer[size];
         ret = av_image_copy_to_buffer(buffer->data(), size,
