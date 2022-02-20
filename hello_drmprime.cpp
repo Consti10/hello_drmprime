@@ -96,7 +96,7 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
 }
 
 static void save_frame_to_file_if_enabled(AVFrame *frame){
-    if (output_file != NULL) {
+    //if (output_file != NULL) {
         std::cout<<"Saving frame to file\n";
         int ret=0;
         AVFrame* sw_frame;
@@ -129,13 +129,13 @@ static void save_frame_to_file_if_enabled(AVFrame *frame){
             av_frame_free(&sw_frame);
             return;
         }
-        if ((ret = fwrite(buffer, 1, size, output_file)) < 0) {
+        /*if ((ret = fwrite(buffer, 1, size, output_file)) < 0) {
             fprintf(stderr, "Failed to dump raw data.\n");
             av_frame_free(&sw_frame);
             return;
-        }
+        }*/
         av_frame_free(&sw_frame);
-    }
+    //}
 }
 
 static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *frame){
