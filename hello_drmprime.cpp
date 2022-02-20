@@ -68,6 +68,8 @@ static AVFilterContext *buffersink_ctx = NULL;
 static AVFilterContext *buffersrc_ctx = NULL;
 static AVFilterGraph *filter_graph = NULL;
 
+static Chronometer copyDataChrono{"CopyData"};
+
 static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
 {
     int err = 0;
@@ -99,6 +101,7 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
 
 static void save_frame_to_file_if_enabled(AVFrame *frame){
     //if (output_file != NULL) {
+    copyDataChrono.start();
         std::cout<<"Saving frame to file\n";
         int ret=0;
         AVFrame* sw_frame;
@@ -132,6 +135,8 @@ static void save_frame_to_file_if_enabled(AVFrame *frame){
             av_frame_free(&sw_frame);
             return;
         }
+        copyDataChrono.stop();
+        copyDataChrono.printInIntervals(10);
         /*if ((ret = fwrite(buffer, 1, size, output_file)) < 0) {
             fprintf(stderr, "Failed to dump raw data.\n");
             av_frame_free(&sw_frame);
