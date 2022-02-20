@@ -110,7 +110,7 @@ static void save_frame_to_file_if_enabled(AVFrame *frame){
         AVFrame* sw_frame=NULL;
         AVFrame *tmp_frame=NULL;
         if (frame->format == hw_pix_fmt) {
-            MLOGD<<"Is hw_pix_fmt\n";
+            MLOGD<<"Is hw_pix_fmt"<<frame->format<<"\n";
             if(!(sw_frame = av_frame_alloc())){
                 fprintf(stderr,"Cannot alloc frame\n");
                 return;
@@ -184,7 +184,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
         std::stringstream ss;
         ss<<"x_push_into_filter_graph:pts:"<<frame->pts<<"\n";
         std::cout<<ss.str();
-        drmprime_out_display(dpo, frame);
+        //drmprime_out_display(dpo, frame);
         save_frame_to_file_if_enabled(frame);
 
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
