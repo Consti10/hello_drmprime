@@ -45,6 +45,8 @@ extern "C" {
 #include <libavutil/imgutils.h>
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
+#include <libavutil/buffer.h>
+#include <libavutil/frame.h>
 }
 
 #include "drmprime_out.h"
@@ -105,8 +107,8 @@ static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::ve
 static void save_frame_to_file_if_enabled(AVFrame *frame){
     //if (output_file != NULL) {
     if(true){
-        V4L2Buffer buff;
-        ff_v4l2_buffer_avframe_to_buf(frame,&buff);
+        //V4L2Buffer buff;
+        //ff_v4l2_buffer_avframe_to_buf(frame,&buff);
         return;
     }
     copyDataChrono.start();
@@ -189,7 +191,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
         std::stringstream ss;
         ss<<"x_push_into_filter_graph:pts:"<<frame->pts<<"\n";
         std::cout<<ss.str();
-        /drmprime_out_display(dpo, frame);
+        drmprime_out_display(dpo, frame);
         save_frame_to_file_if_enabled(frame);
 
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
