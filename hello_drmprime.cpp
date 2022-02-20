@@ -102,6 +102,7 @@ static void save_frame_to_file_if_enabled(AVFrame *frame){
         AVFrame* sw_frame;
         AVFrame *tmp_frame;
         if (frame->format == hw_pix_fmt) {
+            MLOGD<<"Is hw_pix_fmt\n";
             if(!(sw_frame = av_frame_alloc())){
                 fprintf(stderr,"Cannot alloc frame\n");
                 return;
@@ -117,6 +118,7 @@ static void save_frame_to_file_if_enabled(AVFrame *frame){
             tmp_frame = frame;
         int size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
                                         tmp_frame->height, 1);
+        MLOGD<<"Frame size in Bytes:"<<size<<"\n";
         uint8_t buffer[size];
         ret = av_image_copy_to_buffer(buffer, size,
                                       (const uint8_t * const *)tmp_frame->data,
