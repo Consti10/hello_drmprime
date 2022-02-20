@@ -107,6 +107,7 @@ static void save_frame_to_file_if_enabled(AVFrame *frame){
     if(true){
         V4L2Buffer buff;
         ff_v4l2_buffer_avframe_to_buf(frame,&buff);
+        return;
     }
     copyDataChrono.start();
         std::cout<<"Saving frame to file\n";
