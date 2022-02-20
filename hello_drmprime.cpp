@@ -53,6 +53,7 @@ extern "C" {
 #include <iostream>
 #include <cassert>
 
+#include <memory>
 #include <vector>
 #include "extra.h"
 #include "common_consti/TimeHelper.hpp"
@@ -120,8 +121,9 @@ static void save_frame_to_file_if_enabled(AVFrame *frame){
         int size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
                                         tmp_frame->height, 1);
         MLOGD<<"Frame size in Bytes:"<<size<<"\n";
-        uint8_t buffer[size];
-        ret = av_image_copy_to_buffer(buffer, size,
+        std::unique_ptr<std::vector<uint8_t>> buffer=std::make_unique<std::vector<uint8_t>>(size);
+        //uint8_t buffer[size];
+        ret = av_image_copy_to_buffer(buffer->data(), size,
                                       (const uint8_t * const *)tmp_frame->data,
                                       (const int *)tmp_frame->linesize, (AVPixelFormat)tmp_frame->format,
                                       tmp_frame->width, tmp_frame->height, 1);
