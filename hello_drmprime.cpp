@@ -100,6 +100,8 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
     return AV_PIX_FMT_NONE;
 }
 
+static std::unique_ptr<std::vector<uint8_t>> buffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
+
 static void save_frame_to_file_if_enabled(AVFrame *frame){
     //if (output_file != NULL) {
     copyDataChrono.start();
@@ -114,21 +116,24 @@ static void save_frame_to_file_if_enabled(AVFrame *frame){
                 return;
             }
             transferCpuGpu.start();
-            /* retrieve data from GPU to CPU */
-            if ((ret = av_hwframe_transfer_data(sw_frame, frame, 0)) < 0) {
+            // retrieve data from GPU to CPU
+            if (av_hwframe_transfer_data(sw_frame, frame, 0) !=0) {
                 fprintf(stderr, "Error transferring the data to system memory\n");
                 av_frame_free(&sw_frame);
                 return;
             }
             transferCpuGpu.stop();
-            transferCpuGpu.printInIntervals(10);
+            transferCpuGpu.printInIntervals(1);
             tmp_frame = sw_frame;
         } else
             tmp_frame = frame;
         const int size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
                                         tmp_frame->height, 1);
         MLOGD<<"Frame size in Bytes:"<<size<<"\n";
-        std::unique_ptr<std::vector<uint8_t>> buffer=std::make_unique<std::vector<uint8_t>>(size);
+        if(size>buffer->size()){
+            MLOGD<<"Resize to "<<size<<"\n";
+            buffer->resize(size):
+        }
         //uint8_t buffer[size];
         ret = av_image_copy_to_buffer(buffer->data(), size,
                                       (const uint8_t * const *)tmp_frame->data,
@@ -140,7 +145,7 @@ static void save_frame_to_file_if_enabled(AVFrame *frame){
             return;
         }
         copyDataChrono.stop();
-        copyDataChrono.printInIntervals(10);
+        copyDataChrono.printInIntervals(1);
         /*if ((ret = fwrite(buffer, 1, size, output_file)) < 0) {
             fprintf(stderr, "Failed to dump raw data.\n");
             av_frame_free(&sw_frame);
