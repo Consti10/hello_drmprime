@@ -100,10 +100,14 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
     return AV_PIX_FMT_NONE;
 }
 
-static std::unique_ptr<std::vector<uint8_t>> buffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
+static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
 
 static void save_frame_to_file_if_enabled(AVFrame *frame){
     //if (output_file != NULL) {
+    if(true){
+        V4L2Buffer buff;
+        ff_v4l2_buffer_avframe_to_buf(frame,buff);
+    }
     copyDataChrono.start();
         std::cout<<"Saving frame to file\n";
         int ret=0;
@@ -130,12 +134,12 @@ static void save_frame_to_file_if_enabled(AVFrame *frame){
         const int size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
                                         tmp_frame->height, 1);
         MLOGD<<"Frame size in Bytes:"<<size<<"\n";
-        if(size>buffer->size()){
+        if(size>copyBuffer->size()){
             MLOGD<<"Resize to "<<size<<"\n";
-            buffer->resize(size);
+            copyBuffer->resize(size);
         }
         //uint8_t buffer[size];
-        /*ret = av_image_copy_to_buffer(buffer->data(), size,
+        /*ret = av_image_copy_to_buffer(copyBuffer->data(), size,
                                       (const uint8_t * const *)tmp_frame->data,
                                       (const int *)tmp_frame->linesize, (AVPixelFormat)tmp_frame->format,
                                       tmp_frame->width, tmp_frame->height, 1);*/
@@ -184,7 +188,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
         std::stringstream ss;
         ss<<"x_push_into_filter_graph:pts:"<<frame->pts<<"\n";
         std::cout<<ss.str();
-        //drmprime_out_display(dpo, frame);
+        /drmprime_out_display(dpo, frame);
         save_frame_to_file_if_enabled(frame);
 
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
