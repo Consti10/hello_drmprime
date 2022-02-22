@@ -249,6 +249,10 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
             return -1;
         }
     }else{
+        // https://github.com/grate-driver/libdrm/blob/master/xf86drmMode.c#L988
+        // https://github.com/raspberrypi/linux/blob/aeaa2460db088fb2c97ae56dec6d7d0058c68294/drivers/gpu/drm/drm_ioctl.c#L670
+        // https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/gpu/drm/drm_plane.c#L800
+        // https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/gpu/drm/drm_plane.c#L771
         if(drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
                            da->fb_handle, DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK,
                            de->setup.compose.x, de->setup.compose.y,
