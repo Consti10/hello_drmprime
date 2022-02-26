@@ -191,7 +191,9 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
         std::stringstream ss;
         ss<<"x_push_into_filter_graph:pts:"<<frame->pts<<"\n";
         std::cout<<ss.str();
-        drmprime_out_display(dpo, frame);
+        if(dpo!=NULL){
+            drmprime_out_display(dpo, frame);
+        }
         save_frame_to_file_if_enabled(frame);
 
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
@@ -529,7 +531,9 @@ int main(int argc, char *argv[])
     dpo = drmprime_out_new(drop_frames);
     if (dpo == NULL) {
         fprintf(stderr, "Failed to open drmprime output\n");
-        return 1;
+        // Display out optional
+        //return 1;
+        dpo=NULL;
     }
 
     /* open the file to dump raw data */
@@ -661,7 +665,9 @@ loopy:
     if (--loop_count > 0)
         goto loopy;
 
-    drmprime_out_delete(dpo);
+    if(dpo!=NULL){
+        drmprime_out_delete(dpo);
+    }
 
     return 0;
 }

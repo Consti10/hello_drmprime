@@ -16,8 +16,10 @@ public:
         if(!str.empty()){
             if(str.back()!='\n'){
                 stream<<"\n";
+                std::cout<<stream.str();
+            }else{
+                std::cout<<str;
             }
-            std::cout<<stream.str();
         }
     }
     Logger(const Logger& other)=delete;
