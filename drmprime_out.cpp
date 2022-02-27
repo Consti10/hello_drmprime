@@ -44,7 +44,7 @@ extern "C" {
 
 static int CALCULATOR_LOG_INTERVAL=10;
 AvgCalculator avgDisplayThreadQueueLatency{"DisplayThreadQueue"};
-AvgCalculator avgTotalDrmLatency{"TotalDrmLatency"};
+AvgCalculator avgTotalDecodeAndDisplayLatency{"TotalDecodeDisplayLatency"};
 Chronometer chronoVsync{"VSYNC"};
 Chronometer chronometerDaUninit{"DA_UNINIT"};
 Chronometer chronometer2{"X2"};
@@ -338,8 +338,8 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     da_init(de,da,frame);
     // use another de aux for the next frame
     de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
-    avgTotalDrmLatency.addUs(getTimeUs()- frame->pts);
-    avgTotalDrmLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
+    avgTotalDecodeAndDisplayLatency.addUs(getTimeUs()- frame->pts);
+    avgTotalDecodeAndDisplayLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
     return ret;
 }
 

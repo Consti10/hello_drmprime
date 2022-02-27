@@ -245,6 +245,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
     ss<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
     std::cout<<ss.str();
     const auto before=std::chrono::steady_clock::now();
+    const auto beforeUs=getTimeUs();
     int ret = avcodec_send_packet(avctx, packet);
     if (ret < 0) {
         fprintf(stderr, "Error during decoding\n");
@@ -275,7 +276,8 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
             const auto now=getTimeUs();
             ss<<"Frame pts:"<<frame->pts<<" Set to:"<<now<<"\n";
             std::cout<<ss.str();
-            frame->pts=now;
+            //frame->pts=now;
+            frame->pts=beforeUs;
             // display frame
             x_push_into_filter_graph(dpo,frame);
         }else{
