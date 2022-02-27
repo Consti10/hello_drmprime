@@ -78,7 +78,7 @@ static void memcpy_uint8_loop(uint8_t* dst,const uint8_t* src,size_t length){
     }
 }
 
-#include <arm_neon.h>
+/*#include <arm_neon.h>
 static void memcpy_uint8_neon(uint8_t* dst,const uint8_t* src,size_t length){
     assert(length % 8 ==0);
     uint8x8_t in;
@@ -97,11 +97,12 @@ static void memcpy_uint8_neon2(uint8_t* dst,const uint8_t* src,size_t length){
         vst1_u8(dst,in1);
         vst1_u8(dst+8,in2);
     }
-}
+}*/
 
 static void memcpy_uint8(uint8_t* dst,const uint8_t* src,size_t length){
     //memcpy_uint8_neon(dst,src,length);
-    memcpy_uint8_neon(dst,src,length);
+    //memcpy_uint8_neon(dst,src,length);
+    memcpy_uint8_loop(dst,src,length);
 }
 
 #endif //HELLO_DRMPRIME_EXTRA_H

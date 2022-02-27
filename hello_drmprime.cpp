@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <sys/mman.h>
+#include <getopt.h>
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -73,7 +74,6 @@ extern "C" {
 
 static enum AVPixelFormat hw_pix_fmt;
 static FILE *output_file = NULL;
-static long frames = 0;
 
 static AVFilterContext *buffersink_ctx = NULL;
 static AVFilterContext *buffersrc_ctx = NULL;
@@ -122,6 +122,7 @@ static void map_frame_test(AVFrame* frame){
     <<" Cropped W:"<<av_frame_cropped_width(frame)<<" H:"<<av_frame_cropped_height(frame)<<"\n";
     mmapBuffer.start();
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
+    //assert(desc->nb_objects==1);
     for(int i=0;i<desc->nb_objects;i++){
         const AVDRMObjectDescriptor* obj=&desc->objects[i];
         uint8_t* buffMapped = (uint8_t*)mmap(0,  obj->size, PROT_READ | PROT_WRITE, MAP_SHARED,
@@ -364,8 +365,6 @@ static int decode_write(AVCodecContext * const avctx,
         // tmp test disable
         x_push_into_filter_graph(dpo,frame);
 
-        if (frames == 0 || --frames == 0)
-            ret = -1;
         // we got a frame, return (it is 100% sequential this way)
         return 0;
     fail:
@@ -474,6 +473,25 @@ void usage()
     exit(1);
 }
 
+struct Options{
+    const char* in_filename=NULL;
+    const char* out_filename=NULL;
+    bool deinterlace=false;
+    bool keyboard_led_toggle=false;
+    bool drop_frames=false;
+};
+
+static const char optstr[] = "?:i:o:ykd";
+static const struct option long_options[] = {
+        {"in_filename", required_argument, NULL, 'i'},
+        {"out_filename", required_argument, NULL, 'o'},
+        {"deinterlace", no_argument, NULL, 'y'},
+        {"keyboard_led_toggle", no_argument, NULL, 'k'},
+        {"drop_frames", no_argument, NULL, 'd'},
+        {NULL, 0, NULL, 0},
+};
+
+
 int main(int argc, char *argv[])
 {
     AVFormatContext *input_ctx = NULL;
@@ -483,75 +501,47 @@ int main(int argc, char *argv[])
     const AVCodec *decoder = NULL;
     AVPacket packet;
     enum AVHWDeviceType type;
-    const char * in_file;
-    char * const * in_filelist;
-    unsigned int in_count;
-    unsigned int in_n = 0;
     const char * hwdev = "drm";
-    int i;
     drmprime_out_env_t * dpo;
-    long loop_count = 1;
-    long frame_count = -1;
-    const char * out_name = NULL;
-    bool wants_deinterlace = false;
-    //
-    bool feed_frames_on_keyboard_klick=false;
-    bool drop_frames=false;
 
+    Options mXOptions{};
     {
-        char * const * a = argv + 1;
-        int n = argc - 1;
-
-        while (n-- > 0 && a[0][0] == '-') {
-            const char *arg = *a++;
-            char *e;
-
-            if (strcmp(arg, "-l") == 0 || strcmp(arg, "--loop") == 0) {
-                if (n == 0)
-                    usage();
-                loop_count = strtol(*a, &e, 0);
-                if (*e != 0)
-                    usage();
-                --n;
-                ++a;
+        int c;
+        while ((c = getopt_long(argc, argv, optstr, long_options, NULL)) != -1) {
+            const char *tmp_optarg = optarg;
+            switch (c) {
+                case 'i':
+                    mXOptions.in_filename=tmp_optarg;
+                    break;
+                case 'o':
+                    mXOptions.out_filename=tmp_optarg;
+                    break;
+                case 'y':
+                    mXOptions.deinterlace=true;
+                    break;
+                case 'k':
+                    mXOptions.keyboard_led_toggle=true;
+                    break;
+                case 'd':
+                    mXOptions.drop_frames=true;
+                    break;
+                case '?':
+                default:
+                    MLOGD<<"Usage: -i --in_filename [in_filename] -o --out_filename [optional raw out filename] "<<
+                    "-y --deinterlace [enable interlacing] -k --keyboard_led_toggle [enable keyboard led toggle] "<<
+                    "-d --drop_frames [drop frames on display out queue]\n";
+                    return 0;
             }
-            else if (strcmp(arg, "-f") == 0 || strcmp(arg, "--frames") == 0) {
-                if (n == 0)
-                    usage();
-                frame_count = strtol(*a, &e, 0);
-                if (*e != 0)
-                    usage();
-                --n;
-                ++a;
-            }
-            else if (strcmp(arg, "-o") == 0) {
-                if (n == 0)
-                    usage();
-                out_name = *a;
-                --n;
-                ++a;
-            }
-            else if (strcmp(arg, "--deinterlace") == 0) {
-                wants_deinterlace = true;
-            }
-            else if (strcmp(arg, "--keyboard") == 0) {
-                feed_frames_on_keyboard_klick=true;
-                std::cout<<"Feeding frames only on keyboard input enabled\n";
-            }else if(strcmp(arg,"--drop_frames")==0){
-                drop_frames=true;
-                std::cout<<"Drop-frames enabled\n";
-            }
-            else
-                break;
         }
-
-        // Last args are input files
-        if (n < 0)
-            usage();
-
-        in_filelist = a;
-        in_count = n + 1;
-        loop_count *= in_count;
+        if(mXOptions.in_filename==NULL){
+            MLOGD<<"No input filename,terminating\n";
+            return 0;
+        }
+        MLOGD<<"in_filename: "<<mXOptions.in_filename<<"\n";
+        MLOGD<<"out_filename: "<<(mXOptions.out_filename==NULL ? "NONE": mXOptions.out_filename)<<"\n";
+        MLOGD<<"deinterlace: "<<(mXOptions.deinterlace ? "Y":"N")<<"\n";
+        MLOGD<<"keyboard_led_toggle: "<<(mXOptions.keyboard_led_toggle ? "Y":"N")<<"\n";
+        MLOGD<<"drop_frames: "<<(mXOptions.drop_frames ? "Y":"N")<<"\n";
     }
 
     type = av_hwdevice_find_type_by_name(hwdev);
@@ -564,7 +554,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    dpo = drmprime_out_new(drop_frames);
+    dpo = drmprime_out_new(mXOptions.drop_frames);
     if (dpo == NULL) {
         fprintf(stderr, "Failed to open drmprime output\n");
         // Display out optional
@@ -573,18 +563,15 @@ int main(int argc, char *argv[])
     }
 
     /* open the file to dump raw data */
-    if (out_name != NULL) {
-        std::cout<<"Opening output fle:"<<std::string(out_name)<<"\n";
-        if ((output_file = fopen(out_name, "w+")) == NULL) {
-            fprintf(stderr, "Failed to open output file %s: %s\n", out_name, strerror(errno));
+    if (mXOptions.out_filename != NULL) {
+        std::cout<<"Opening output fle:"<<std::string(mXOptions.out_filename)<<"\n";
+        if ((output_file = fopen(mXOptions.out_filename, "w+")) == NULL) {
+            fprintf(stderr, "Failed to open output file %s: %s\n", mXOptions.out_filename, strerror(errno));
             return -1;
         }
     }
 
-loopy:
-    in_file = in_filelist[in_n];
-    if (++in_n >= in_count)
-        in_n = 0;
+    const char * in_file=mXOptions.in_filename;
 
     /* open the input file */
     if (avformat_open_input(&input_ctx, in_file, NULL, NULL) != 0) {
@@ -613,7 +600,7 @@ loopy:
         hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
     }
     else {
-        for (i = 0;; i++) {
+        for (int i = 0;; i++) {
             const AVCodecHWConfig *config = avcodec_get_hw_config(decoder, i);
             if (!config) {
                 fprintf(stderr, "Decoder %s does not support device type %s.\n",
@@ -649,7 +636,7 @@ loopy:
         return -1;
     }
 
-    if (wants_deinterlace) {
+    if (mXOptions.deinterlace) {
         if (init_filters(video, decoder_ctx, "deinterlace_v4l2m2m") < 0) {
             fprintf(stderr, "Failed to init deinterlace\n");
             return -1;
@@ -657,7 +644,6 @@ loopy:
     }
 
     /* actual decoding and dump the raw data */
-    frames = frame_count;
     const auto decodingStart=std::chrono::steady_clock::now();
     int nFeedFrames=0;
     while (ret >= 0) {
@@ -665,7 +651,7 @@ loopy:
             break;
 
         if (video_stream == packet.stream_index){
-            if(feed_frames_on_keyboard_klick){
+            if(mXOptions.keyboard_led_toggle){
                 // wait for a keyboard input
                 printf("Press ENTER key to Feed new frame\n");
                 auto tmp=getchar();
@@ -673,7 +659,6 @@ loopy:
                 switch_led_on_off();
             }
             ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet);
-
             nFeedFrames++;
             const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
             const double runTimeS=runTimeMs/1000.0f;
@@ -682,7 +667,6 @@ loopy:
             ss<<"Fake fps:"<<fps<<"\n";
             std::cout<<ss.str();
         }
-
         av_packet_unref(&packet);
     }
 
@@ -692,14 +676,12 @@ loopy:
     ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet);
     av_packet_unref(&packet);
 
-    if (output_file)
+    if (output_file){
         fclose(output_file);
+    }
     avfilter_graph_free(&filter_graph);
     avcodec_free_context(&decoder_ctx);
     avformat_close_input(&input_ctx);
-
-    if (--loop_count > 0)
-        goto loopy;
 
     if(dpo!=NULL){
         drmprime_out_delete(dpo);
