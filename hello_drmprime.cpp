@@ -88,7 +88,6 @@ static Chronometer copyMmappedBuffer{"copyMmappedBuffer"};
 static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
 {
     int err = 0;
-
     ctx->hw_frames_ctx = NULL;
     // ctx->hw_device_ctx gets freed when we call avcodec_free_context
     if ((err = av_hwdevice_ctx_create(&ctx->hw_device_ctx, type,
@@ -96,7 +95,6 @@ static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
         fprintf(stderr, "Failed to create specified HW device.\n");
         return err;
     }
-
     return err;
 }
 
@@ -104,12 +102,10 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
                                         const enum AVPixelFormat *pix_fmts)
 {
     const enum AVPixelFormat *p;
-
     for (p = pix_fmts; *p != -1; p++) {
         if (*p == hw_pix_fmt)
             return *p;
     }
-
     fprintf(stderr, "Failed to get HW surface format.\n");
     return AV_PIX_FMT_NONE;
 }
@@ -467,12 +463,6 @@ end:
     return ret;
 }
 
-void usage()
-{
-    fprintf(stderr, "Usage: hello_drmprime [-l loop_count] [-f <frames>] [-o yuv_output_file] [--deinterlace] [--keyboard] <input file> [<input_file> ...]\n");
-    exit(1);
-}
-
 struct Options{
     const char* in_filename=NULL;
     const char* out_filename=NULL;
@@ -480,7 +470,6 @@ struct Options{
     bool keyboard_led_toggle=false;
     bool drop_frames=false;
 };
-
 static const char optstr[] = "?:i:o:ykd";
 static const struct option long_options[] = {
         {"in_filename", required_argument, NULL, 'i'},
@@ -490,7 +479,6 @@ static const struct option long_options[] = {
         {"drop_frames", no_argument, NULL, 'd'},
         {NULL, 0, NULL, 0},
 };
-
 
 int main(int argc, char *argv[])
 {
