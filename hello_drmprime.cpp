@@ -34,6 +34,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <sys/mman.h>
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -47,6 +48,11 @@ extern "C" {
 #include <libavfilter/buffersrc.h>
 #include <libavutil/buffer.h>
 #include <libavutil/frame.h>
+    //
+#include "libavutil/frame.h"
+#include "libavutil/hwcontext.h"
+#include "libavutil/hwcontext_drm.h"
+#include "libavutil/pixdesc.h"
 }
 
 #include "drmprime_out.h"
@@ -61,6 +67,9 @@ extern "C" {
 #include "common_consti/TimeHelper.hpp"
 #include "common_consti/LEDSwap.h"
 #include "common_consti/Logger.hpp"
+//
+#include <xf86drm.h>
+#include <xf86drmMode.h>
 
 static enum AVPixelFormat hw_pix_fmt;
 static FILE *output_file = NULL;
@@ -72,6 +81,9 @@ static AVFilterGraph *filter_graph = NULL;
 
 static Chronometer transferCpuGpu{"Transfer"};
 static Chronometer copyDataChrono{"CopyData"};
+
+static Chronometer mmapBuffer{"mmapBuffer"};
+static Chronometer copyMmappedBuffer{"copyMmappedBuffer"};
 
 static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
 {
@@ -104,62 +116,86 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
 
 static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
 
+static void map_frame_test(AVFrame* frame){
+    MLOGD<<"map_frame_test\n";
+    MLOGD<<"Frame W:"<<frame->width<<" H:"<<frame->height
+    <<" Cropped W:"<<av_frame_cropped_width(frame)<<" H:"<<av_frame_cropped_height(frame)<<"\n";
+    mmapBuffer.start();
+    const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
+    for(int i=0;i<desc->nb_objects;i++){
+        const AVDRMObjectDescriptor* obj=&desc->objects[i];
+        uint8_t* buffMapped = (uint8_t*)mmap(0,  obj->size, PROT_READ | PROT_WRITE, MAP_SHARED,
+                        obj->fd, 0);
+        if (buffMapped == MAP_FAILED) {
+            MLOGD<<"Cannot map buffer\n";
+            return;
+        }else{
+            MLOGD<<"Mapped buffer size:"<<obj->size<<"\n";
+            // copy data
+            copyMmappedBuffer.start();
+            //memcpy(copyBuffer->data(),buffMapped,obj->size);
+            memcpy_uint8(copyBuffer->data(),buffMapped,obj->size);
+            copyMmappedBuffer.stop();
+            copyMmappedBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
+            const auto ret=munmap(buffMapped,obj->size);
+            if(ret!=0){
+                MLOGD<<"unmap failed:"<<ret<<"\n";
+            }
+        }
+    }
+    mmapBuffer.stop();
+    mmapBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
+}
+
 static void save_frame_to_file_if_enabled(AVFrame *frame){
-    //if (output_file != NULL) {
-    if(true){
-        //V4L2Buffer buff;
-        //ff_v4l2_buffer_avframe_to_buf(frame,&buff);
+    if(output_file==NULL)return;
+    copyDataChrono.start();
+    std::cout<<"Saving frame to file\n";
+    AVFrame* sw_frame=NULL;
+    AVFrame *tmp_frame=NULL;
+    if (frame->format == hw_pix_fmt) {
+        MLOGD<<"Is hw_pix_fmt"<<frame->format<<"\n";
+        if(!(sw_frame = av_frame_alloc())){
+            fprintf(stderr,"Cannot alloc frame\n");
+            return;
+        }
+        transferCpuGpu.start();
+        // retrieve data from GPU to CPU
+        if (av_hwframe_transfer_data(sw_frame, frame, 0) !=0) {
+            fprintf(stderr, "Error transferring the data to system memory\n");
+            av_frame_free(&sw_frame);
+            return;
+        }
+        transferCpuGpu.stop();
+        transferCpuGpu.printInIntervals(10);
+        tmp_frame = sw_frame;
+    } else
+        tmp_frame = frame;
+    const int size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
+                                    tmp_frame->height, 1);
+    MLOGD<<"Frame size in Bytes:"<<size<<"\n";
+    if(size>copyBuffer->size()){
+        MLOGD<<"Resize to "<<size<<"\n";
+        copyBuffer->resize(size);
+    }
+    //uint8_t buffer[size];
+    int ret = av_image_copy_to_buffer(copyBuffer->data(), size,
+                                  (const uint8_t * const *)tmp_frame->data,
+                                  (const int *)tmp_frame->linesize, (AVPixelFormat)tmp_frame->format,
+                                  tmp_frame->width, tmp_frame->height, 1);
+    if (ret < 0) {
+        fprintf(stderr, "Can not copy image to buffer\n");
+        av_frame_free(&sw_frame);
         return;
     }
-    copyDataChrono.start();
-        std::cout<<"Saving frame to file\n";
-        int ret=0;
-        AVFrame* sw_frame=NULL;
-        AVFrame *tmp_frame=NULL;
-        if (frame->format == hw_pix_fmt) {
-            MLOGD<<"Is hw_pix_fmt"<<frame->format<<"\n";
-            if(!(sw_frame = av_frame_alloc())){
-                fprintf(stderr,"Cannot alloc frame\n");
-                return;
-            }
-            transferCpuGpu.start();
-            // retrieve data from GPU to CPU
-            if (av_hwframe_transfer_data(sw_frame, frame, 0) !=0) {
-                fprintf(stderr, "Error transferring the data to system memory\n");
-                av_frame_free(&sw_frame);
-                return;
-            }
-            transferCpuGpu.stop();
-            transferCpuGpu.printInIntervals(1);
-            tmp_frame = sw_frame;
-        } else
-            tmp_frame = frame;
-        const int size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
-                                        tmp_frame->height, 1);
-        MLOGD<<"Frame size in Bytes:"<<size<<"\n";
-        if(size>copyBuffer->size()){
-            MLOGD<<"Resize to "<<size<<"\n";
-            copyBuffer->resize(size);
-        }
-        //uint8_t buffer[size];
-        /*ret = av_image_copy_to_buffer(copyBuffer->data(), size,
-                                      (const uint8_t * const *)tmp_frame->data,
-                                      (const int *)tmp_frame->linesize, (AVPixelFormat)tmp_frame->format,
-                                      tmp_frame->width, tmp_frame->height, 1);*/
-        if (ret < 0) {
-            fprintf(stderr, "Can not copy image to buffer\n");
-            av_frame_free(&sw_frame);
-            return;
-        }
-        copyDataChrono.stop();
-        copyDataChrono.printInIntervals(1);
-        /*if ((ret = fwrite(buffer, 1, size, output_file)) < 0) {
-            fprintf(stderr, "Failed to dump raw data.\n");
-            av_frame_free(&sw_frame);
-            return;
-        }*/
+    copyDataChrono.stop();
+    copyDataChrono.printInIntervals(10);
+    if ((ret = fwrite(copyBuffer->data(), 1, size, output_file)) < 0) {
+        fprintf(stderr, "Failed to dump raw data.\n");
         av_frame_free(&sw_frame);
-    //}
+        return;
+    }
+    av_frame_free(&sw_frame);
 }
 
 static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *frame){
@@ -194,6 +230,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
         if(dpo!=NULL){
             drmprime_out_display(dpo, frame);
         }
+        //map_frame_test(frame);
         save_frame_to_file_if_enabled(frame);
 
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
@@ -460,7 +497,6 @@ int main(int argc, char *argv[])
     //
     bool feed_frames_on_keyboard_klick=false;
     bool drop_frames=false;
-
 
     {
         char * const * a = argv + 1;

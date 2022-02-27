@@ -306,6 +306,9 @@ static void waitForVSYNC(drmprime_out_env_t *const de){
     chronoVsync.printInIntervals(CALCULATOR_LOG_INTERVAL);
 }
 
+//static void consti10_copy_into_curr_fb(drmprime_out_env_t *const de,AVFrame* frame,drm_aux_t *da){
+//}
+
 static bool first=true;
 static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
 {
