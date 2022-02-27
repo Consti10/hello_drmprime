@@ -320,10 +320,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     if(updateCRTCFormatIfNeeded(de,frame)!=0){
         return -1;
     }
-    if(first){
-        // Not needed / doesn't have the desired effect anyways
-        //waitForVSYNC(de);
-        //
+    /*if(first){
         da_uninit(de, da);
         //
         da_init(de,da,frame);
@@ -332,19 +329,15 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         for(int i=0;i<4;i++){
             MLOGD<<"BO_H:"<<i<<da->bo_handles[i];
         }
-        //if(av_hwframe_map(da->frame,frame,0)!=0){
-        //    MLOGD<<"av_hwframe_map error\n";
-        //}
-        //drm_transfer_data_to()
-    }
+    }*/
     // Not needed / doesn't have the desired effect anyways
     //waitForVSYNC(de);
     //
-    /*da_uninit(de, da);
+    da_uninit(de, da);
     //
     da_init(de,da,frame);
     // use another de aux for the next frame
-    de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;*/
+    de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
     avgTotalDrmLatency.addUs(getTimeUs()- frame->pts);
     avgTotalDrmLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
     return ret;
