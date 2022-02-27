@@ -550,7 +550,7 @@ int main(int argc, char *argv[])
         dpo=NULL;
     }
 
-    /* open the file to dump raw data */
+    // open the file to dump raw data
     if (mXOptions.out_filename != NULL) {
         std::cout<<"Opening output fle:"<<std::string(mXOptions.out_filename)<<"\n";
         if ((output_file = fopen(mXOptions.out_filename, "w+")) == NULL) {
@@ -561,7 +561,7 @@ int main(int argc, char *argv[])
 
     const char * in_file=mXOptions.in_filename;
 
-    /* open the input file */
+    // open the input file
     if (avformat_open_input(&input_ctx, in_file, NULL, NULL) != 0) {
         fprintf(stderr, "Cannot open input file '%s'\n", in_file);
         return -1;
@@ -572,7 +572,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    /* find the video stream information */
+    // find the video stream information
     ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1,(AVCodec**) &decoder, 0);
     if (ret < 0) {
         fprintf(stderr, "Cannot find a video stream in the input file\n");
@@ -603,8 +603,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (!(decoder_ctx = avcodec_alloc_context3(decoder)))
+    if (!(decoder_ctx = avcodec_alloc_context3(decoder))){
         return AVERROR(ENOMEM);
+    }
 
     video = input_ctx->streams[video_stream];
     if (avcodec_parameters_to_context(decoder_ctx, video->codecpar) < 0)
@@ -635,9 +636,10 @@ int main(int argc, char *argv[])
     const auto decodingStart=std::chrono::steady_clock::now();
     int nFeedFrames=0;
     while (ret >= 0) {
-        if ((ret = av_read_frame(input_ctx, &packet)) < 0)
+        if ((ret = av_read_frame(input_ctx, &packet)) < 0){
+            MLOGD<<"av_read_frame returned 0\n";
             break;
-
+        }
         if (video_stream == packet.stream_index){
             if(mXOptions.keyboard_led_toggle){
                 // wait for a keyboard input
@@ -658,7 +660,7 @@ int main(int argc, char *argv[])
         av_packet_unref(&packet);
     }
 
-    /* flush the decoder */
+    // flush the decoder
     packet.data = NULL;
     packet.size = 0;
     ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet);
