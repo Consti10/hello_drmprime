@@ -269,8 +269,9 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
         }else{
             fprintf(stderr, "drmModePageFlip success\n");
         }*/
-
-        if(drmModeSetCrtc(de->drm_fd,de->setup.crtcId,da->fb_handle,0,0,&de->setup.conId,1,NULL)!=0){
+        uint32_t connectors[1];
+        connectors[0]=de->setup.conId;
+        if(drmModeSetCrtc(de->drm_fd,de->setup.crtcId,da->fb_handle,0,0,connectors,1,NULL)!=0){
             fprintf(stderr, "drmModeSetCrtc failed: %s %d\n", ERRSTR, errno);
         }else{
             fprintf(stderr, "drmModeSetCrtc success\n");
