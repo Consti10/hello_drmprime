@@ -487,7 +487,6 @@ static void modeset_page_flip_event(int fd, unsigned int frame,
 				    void *data)
 {
 	struct modeset_dev *dev = data;
-    fprintf(stderr,"modeset_page_flip_event with frame:%d sec:%d usec:%d\n",frame,sec,usec);
 	dev->pflip_pending = false;
 	if (!dev->cleanup)
 		modeset_draw_dev(fd, dev);
