@@ -236,7 +236,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     for (int j = 0; j < desc->layers[0].nb_planes; ++j) {
         const AVDRMPlaneDescriptor *const p = desc->layers[0].planes + j;
         const AVDRMObjectDescriptor *const obj = desc->objects + p->object_index;
-        MLOGD<<"Plane "<<j<<" has pitch:"<<p->pitch<<" offset:"<<p->offset<<" object_index:"<<p->object_index<<"\n";
+        //MLOGD<<"Plane "<<j<<" has pitch:"<<p->pitch<<" offset:"<<p->offset<<" object_index:"<<p->object_index<<"\n";
         pitches[n] = p->pitch;
         offsets[n] = p->offset;
         modifiers[n] = obj->format_modifier;
@@ -244,7 +244,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
         ++n;
     }
     //}
-    MLOGD<<"desc->nb_objects:"<<desc->nb_objects<<"desc->nb_layers"<<desc->nb_layers<<"\n";
+    //MLOGD<<"desc->nb_objects:"<<desc->nb_objects<<"desc->nb_layers"<<desc->nb_layers<<"\n";
     if (drmModeAddFB2WithModifiers(de->drm_fd,
                                    av_frame_cropped_width(frame),
                                    av_frame_cropped_height(frame),
@@ -270,7 +270,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
             fprintf(stderr, "drmModePageFlip success\n");
         }*/
         uint32_t connectors[1];
-        connectors[0]=de->setup.conId;
+        connectors[0]=de->con_id;
         if(drmModeSetCrtc(de->drm_fd,de->setup.crtcId,da->fb_handle,0,0,connectors,1,NULL)!=0){
             fprintf(stderr, "drmModeSetCrtc failed: %s %d\n", ERRSTR, errno);
         }else{
