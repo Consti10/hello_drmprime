@@ -465,14 +465,16 @@ struct Options{
     bool deinterlace=false;
     bool keyboard_led_toggle=false;
     bool drop_frames=false;
+    int limitedFrameRate=-1;
 };
-static const char optstr[] = "?:i:o:ykd";
+static const char optstr[] = "?:i:o:ykdf:";
 static const struct option long_options[] = {
         {"in_filename", required_argument, NULL, 'i'},
         {"out_filename", required_argument, NULL, 'o'},
         {"deinterlace", no_argument, NULL, 'y'},
         {"keyboard_led_toggle", no_argument, NULL, 'k'},
         {"drop_frames", no_argument, NULL, 'd'},
+        {"framerate", no_argument, NULL, 'f'},
         {NULL, 0, NULL, 0},
 };
 
@@ -509,11 +511,15 @@ int main(int argc, char *argv[])
                 case 'd':
                     mXOptions.drop_frames=true;
                     break;
+                case 'f':
+                    mXOptions.limitedFrameRate= atoi(tmp_optarg);
+                    break;
                 case '?':
                 default:
                     MLOGD<<"Usage: -i --in_filename [in_filename] -o --out_filename [optional raw out filename] "<<
                     "-y --deinterlace [enable interlacing] -k --keyboard_led_toggle [enable keyboard led toggle] "<<
-                    "-d --drop_frames [drop frames on display out queue]\n";
+                    "-d --drop_frames [drop frames on display out queue]"<<" -f --framerate [limit framerate]"
+                    "\n";
                     return 0;
             }
         }
@@ -526,6 +532,7 @@ int main(int argc, char *argv[])
         MLOGD<<"deinterlace: "<<(mXOptions.deinterlace ? "Y":"N")<<"\n";
         MLOGD<<"keyboard_led_toggle: "<<(mXOptions.keyboard_led_toggle ? "Y":"N")<<"\n";
         MLOGD<<"drop_frames: "<<(mXOptions.drop_frames ? "Y":"N")<<"\n";
+        MLOGD<<"limited framerate: "<<mXOptions.limitedFrameRate<<"\n";
     }
 
     type = av_hwdevice_find_type_by_name(hwdev);
@@ -631,6 +638,7 @@ int main(int argc, char *argv[])
     /* actual decoding and dump the raw data */
     const auto decodingStart=std::chrono::steady_clock::now();
     int nFeedFrames=0;
+    const auto lastFrame=std::chrono::steady_clock::now();
     while (ret >= 0) {
         if ((ret = av_read_frame(input_ctx, &packet)) < 0){
             MLOGD<<"av_read_frame returned 0\n";
@@ -643,6 +651,14 @@ int main(int argc, char *argv[])
                 auto tmp=getchar();
                 // change LED, feed one new frame
                 switch_led_on_off();
+            }else{
+                // limit frame rate if einabled
+                if(mXOptions.limitedFrameRate!=-1){
+                    const long frameDeltaNs=1000*1000*1000 / mXOptions.limitedFrameRate;
+                    while (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now()-lastFrame).count()<frameDeltaNs){
+                        // busy wait
+                    }
+                }
             }
             ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet);
             nFeedFrames++;
