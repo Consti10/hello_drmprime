@@ -199,6 +199,17 @@ static int XdrmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
     s.src_h = src_h;
     return XDRM_IOCTL(fd, DRM_IOCTL_MODE_SETPLANE, &s);
 }
+static void modeset_page_flip_event(int fd, unsigned int frame,unsigned int sec, unsigned int usec,void *data){
+    MLOGD<<"Got modeset_page_flip_event for frame "<<frame<<"\n";
+}
+
+static void registerModesetPageFlipEvent(drmprime_out_env_t *const de){
+    drmEventContext ev;
+    memset(&ev, 0, sizeof(ev));
+    ev.version = 2;
+    ev.page_flip_handler = modeset_page_flip_event;
+    drmHandleEvent(de->drm_fd, &ev);
+}
 
 static int countLol=0;
 
@@ -335,6 +346,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     if(updateCRTCFormatIfNeeded(de,frame)!=0){
         return -1;
     }
+    registerModesetPageFlipEvent(de);
     /*if(first){
         da_uninit(de, da);
         //
