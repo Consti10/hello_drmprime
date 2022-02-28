@@ -221,9 +221,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
                 return;
             }
         }
-        std::stringstream ss;
-        ss<<"x_push_into_filter_graph:pts:"<<frame->pts<<"\n";
-        std::cout<<ss.str();
+        //MLOGD<<"x_push_into_filter_graph:pts:"<<frame->pts<<"\n";
         if(dpo!=NULL){
             drmprime_out_display(dpo, frame);
         }
@@ -241,9 +239,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
     AVFrame *frame = NULL;
     // testing
     check_single_nalu(packet->data,packet->size);
-    std::stringstream ss;
-    ss<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
-    std::cout<<ss.str();
+    MLOGD<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
     const auto before=std::chrono::steady_clock::now();
     const auto beforeUs=getTimeUs();
     int ret = avcodec_send_packet(avctx, packet);
@@ -268,14 +264,12 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
         }else if(ret==0){
             // we got a new frame
             const auto x_delay=std::chrono::steady_clock::now()-before;
-            ss.str("");
-            ss<<"(True) decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(x_delay).count()/1000.0f)<<" ms\n";
+            MLOGD<<"(True) decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(x_delay).count()/1000.0f)<<" ms\n";
             avgDecodeTime.add(x_delay);
             avgDecodeTime.printInIntervals(CALCULATOR_LOG_INTERVAL);
             gotFrame=true;
             const auto now=getTimeUs();
-            ss<<"Frame pts:"<<frame->pts<<" Set to:"<<now<<"\n";
-            std::cout<<ss.str();
+            MLOGD<<"Frame pts:"<<frame->pts<<" Set to:"<<now<<"\n";
             //frame->pts=now;
             frame->pts=beforeUs;
             // display frame
@@ -655,9 +649,7 @@ int main(int argc, char *argv[])
             const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
             const double runTimeS=runTimeMs/1000.0f;
             const double fps=nFeedFrames/runTimeS;
-            std::stringstream ss;
-            ss<<"Fake fps:"<<fps<<"\n";
-            std::cout<<ss.str();
+            MLOGD<<"Fake fps:"<<fps<<"\n";
         }
         av_packet_unref(&packet);
     }
