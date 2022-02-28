@@ -269,6 +269,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
         }else{
             fprintf(stderr, "drmModePageFlip success\n");
         }*/
+        MLOGD<<"de->con_id:"<<de->con_id<<" de->setup.conId"<<de->setup.conId<<"\n";
         uint32_t connectors[1];
         connectors[0]=de->con_id;
         if(drmModeSetCrtc(de->drm_fd,de->setup.crtcId,da->fb_handle,0,0,connectors,1,NULL)!=0){
