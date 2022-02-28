@@ -62,6 +62,14 @@ static modeset_options options;
 static const int LOG_INTERVALL=10;
 static Chronometer avgCpuDrawTime{"CPUDraw"};
 
+class ModesetFrameBuffer{
+public:
+    int create(int drm_fd,int width, int height){
+        return 0;
+    }
+};
+
+
 /*
  * When the linux kernel detects a graphics-card on your machine, it loads the
  * correct device driver (located in kernel-tree at ./drivers/gpu/drm/<xy>) and
@@ -453,58 +461,46 @@ static int modeset_create_fb(int fd, struct modeset_dev *dev)
 	struct drm_mode_destroy_dumb dreq;
 	struct drm_mode_map_dumb mreq;
 	int ret;
-
-	/* create dumb buffer */
+	// create dumb buffer
 	memset(&creq, 0, sizeof(creq));
 	creq.width = dev->width;
 	creq.height = dev->height;
 	creq.bpp = 32;
 	ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &creq);
 	if (ret < 0) {
-		fprintf(stderr, "cannot create dumb buffer (%d): %m\n",
-			errno);
+		fprintf(stderr, "cannot create dumb buffer (%d): %m\n",errno);
 		return -errno;
 	}
 	dev->stride = creq.pitch;
 	dev->size = creq.size;
 	dev->handle = creq.handle;
-
-	/* create framebuffer object for the dumb-buffer */
-	ret = drmModeAddFB(fd, dev->width, dev->height, 24, 32, dev->stride,
-			   dev->handle, &dev->fb);
+	// create framebuffer object for the dumb-buffer
+	ret = drmModeAddFB(fd, dev->width, dev->height, 24, 32, dev->stride,dev->handle, &dev->fb);
 	if (ret) {
-		fprintf(stderr, "cannot create framebuffer (%d): %m\n",
-			errno);
+		fprintf(stderr, "cannot create framebuffer (%d): %m\n",errno);
 		ret = -errno;
 		goto err_destroy;
 	}
-
-	/* prepare buffer for memory mapping */
+	// prepare buffer for memory mapping
 	memset(&mreq, 0, sizeof(mreq));
 	mreq.handle = dev->handle;
 	ret = drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq);
 	if (ret) {
-		fprintf(stderr, "cannot map dumb buffer (%d): %m\n",
-			errno);
+		fprintf(stderr, "cannot map dumb buffer (%d): %m\n",errno);
 		ret = -errno;
 		goto err_fb;
 	}
-
-	/* perform actual memory mapping */
+	// perform actual memory mapping
 	dev->map = (uint8_t*)mmap(0, dev->size, PROT_READ | PROT_WRITE, MAP_SHARED,
 		        fd, mreq.offset);
 	if (dev->map == MAP_FAILED) {
-		fprintf(stderr, "cannot mmap dumb buffer (%d): %m\n",
-			errno);
+		fprintf(stderr, "cannot mmap dumb buffer (%d): %m\n",errno);
 		ret = -errno;
 		goto err_fb;
 	}
-
-	/* clear the framebuffer to 0 */
+	// clear the framebuffer to 0
 	memset(dev->map, 0, dev->size);
-
 	return 0;
-
 err_fb:
 	drmModeRmFB(fd, dev->fb);
 err_destroy:
