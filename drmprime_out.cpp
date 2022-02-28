@@ -52,6 +52,7 @@ Chronometer chronometerDaUninit{"DA_UNINIT"};
 Chronometer chronometer2{"X2"};
 Chronometer chronometer3{"X3"};
 Chronometer chronometerDaInit{"DA_INIT"};
+Chronometer chronoCopyFrameMMap{"CopyFrameMMap"};
 static bool DROP_FRAMES= false;
 
 #define DRM_MODULE "vc4"
@@ -374,7 +375,10 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         da_init(de,da,frame);
         first=false;
     }else{
+        chronoCopyFrameMMap.start();
         workaround_copy_frame_data(da->frame,frame);
+        chronoCopyFrameMMap.stop();
+        chronoCopyFrameMMap.printInIntervals(CALCULATOR_LOG_INTERVAL);
         av_frame_free(&frame);
     }
     // Not needed / doesn't have the desired effect anyways
