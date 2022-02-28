@@ -134,7 +134,7 @@ public:
     }
     void unmap_buf(){
         if(map!=NULL){
-            const auto ret=munmap(map,obj->size);
+            const auto ret=munmap(map,map_size);
             if(ret!=0){
                 MLOGD<<"unmap failed:"<<ret<<"\n";
             }
