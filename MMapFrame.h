@@ -59,7 +59,7 @@ static void workaround_copy_frame_data(AVFrame* dst, AVFrame* src){
     if(dstMap.map_size!=srcMap.map_size){
         fprintf(stderr,"Cannot copy data from mapped buffer size %d to buff size %d",srcMap.map_size,dstMap.map_size);
     }else{
-        memcpy_uint8(dstMap.map,srcMap.map,srcMap.map_size);
+        memcpy_uint8(dstMap.map,srcMap.map,100);
     }
     //copy data
     dstMap.unmap();
