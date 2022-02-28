@@ -512,9 +512,9 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
     if (src_frame->format == AV_PIX_FMT_DRM_PRIME) {
         frame = av_frame_alloc();
         av_frame_ref(frame, src_frame);
-        printf("format == AV_PIX_FMT_DRM_PRIME\n");
+        //printf("format == AV_PIX_FMT_DRM_PRIME\n");
     } else if (src_frame->format == AV_PIX_FMT_VAAPI) {
-        printf("format == AV_PIX_FMT_VAAPI\n");
+        //printf("format == AV_PIX_FMT_VAAPI\n");
         frame = av_frame_alloc();
         frame->format = AV_PIX_FMT_DRM_PRIME;
         if (av_hwframe_map(frame, src_frame, 0) != 0) {

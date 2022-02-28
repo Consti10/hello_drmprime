@@ -238,7 +238,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
                                      AVPacket *packet){
     AVFrame *frame = NULL;
     // testing
-    check_single_nalu(packet->data,packet->size);
+    //check_single_nalu(packet->data,packet->size);
     MLOGD<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
     const auto before=std::chrono::steady_clock::now();
     const auto beforeUs=getTimeUs();
@@ -269,7 +269,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
             avgDecodeTime.printInIntervals(CALCULATOR_LOG_INTERVAL);
             gotFrame=true;
             const auto now=getTimeUs();
-            MLOGD<<"Frame pts:"<<frame->pts<<" Set to:"<<now<<"\n";
+            //MLOGD<<"Frame pts:"<<frame->pts<<" Set to:"<<now<<"\n";
             //frame->pts=now;
             frame->pts=beforeUs;
             // display frame
