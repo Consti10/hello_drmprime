@@ -257,17 +257,23 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     chronometer2.stop();
     chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
 
-    //countLol++;
+    countLol++;
     if(countLol>20){
         fprintf(stderr,"de->setup.crtcId: %d da->fb_handle: %d",de->setup.crtcId,da->fb_handle);
         // https://github.com/raspberrypi/linux/blob/aeaa2460db088fb2c97ae56dec6d7d0058c68294/drivers/gpu/drm/drm_ioctl.c#L686
         // https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/gpu/drm/drm_plane.c#L1044
         //DRM_MODE_PAGE_FLIP_EVENT
-        if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,0,de)!=0){
+        /*if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,0,de)!=0){
             fprintf(stderr, "drmModePageFlip failed: %s %d\n", ERRSTR, errno);
             return -1;
         }else{
             fprintf(stderr, "drmModePageFlip success\n");
+        }*/
+
+        if(drmModeSetCrtc(de->drm_fd,de->setup.crtcId,da->fb_handle,0,0,&de->setup.conId,1,NULL)!=0){
+            fprintf(stderr, "drmModeSetCrtc failed: %s %d\n", ERRSTR, errno);
+        }else{
+            fprintf(stderr, "drmModeSetCrtc success\n");
         }
     }else{
         // https://github.com/grate-driver/libdrm/blob/master/xf86drmMode.c#L988
