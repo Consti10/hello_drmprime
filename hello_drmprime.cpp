@@ -86,9 +86,10 @@ static Chronometer copyDataChrono{"CopyData"};
 static AvgCalculator avgDecodeTime{"DecodeTime"};
 static Chronometer mmapBuffer{"mmapBuffer"};
 static Chronometer copyMmappedBuffer{"copyMmappedBuffer"};
+// used for testing
+static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
 
-static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
-{
+static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type){
     int err = 0;
     ctx->hw_frames_ctx = NULL;
     // ctx->hw_device_ctx gets freed when we call avcodec_free_context
@@ -100,9 +101,7 @@ static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
     return err;
 }
 
-static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
-                                        const enum AVPixelFormat *pix_fmts)
-{
+static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,const enum AVPixelFormat *pix_fmts){
     const enum AVPixelFormat *p;
     for (p = pix_fmts; *p != -1; p++) {
         if (*p == hw_pix_fmt)
@@ -111,8 +110,6 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
     fprintf(stderr, "Failed to get HW surface format.\n");
     return AV_PIX_FMT_NONE;
 }
-
-static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
 
 static void map_frame_test(AVFrame* frame){
     MLOGD<<"map_frame_test\n";
@@ -219,9 +216,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
 }
 
 //Sends one frame to the decoder, then waits for the output frame to become available
-static int decode_and_wait_for_frame(AVCodecContext * const avctx,
-                                     drmprime_out_env_t * const dpo,
-                                     AVPacket *packet){
+static int decode_and_wait_for_frame(AVCodecContext * const avctx,drmprime_out_env_t * const dpo,AVPacket *packet){
     AVFrame *frame = NULL;
     // testing
     //check_single_nalu(packet->data,packet->size);
@@ -271,10 +266,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,
 std::vector<std::chrono::steady_clock::time_point> feedDecoderTimePoints;
 int nTotalPulledFrames=0;
 // testing, obsolete
-static int decode_write(AVCodecContext * const avctx,
-                        drmprime_out_env_t * const dpo,
-                        AVPacket *packet)
-{
+static int decode_write(AVCodecContext * const avctx,drmprime_out_env_t * const dpo,AVPacket *packet){
     AVFrame *frame = NULL, *sw_frame = NULL;
     uint8_t *buffer_for_something = NULL;
     int size;
@@ -356,10 +348,7 @@ static int decode_write(AVCodecContext * const avctx,
 }
 
 // Copied almost directly from ffmpeg filtering_video.c example
-static int init_filters(const AVStream * const stream,
-                        const AVCodecContext * const dec_ctx,
-                        const char * const filters_descr)
-{
+static int init_filters(const AVStream * const stream,const AVCodecContext * const dec_ctx,const char * const filters_descr){
     char args[512];
     int ret = 0;
     const AVFilter *buffersrc  = avfilter_get_by_name("buffer");
@@ -464,8 +453,7 @@ static const struct option long_options[] = {
         {NULL, 0, NULL, 0},
 };
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
     AVFormatContext *input_ctx = NULL;
     int video_stream, ret;
     AVStream *video = NULL;
