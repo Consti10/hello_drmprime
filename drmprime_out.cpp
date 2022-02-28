@@ -403,9 +403,9 @@ static void* display_thread(void *v)
                 const auto mostRecent=allBuffers[nDroppedFrames];
                 do_display(de, mostRecent->frame);
                 // since the last swap probably returned at VSYNC, we can sleep almost 1 VSYNC period and
-                // then get a immediate plane swap
+                // then get do a (almost) immediate plane swap with the most recent video frame buffer
                 // a 10ms sleep seems to work
-                busySleep(14*1000);
+                busySleep(12*1000);
             }
         }else{
             AVFrame* frame=de->sbQueue->getBuffer();
