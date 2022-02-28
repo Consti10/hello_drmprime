@@ -146,7 +146,9 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
     return ret;
 }
 
-// ? clears up the drm_aux_t to be reused with a new frame
+// clears up the drm_aux_t to be reused with a new frame
+// Note that if this drm_aux_t is currently read out, this call
+// might block. Otherwise, it will return almost immediately
 static void da_uninit(drmprime_out_env_t *const de, drm_aux_t *da){
     chronometerDaUninit.start();
     unsigned int i;
@@ -404,7 +406,7 @@ static void* display_thread(void *v)
                 do_display(de, mostRecent->frame);
                 // since the last swap probably returned at VSYNC, we can sleep almost 1 VSYNC period and
                 // then get to do a (almost) immediate plane swap with the most recent video frame buffer
-                // a 12ms sleep seems to be the highest we can do before
+                // For a 60fps display a 12ms sleep seems to be the highest we can do before
                 // we actually then miss a VSYNC again
                 busySleep(12*1000);
             }
