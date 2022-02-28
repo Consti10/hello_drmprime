@@ -247,6 +247,8 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
         if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_ASYNC,de)!=0){
             fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
             return -1;
+        }else{
+            fprintf(stderr, "drmModePageFlip success\n");
         }
     }else{
         // https://github.com/grate-driver/libdrm/blob/master/xf86drmMode.c#L988
