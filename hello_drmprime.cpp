@@ -638,7 +638,7 @@ int main(int argc, char *argv[])
     /* actual decoding and dump the raw data */
     const auto decodingStart=std::chrono::steady_clock::now();
     int nFeedFrames=0;
-    const auto lastFrame=std::chrono::steady_clock::now();
+    auto lastFrame=std::chrono::steady_clock::now();
     while (ret >= 0) {
         if ((ret = av_read_frame(input_ctx, &packet)) < 0){
             MLOGD<<"av_read_frame returned 0\n";
@@ -652,7 +652,7 @@ int main(int argc, char *argv[])
                 // change LED, feed one new frame
                 switch_led_on_off();
             }else{
-                // limit frame rate if einabled
+                // limit frame rate if enabled
                 if(mXOptions.limitedFrameRate!=-1){
                     const long frameDeltaNs=1000*1000*1000 / mXOptions.limitedFrameRate;
                     while (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now()-lastFrame).count()<frameDeltaNs){
