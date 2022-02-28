@@ -394,13 +394,6 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     return 0;
 }
 
-static void busySleep(const long microseconds){
-    const auto start=getTimeUs();
-    while ((getTimeUs()-start)<microseconds){
-        // busy wait
-    }
-}
-
 static void* display_thread(void *v)
 {
     drmprime_out_env_t *const de = (drmprime_out_env_t *)v;
