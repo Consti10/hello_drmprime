@@ -134,7 +134,7 @@ public:
     }
     void unmap_buf(){
         if(map!=NULL){
-            const auto ret=munmap(buffMapped,obj->size);
+            const auto ret=munmap(map,obj->size);
             if(ret!=0){
                 MLOGD<<"unmap failed:"<<ret<<"\n";
             }
@@ -174,10 +174,10 @@ static void map_frame_test(AVFrame* frame){
     mmapBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
 }
 
-static void workaround_copy_frame_data(AVFrame* dst, AVFrame* src){
+/*static void workaround_copy_frame_data(AVFrame* dst, AVFrame* src){
     const AVDRMFrameDescriptor *dst_desc = (AVDRMFrameDescriptor *)dst->data[0];
     const AVDRMFrameDescriptor *dst_desc = (AVDRMFrameDescriptor *)dst->data[0];
-}
+}*/
 
 static void save_frame_to_file_if_enabled(AVFrame *frame){
     if(output_file==NULL)return;
