@@ -116,7 +116,14 @@ class MapFrame{
 public:
     uint8_t* map=NULL;
     int map_size=0;
-    void map_buf(const AVDRMFrameDescriptor * desc){
+    MapFrame(AVFrame* frame){
+        mapFrame(frame);
+    }
+    void mapFrame(AVFrame* frame){
+        const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
+        mapFrameDescriptor(desc);
+    }
+    void mapFrameDescriptor(const AVDRMFrameDescriptor * desc){
         if(desc->nb_objects!=1){
             fprintf(stderr,"Unexpected desc->nb_objects: %d\n",desc->nb_objects);
         }
@@ -131,7 +138,7 @@ public:
         map_size=obj->size;
         MLOGD<<"Mapped buffer size:" << obj->size << "\n";
     }
-    void unmap_buf(){
+    void unmap(){
         if(map!=NULL){
             const auto ret=munmap(map,map_size);
             if(ret!=0){
@@ -147,28 +154,28 @@ static void map_frame_test(AVFrame* frame){
     <<" Cropped W:"<<av_frame_cropped_width(frame)<<" H:"<<av_frame_cropped_height(frame)<<"\n";
     mmapBuffer.start();
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
-    MapFrame mapFrame;
-    mapFrame.map_buf(desc);
+    MapFrame mapFrame(frame);
     copyMmappedBuffer.start();
     //memcpy(copyBuffer->data(),buffMapped,obj->size);
     memcpy_uint8(copyBuffer->data(),mapFrame.map,mapFrame.map_size);
     copyMmappedBuffer.stop();
     copyMmappedBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    mapFrame.unmap_buf();
+    mapFrame.unmap();
     mmapBuffer.stop();
     mmapBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
 }
 
 static void workaround_copy_frame_data(AVFrame* dst, AVFrame* src){
-    const AVDRMFrameDescriptor *dst_desc = (AVDRMFrameDescriptor *)dst->data[0];
-    const AVDRMFrameDescriptor *src_desc = (AVDRMFrameDescriptor *)src->data[0];
-    MapFrame dstMap;
-    MapFrame srcMap;
-    srcMap.map_buf(src_desc);
-    dstMap.map_buf(dst_desc);
-    //
-    dstMap.unmap_buf();
-    srcMap.unmap_buf();
+    MapFrame dstMap(dst);
+    MapFrame srcMap(src);
+    if(dstMap.map_size!=srcMap.map_size){
+        fprintf(stderr,"Cannot copy data from mapped buffer size %d to buff size %d",srcMap.map_size,dstMap.map_size);
+    }else{
+        memcpy_uint8(dstMap.map,srcMap.map,srcMap.map_size);
+    }
+    //copy data
+    dstMap.unmap();
+    srcMap.unmap();
 }
 
 static void save_frame_to_file_if_enabled(AVFrame *frame){
