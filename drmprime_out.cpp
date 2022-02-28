@@ -105,6 +105,8 @@ typedef struct drmprime_out_env_s{
     std::unique_ptr<ThreadsafeSingleBuffer<AVFrame*>> sbQueue;
     // allows frame drops (higher video fps than display refresh).
     std::unique_ptr<ThreadsafeQueue<AVFrameHolder>> queue;
+    // extra
+    drm_aux_t extraAux;
 } drmprime_out_env_t;
 
 
@@ -226,6 +228,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
         pitches[n] = p->pitch;
         offsets[n] = p->offset;
         modifiers[n] = obj->format_modifier;
+        MLOGD<<"Plane "<<j<<" has object index:"<<p->object_index<<"\n";
         bo_handles[n] = da->bo_handles[p->object_index];
         ++n;
     }
@@ -243,7 +246,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     chronometer2.stop();
     chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
 
-    countLol++;
+    //countLol++;
     if(countLol>20){
         fprintf(stderr,"de->setup.crtcId: %d da->fb_handle: %d",de->setup.crtcId,da->fb_handle);
         if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC,de)!=0){
@@ -273,6 +276,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     chronometerDaInit.printInIntervals(CALCULATOR_LOG_INTERVAL);
     return 0;
 }
+
 
 // If the crtc plane we have for video is not updated to use the same frame format (yet),
 // do so. Only needs to be done once.
@@ -328,7 +332,6 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     avgDisplayThreadQueueLatency.addUs(getTimeUs()-frame->pts);
     avgDisplayThreadQueueLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
     drm_aux_t *da = de->aux + de->ano;
-    int ret = 0;
     if(updateCRTCFormatIfNeeded(de,frame)!=0){
         return -1;
     }
@@ -338,10 +341,8 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         da_init(de,da,frame);
         first=false;
     }else{
-        consti10_page_flip(de,da,frame);
-        for(int i=0;i<4;i++){
-            MLOGD<<"BO_H:"<<i<<da->bo_handles[i];
-        }
+        da_init(de,de->extraAux,frame);
+        sleep(1);
     }*/
     // Not needed / doesn't have the desired effect anyways
     //waitForVSYNC(de);
@@ -353,7 +354,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
     avgTotalDecodeAndDisplayLatency.addUs(getTimeUs()- frame->pts);
     avgTotalDecodeAndDisplayLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    return ret;
+    return 0;
 }
 
 static void* display_thread(void *v)
