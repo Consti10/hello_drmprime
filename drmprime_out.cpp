@@ -260,7 +260,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     chronometer2.stop();
     chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
 
-    countLol++;
+    //countLol++;
     if(countLol>20){
         fprintf(stderr,"de->setup.crtcId: %d da->fb_handle: %d",de->setup.crtcId,da->fb_handle);
         // https://github.com/raspberrypi/linux/blob/aeaa2460db088fb2c97ae56dec6d7d0058c68294/drivers/gpu/drm/drm_ioctl.c#L686
@@ -375,6 +375,8 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         da_init(de,da,frame);
         first=false;
     }else{
+        // Instead of using any drm crap, just copy the raw data
+        // takes longer than expected, though.
         chronoCopyFrameMMap.start();
         workaround_copy_frame_data(da->frame,frame);
         chronoCopyFrameMMap.stop();
@@ -394,14 +396,11 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     return 0;
 }
 
-static void* display_thread(void *v)
-{
+static void* display_thread(void *v){
     drmprime_out_env_t *const de = (drmprime_out_env_t *)v;
     for (;;) {
         if(de->terminate)break;
         if(DROP_FRAMES){
-            // wait until we are close to VSYNC ?!
-            //waitForVSYNC(de);
             const auto allBuffers=de->queue->getAllAndClear();
             if(allBuffers.size()>0){
                 const int nDroppedFrames=allBuffers.size()-1;
