@@ -320,12 +320,16 @@ static void waitForVSYNC(drmprime_out_env_t *const de){
                     .sequence = 1
             }
     };
-    while (drmWaitVBlank(de->drm_fd, &vbl)) {
+    /*while (drmWaitVBlank(de->drm_fd, &vbl)) {
         if (errno != EINTR) {
             // This always fails - don't know why
             //fprintf(stderr, "drmWaitVBlank failed: %s\n", ERRSTR);
             break;
         }
+    }*/
+    const int ret=drmWaitVBlank(de->drm_fd,&vbl);
+    if(ret!=0){
+        fprintf(stderr, "drmWaitVBlank failed:%d  %s\n",ret, ERRSTR);
     }
     chronoVsync.stop();
     chronoVsync.printInIntervals(CALCULATOR_LOG_INTERVAL);
