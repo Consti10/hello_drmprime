@@ -129,7 +129,7 @@ public:
             return;
         }
         map_size=obj->size;
-        MLOGD << "Mapped buffer size:" << obj->size << "\n";
+        MLOGD<<"Mapped buffer size:" << obj->size << "\n";
     }
     void unmap_buf(){
         if(map!=NULL){
@@ -145,42 +145,31 @@ static void map_frame_test(AVFrame* frame){
     MLOGD<<"map_frame_test\n";
     MLOGD<<"Frame W:"<<frame->width<<" H:"<<frame->height
     <<" Cropped W:"<<av_frame_cropped_width(frame)<<" H:"<<av_frame_cropped_height(frame)<<"\n";
-
     mmapBuffer.start();
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
     MapFrame mapFrame;
     mapFrame.map_buf(desc);
+    copyMmappedBuffer.start();
+    //memcpy(copyBuffer->data(),buffMapped,obj->size);
+    memcpy_uint8(copyBuffer->data(),mapFrame.map,mapFrame.map_size);
+    copyMmappedBuffer.stop();
+    copyMmappedBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
     mapFrame.unmap_buf();
-    //assert(desc->nb_objects==1);
-    for(int i=0;i<desc->nb_objects;i++){
-        const AVDRMObjectDescriptor* obj=&desc->objects[i];
-        uint8_t* buffMapped = (uint8_t*)mmap(0,  obj->size, PROT_READ | PROT_WRITE, MAP_SHARED,
-                        obj->fd, 0);
-        if (buffMapped == MAP_FAILED) {
-            MLOGD<<"Cannot map buffer\n";
-            return;
-        }else{
-            MLOGD<<"Mapped buffer size:"<<obj->size<<"\n";
-            // copy data
-            copyMmappedBuffer.start();
-            //memcpy(copyBuffer->data(),buffMapped,obj->size);
-            memcpy_uint8(copyBuffer->data(),buffMapped,obj->size);
-            copyMmappedBuffer.stop();
-            copyMmappedBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
-            const auto ret=munmap(buffMapped,obj->size);
-            if(ret!=0){
-                MLOGD<<"unmap failed:"<<ret<<"\n";
-            }
-        }
-    }
     mmapBuffer.stop();
     mmapBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
 }
 
-/*static void workaround_copy_frame_data(AVFrame* dst, AVFrame* src){
+static void workaround_copy_frame_data(AVFrame* dst, AVFrame* src){
     const AVDRMFrameDescriptor *dst_desc = (AVDRMFrameDescriptor *)dst->data[0];
-    const AVDRMFrameDescriptor *dst_desc = (AVDRMFrameDescriptor *)dst->data[0];
-}*/
+    const AVDRMFrameDescriptor *src_desc = (AVDRMFrameDescriptor *)src->data[0];
+    MapFrame dstMap;
+    MapFrame srcMap;
+    srcMap.map_buf(src_desc);
+    dstMap.map_buf(dst_desc);
+    //
+    dstMap.unmap_buf();
+    srcMap.unmap_buf();
+}
 
 static void save_frame_to_file_if_enabled(AVFrame *frame){
     if(output_file==NULL)return;
