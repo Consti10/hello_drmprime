@@ -20,19 +20,19 @@ class MMapFrame{
 public:
     uint8_t* map=NULL;
     int map_size=0;
-    MMapFrame(AVFrame* frame){
+    MMapFrame(AVFrame* frame,int prot=(PROT_READ | PROT_WRITE)){
         mapFrame(frame);
     }
-    void mapFrame(AVFrame* frame){
+    void mapFrame(AVFrame* frame,int prot){
         const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
-        mapFrameDescriptor(desc);
+        mapFrameDescriptor(desc,prot);
     }
-    void mapFrameDescriptor(const AVDRMFrameDescriptor * desc){
+    void mapFrameDescriptor(const AVDRMFrameDescriptor * desc,int prot){
         if(desc->nb_objects!=1){
             fprintf(stderr,"Unexpected desc->nb_objects: %d\n",desc->nb_objects);
         }
         const AVDRMObjectDescriptor *obj = &desc->objects[0];
-        map = (uint8_t *) mmap(0, obj->size, PROT_READ | PROT_WRITE, MAP_SHARED,
+        map = (uint8_t *) mmap(0, obj->size, prot, MAP_SHARED,
                                obj->fd, 0);
         if (map == MAP_FAILED) {
             fprintf(stderr,"Cannot map buffer\n");
@@ -54,8 +54,8 @@ public:
 
 // copy data from one AVFrame drm prime frame to another via mmap
 static void workaround_copy_frame_data(AVFrame* dst, AVFrame* src){
-    MMapFrame dstMap(dst);
-    MMapFrame srcMap(src);
+    MMapFrame dstMap(dst,PROT_WRITE);
+    MMapFrame srcMap(src,PROT_READ);
     if(dstMap.map_size!=srcMap.map_size){
         fprintf(stderr,"Cannot copy data from mapped buffer size %d to buff size %d",srcMap.map_size,dstMap.map_size);
     }else{
