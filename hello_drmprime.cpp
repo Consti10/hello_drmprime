@@ -212,7 +212,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
         if(dpo!=NULL){
             drmprime_out_display(dpo, frame);
         }
-        map_frame_test(frame);
+        //map_frame_test(frame);
         save_frame_to_file_if_enabled(frame);
 
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
