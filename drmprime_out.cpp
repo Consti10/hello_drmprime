@@ -106,7 +106,7 @@ typedef struct drmprime_out_env_s{
     // allows frame drops (higher video fps than display refresh).
     std::unique_ptr<ThreadsafeQueue<AVFrameHolder>> queue;
     // extra
-    drm_aux_t extraAux;
+    //drm_aux_t extraAux;
 } drmprime_out_env_t;
 
 
@@ -400,7 +400,7 @@ static void* display_thread(void *v)
             //waitForVSYNC(de);
             // since the last swap probably returned at VSYNC, we can sleep almost 1 VSYNC period and
             // then get a immediate plane swap
-            busySleep(14*1000*1000);
+            //busySleep(14*1000*1000);
             const auto allBuffers=de->queue->getAllAndClear();
             if(allBuffers.size()>0){
                 const int nDroppedFrames=allBuffers.size()-1;
