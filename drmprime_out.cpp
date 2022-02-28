@@ -42,6 +42,8 @@ extern "C" {
 #include "common_consti/Logger.hpp"
 #include "common_consti/ThreadsafeQueue.hpp"
 
+#include "MMapFrame.h"
+
 static int CALCULATOR_LOG_INTERVAL=10;
 AvgCalculator avgDisplayThreadQueueLatency{"DisplayThreadQueue"};
 AvgCalculator avgTotalDecodeAndDisplayLatency{"TotalDecodeDisplayLatency"};

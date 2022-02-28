@@ -72,6 +72,8 @@ extern "C" {
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
+#include "MMapFrame.h"
+
 static enum AVPixelFormat hw_pix_fmt;
 static FILE *output_file = NULL;
 
@@ -112,42 +114,6 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
 
 static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
 
-class MMapFrame{
-public:
-    uint8_t* map=NULL;
-    int map_size=0;
-    MMapFrame(AVFrame* frame){
-        mapFrame(frame);
-    }
-    void mapFrame(AVFrame* frame){
-        const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
-        mapFrameDescriptor(desc);
-    }
-    void mapFrameDescriptor(const AVDRMFrameDescriptor * desc){
-        if(desc->nb_objects!=1){
-            fprintf(stderr,"Unexpected desc->nb_objects: %d\n",desc->nb_objects);
-        }
-        const AVDRMObjectDescriptor *obj = &desc->objects[0];
-        map = (uint8_t *) mmap(0, obj->size, PROT_READ | PROT_WRITE, MAP_SHARED,
-                                               obj->fd, 0);
-        if (map == MAP_FAILED) {
-            MLOGD << "Cannot map buffer\n";
-            map = NULL;
-            return;
-        }
-        map_size=obj->size;
-        MLOGD<<"Mapped buffer size:" << obj->size << "\n";
-    }
-    void unmap(){
-        if(map!=NULL){
-            const auto ret=munmap(map,map_size);
-            if(ret!=0){
-                MLOGD<<"unmap failed:"<<ret<<"\n";
-            }
-        }
-    }
-};
-
 static void map_frame_test(AVFrame* frame){
     MLOGD<<"map_frame_test\n";
     MLOGD<<"Frame W:"<<frame->width<<" H:"<<frame->height
@@ -163,19 +129,6 @@ static void map_frame_test(AVFrame* frame){
     mapFrame.unmap();
     mmapBuffer.stop();
     mmapBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
-}
-
-static void workaround_copy_frame_data(AVFrame* dst, AVFrame* src){
-    MMapFrame dstMap(dst);
-    MMapFrame srcMap(src);
-    if(dstMap.map_size!=srcMap.map_size){
-        fprintf(stderr,"Cannot copy data from mapped buffer size %d to buff size %d",srcMap.map_size,dstMap.map_size);
-    }else{
-        memcpy_uint8(dstMap.map,srcMap.map,srcMap.map_size);
-    }
-    //copy data
-    dstMap.unmap();
-    srcMap.unmap();
 }
 
 static void save_frame_to_file_if_enabled(AVFrame *frame){
