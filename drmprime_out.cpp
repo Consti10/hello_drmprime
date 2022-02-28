@@ -313,8 +313,11 @@ static void waitForVSYNC(drmprime_out_env_t *const de){
     chronoVsync.start();
     drmVBlank vbl = {
             .request = {
+                    // Consti10: I think to get the next VBLANK, we need to set sequence to 1
+                    // https://docs.nvidia.com/jetson/l4t-graphics/group__direct__rendering__manager.html#gadc9d79f4d0195e60d0f8c9665da5d8b2
                     .type = DRM_VBLANK_RELATIVE,
-                    .sequence = 0
+                    //.sequence = 0
+                    .sequence = 1
             }
     };
     while (drmWaitVBlank(de->drm_fd, &vbl)) {
@@ -383,6 +386,8 @@ static void* display_thread(void *v)
     for (;;) {
         if(de->terminate)break;
         if(DROP_FRAMES){
+            // wait until we are close to VSYNC ?!
+            waitForVSYNC(de);
             const auto allBuffers=de->queue->getAllAndClear();
             if(allBuffers.size()>0){
                 const int nDroppedFrames=allBuffers.size()-1;
