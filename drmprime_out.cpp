@@ -379,7 +379,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         workaround_copy_frame_data(da->frame,frame);
         chronoCopyFrameMMap.stop();
         chronoCopyFrameMMap.printInIntervals(CALCULATOR_LOG_INTERVAL);
-        av_frame_free(&frame);
+        //av_frame_free(&frame);
     }
     // Not needed / doesn't have the desired effect anyways
     //waitForVSYNC(de);
