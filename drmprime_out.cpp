@@ -394,7 +394,8 @@ static void* display_thread(void *v)
             //waitForVSYNC(de);
             // since the last swap probably returned at VSYNC, we can sleep almost 1 VSYNC period and
             // then get a immediate plane swap
-            busySleep(10*1000);
+            // a 10ms sleep seems to work
+            //busySleep(10*1000);
             const auto allBuffers=de->queue->getAllAndClear();
             if(allBuffers.size()>0){
                 const int nDroppedFrames=allBuffers.size()-1;
