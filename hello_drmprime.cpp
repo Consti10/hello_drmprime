@@ -146,8 +146,11 @@ static void map_frame_test(AVFrame* frame){
     MLOGD<<"map_frame_test\n";
     MLOGD<<"Frame W:"<<frame->width<<" H:"<<frame->height
     <<" Cropped W:"<<av_frame_cropped_width(frame)<<" H:"<<av_frame_cropped_height(frame)<<"\n";
+
     mmapBuffer.start();
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
+    MapFrame mapFrame;
+    mapFrame.map_buf(desc);
     //assert(desc->nb_objects==1);
     for(int i=0;i<desc->nb_objects;i++){
         const AVDRMObjectDescriptor* obj=&desc->objects[i];
