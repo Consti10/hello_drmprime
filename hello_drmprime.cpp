@@ -117,6 +117,7 @@ public:
     uint8_t* map=NULL;
     int map_size=0;
     void map_buf(const AVDRMFrameDescriptor * desc){
+        MLOGD<<"Xdesc->nb_objects:"<<desc->nb_objects<<"\n";
         for(int i=0;i<desc->nb_objects;i++) {
             const AVDRMObjectDescriptor *obj = &desc->objects[i];
             map = (uint8_t *) mmap(0, obj->size, PROT_READ | PROT_WRITE, MAP_SHARED,
@@ -128,6 +129,7 @@ public:
             }
             map_size=obj->size;
             MLOGD << "Mapped buffer size:" << obj->size << "\n";
+            unmap_buf();
         }
     }
     void unmap_buf(){
