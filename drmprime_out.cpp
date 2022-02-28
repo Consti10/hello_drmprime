@@ -272,7 +272,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
         drmModeConnectorPtr xConnector=drmModeGetConnector(de->drm_fd,de->setup.conId);
         MLOGD<<"de->con_id:"<<de->con_id<<" de->setup.conId"<<de->setup.conId<<" actual connector"<<xConnector<<"\n";
         uint32_t connectors[1];
-        connectors[0]=(uint32_t)xConnector;
+        connectors[0]=(uint32_t)de->con_id;
         if(drmModeSetCrtc(de->drm_fd,de->setup.crtcId,da->fb_handle,0,0,connectors,1,NULL)!=0){
             fprintf(stderr, "drmModeSetCrtc failed: %s %d\n", ERRSTR, errno);
         }else{

@@ -112,6 +112,34 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
 
 static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
 
+class MapFrame{
+public:
+    uint8_t* map=NULL;
+    int map_size=0;
+    void map_buf(const AVDRMFrameDescriptor * desc){
+        for(int i=0;i<desc->nb_objects;i++) {
+            const AVDRMObjectDescriptor *obj = &desc->objects[i];
+            map = (uint8_t *) mmap(0, obj->size, PROT_READ | PROT_WRITE, MAP_SHARED,
+                                                   obj->fd, 0);
+            if (map == MAP_FAILED) {
+                MLOGD << "Cannot map buffer\n";
+                map = NULL;
+                return;
+            }
+            map_size=obj->size;
+            MLOGD << "Mapped buffer size:" << obj->size << "\n";
+        }
+    }
+    void unmap_buf(){
+        if(map!=NULL){
+            const auto ret=munmap(buffMapped,obj->size);
+            if(ret!=0){
+                MLOGD<<"unmap failed:"<<ret<<"\n";
+            }
+        }
+    }
+};
+
 static void map_frame_test(AVFrame* frame){
     MLOGD<<"map_frame_test\n";
     MLOGD<<"Frame W:"<<frame->width<<" H:"<<frame->height
@@ -142,6 +170,11 @@ static void map_frame_test(AVFrame* frame){
     }
     mmapBuffer.stop();
     mmapBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
+}
+
+static void workaround_copy_frame_data(AVFrame* dst, AVFrame* src){
+    const AVDRMFrameDescriptor *dst_desc = (AVDRMFrameDescriptor *)dst->data[0];
+    const AVDRMFrameDescriptor *dst_desc = (AVDRMFrameDescriptor *)dst->data[0];
 }
 
 static void save_frame_to_file_if_enabled(AVFrame *frame){
@@ -225,7 +258,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
         if(dpo!=NULL){
             drmprime_out_display(dpo, frame);
         }
-        //map_frame_test(frame);
+        map_frame_test(frame);
         save_frame_to_file_if_enabled(frame);
 
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
