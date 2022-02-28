@@ -22,7 +22,7 @@ public:
     int map_size=0;
     static constexpr const int PROT_READ_WRITE=(PROT_READ | PROT_WRITE);
     MMapFrame(AVFrame* frame,int prot=PROT_READ_WRITE){
-        mapFrame(frame);
+        mapFrame(frame,prot);
     }
     void mapFrame(AVFrame* frame,int prot){
         const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
