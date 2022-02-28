@@ -112,11 +112,11 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
 
 static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
 
-class MapFrame{
+class MMapFrame{
 public:
     uint8_t* map=NULL;
     int map_size=0;
-    MapFrame(AVFrame* frame){
+    MMapFrame(AVFrame* frame){
         mapFrame(frame);
     }
     void mapFrame(AVFrame* frame){
@@ -154,7 +154,7 @@ static void map_frame_test(AVFrame* frame){
     <<" Cropped W:"<<av_frame_cropped_width(frame)<<" H:"<<av_frame_cropped_height(frame)<<"\n";
     mmapBuffer.start();
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
-    MapFrame mapFrame(frame);
+    MMapFrame mapFrame(frame);
     copyMmappedBuffer.start();
     //memcpy(copyBuffer->data(),buffMapped,obj->size);
     memcpy_uint8(copyBuffer->data(),mapFrame.map,mapFrame.map_size);
@@ -166,8 +166,8 @@ static void map_frame_test(AVFrame* frame){
 }
 
 static void workaround_copy_frame_data(AVFrame* dst, AVFrame* src){
-    MapFrame dstMap(dst);
-    MapFrame srcMap(src);
+    MMapFrame dstMap(dst);
+    MMapFrame srcMap(src);
     if(dstMap.map_size!=srcMap.map_size){
         fprintf(stderr,"Cannot copy data from mapped buffer size %d to buff size %d",srcMap.map_size,dstMap.map_size);
     }else{
