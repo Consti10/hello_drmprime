@@ -658,6 +658,7 @@ int main(int argc, char *argv[])
                     while (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now()-lastFrame).count()<frameDeltaNs){
                         // busy wait
                     }
+                    lastFrame=std::chrono::steady_clock::now();
                 }
             }
             ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet);
