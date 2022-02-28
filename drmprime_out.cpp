@@ -403,7 +403,7 @@ static void* display_thread(void *v)
                 const auto mostRecent=allBuffers[nDroppedFrames];
                 do_display(de, mostRecent->frame);
                 // since the last swap probably returned at VSYNC, we can sleep almost 1 VSYNC period and
-                // then get do a (almost) immediate plane swap with the most recent video frame buffer
+                // then get to do a (almost) immediate plane swap with the most recent video frame buffer
                 // a 12ms sleep seems to be the highest we can do before
                 // we actually then miss a VSYNC again
                 busySleep(12*1000);
