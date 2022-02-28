@@ -346,7 +346,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     if(updateCRTCFormatIfNeeded(de,frame)!=0){
         return -1;
     }
-    registerModesetPageFlipEvent(de);
+    //registerModesetPageFlipEvent(de);
     /*if(first){
         da_uninit(de, da);
         //
