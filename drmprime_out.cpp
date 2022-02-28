@@ -381,7 +381,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
 
 static void busySleep(long microseconds){
     const auto start=getTimeUs();
-    while (getTimeUs()-start<microseconds){
+    while ((start-getTimeUs())<microseconds){
         // busy wait
     }
 }
@@ -400,7 +400,7 @@ static void* display_thread(void *v)
             //waitForVSYNC(de);
             // since the last swap probably returned at VSYNC, we can sleep almost 1 VSYNC period and
             // then get a immediate plane swap
-            //busySleep(14*1000*1000);
+            busySleep(14*1000*1000);
             const auto allBuffers=de->queue->getAllAndClear();
             if(allBuffers.size()>0){
                 const int nDroppedFrames=allBuffers.size()-1;
