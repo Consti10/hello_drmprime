@@ -20,7 +20,8 @@ class MMapFrame{
 public:
     uint8_t* map=NULL;
     int map_size=0;
-    MMapFrame(AVFrame* frame,int prot=(PROT_READ | PROT_WRITE)){
+    static constexpr const int PROT_READ_WRITE=(PROT_READ | PROT_WRITE);
+    MMapFrame(AVFrame* frame,int prot=PROT_READ_WRITE){
         mapFrame(frame);
     }
     void mapFrame(AVFrame* frame,int prot){
