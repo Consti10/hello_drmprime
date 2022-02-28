@@ -242,7 +242,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     }
     chronometer2.stop();
     chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    //countLol++;
+    countLol++;
     if(countLol>20){
         if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_ASYNC,de)!=0){
             fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
@@ -308,6 +308,14 @@ static void waitForVSYNC(drmprime_out_env_t *const de){
 
 //static void consti10_copy_into_curr_fb(drmprime_out_env_t *const de,AVFrame* frame,drm_aux_t *da){
 //}
+/*static void consti10_page_flip(drmprime_out_env_t *const de,drm_aux_t *da,AVFrame *frame){
+    if (drmPrimeFDToHandle(de->drm_fd, desc->objects[0].fd, da->bo_handles) != 0) {
+        fprintf(stderr, "drmPrimeFDToHandle[%d](%d) failed: %s\n", 0, desc->objects[0].fd, ERRSTR);
+        return -1;
+    }
+
+    drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC,de);
+}*/
 
 static bool first=true;
 static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
@@ -326,6 +334,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         da_init(de,da,frame);
         first=false;
     }else{
+        consti10_page_flip(de,da,frame);
         for(int i=0;i<4;i++){
             MLOGD<<"BO_H:"<<i<<da->bo_handles[i];
         }
@@ -341,14 +350,6 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     avgTotalDecodeAndDisplayLatency.addUs(getTimeUs()- frame->pts);
     avgTotalDecodeAndDisplayLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
     return ret;
-}
-
-static int do_sem_wait(sem_t *const sem, const int nowait)
-{
-    while (nowait ? sem_trywait(sem) : sem_wait(sem)) {
-        if (errno != EINTR) return -errno;
-    }
-    return 0;
 }
 
 static void* display_thread(void *v)
