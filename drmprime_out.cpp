@@ -52,8 +52,6 @@ Chronometer chronometer3{"X3"};
 Chronometer chronometerDaInit{"DA_INIT"};
 static bool DROP_FRAMES= false;
 
-#define TRACE_ALL 0
-
 #define DRM_MODULE "vc4"
 
 #define ERRSTR strerror(errno)
@@ -389,10 +387,6 @@ static void busySleep(const long microseconds){
 static void* display_thread(void *v)
 {
     drmprime_out_env_t *const de = (drmprime_out_env_t *)v;
-    int i;
-#if TRACE_ALL
-    fprintf(stderr, "<<< %s\n", __func__);
-#endif
     for (;;) {
         if(de->terminate)break;
         if(DROP_FRAMES){
@@ -423,10 +417,7 @@ static void* display_thread(void *v)
             do_display(de, frame);
         }
     }
-#if TRACE_ALL
-    fprintf(stderr, ">>> %s\n", __func__);
-#endif
-    for (i = 0; i != AUX_SIZE; ++i)
+    for (int i = 0; i != AUX_SIZE; ++i)
         da_uninit(de, de->aux + i);
     return NULL;
 }
