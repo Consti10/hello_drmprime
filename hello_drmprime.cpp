@@ -83,7 +83,7 @@ static AVFilterGraph *filter_graph = NULL;
 
 static Chronometer transferCpuGpu{"Transfer"};
 static Chronometer copyDataChrono{"CopyData"};
-
+static AvgCalculator avgDecodeTime{"DecodeTime"};
 static Chronometer mmapBuffer{"mmapBuffer"};
 static Chronometer copyMmappedBuffer{"copyMmappedBuffer"};
 
@@ -218,7 +218,6 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
 }
 
-static AvgCalculator avgDecodeTime{"DecodeTime"};
 //Sends one frame to the decoder, then waits for the output frame to become available
 static int decode_and_wait_for_frame(AVCodecContext * const avctx,
                                      drmprime_out_env_t * const dpo,
