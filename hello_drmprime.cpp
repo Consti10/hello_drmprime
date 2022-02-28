@@ -117,20 +117,19 @@ public:
     uint8_t* map=NULL;
     int map_size=0;
     void map_buf(const AVDRMFrameDescriptor * desc){
-        MLOGD<<"Xdesc->nb_objects:"<<desc->nb_objects<<"\n";
-        for(int i=0;i<desc->nb_objects;i++) {
-            const AVDRMObjectDescriptor *obj = &desc->objects[i];
-            map = (uint8_t *) mmap(0, obj->size, PROT_READ | PROT_WRITE, MAP_SHARED,
-                                                   obj->fd, 0);
-            if (map == MAP_FAILED) {
-                MLOGD << "Cannot map buffer\n";
-                map = NULL;
-                return;
-            }
-            map_size=obj->size;
-            MLOGD << "Mapped buffer size:" << obj->size << "\n";
-            unmap_buf();
+        if(desc->nb_objects!=1){
+            fprintf(stderr,"Unexpected desc->nb_objects: %d\n",desc->nb_objects);
         }
+        const AVDRMObjectDescriptor *obj = &desc->objects[0];
+        map = (uint8_t *) mmap(0, obj->size, PROT_READ | PROT_WRITE, MAP_SHARED,
+                                               obj->fd, 0);
+        if (map == MAP_FAILED) {
+            MLOGD << "Cannot map buffer\n";
+            map = NULL;
+            return;
+        }
+        map_size=obj->size;
+        MLOGD << "Mapped buffer size:" << obj->size << "\n";
     }
     void unmap_buf(){
         if(map!=NULL){
@@ -151,6 +150,7 @@ static void map_frame_test(AVFrame* frame){
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
     MapFrame mapFrame;
     mapFrame.map_buf(desc);
+    mapFrame.unmap_buf();
     //assert(desc->nb_objects==1);
     for(int i=0;i<desc->nb_objects;i++){
         const AVDRMObjectDescriptor* obj=&desc->objects[i];
