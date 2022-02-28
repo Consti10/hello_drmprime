@@ -416,7 +416,7 @@ static void* display_thread(void *v)
                 // then get to do a (almost) immediate plane swap with the most recent video frame buffer
                 // For a 60fps display a 12ms sleep seems to be the highest we can do before
                 // we actually then miss a VSYNC again
-                busySleep(12*1000);
+                //busySleep(12*1000);
             }
         }else{
             AVFrame* frame=de->sbQueue->getBuffer();
