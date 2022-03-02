@@ -43,6 +43,7 @@ extern "C" {
 #include "common_consti/ThreadsafeQueue.hpp"
 
 #include "MMapFrame.h"
+#include "extra_drm.h"
 
 static int CALCULATOR_LOG_INTERVAL=10;
 AvgCalculator avgDisplayThreadQueueLatency{"DisplayThreadQueue"};
@@ -76,7 +77,6 @@ typedef struct drm_aux_s{
     uint32_t bo_handles[AV_DRM_MAX_PLANES];
     AVFrame *frame;
 } drm_aux_t;
-
 
 class AVFrameHolder{
 public:
@@ -250,7 +250,6 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
         }else{
             fprintf(stderr, "drmModeSetCrtc success\n");
         }
-
     }else{
         // https://github.com/grate-driver/libdrm/blob/master/xf86drmMode.c#L988
         // https://github.com/raspberrypi/linux/blob/aeaa2460db088fb2c97ae56dec6d7d0058c68294/drivers/gpu/drm/drm_ioctl.c#L670

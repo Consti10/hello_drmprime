@@ -346,12 +346,10 @@ static int modeset_find_crtc(int fd, drmModeRes *res, drmModeConnector *conn,
 
 static int modeset_create_fb(int fd, struct modeset_buf *buf)
 {
-	struct drm_mode_create_dumb creq;
-	struct drm_mode_destroy_dumb dreq;
-	struct drm_mode_map_dumb mreq;
 	int ret;
 
-	/* create dumb buffer */
+	// create dumb buffer
+    struct drm_mode_create_dumb creq;
 	memset(&creq, 0, sizeof(creq));
 	creq.width = buf->width;
 	creq.height = buf->height;
@@ -366,7 +364,7 @@ static int modeset_create_fb(int fd, struct modeset_buf *buf)
 	buf->size = creq.size;
 	buf->handle = creq.handle;
 
-	/* create framebuffer object for the dumb-buffer */
+	// create framebuffer object for the dumb-buffer
 	ret = drmModeAddFB(fd, buf->width, buf->height, 24, 32, buf->stride,
 			   buf->handle, &buf->fb);
 	if (ret) {
@@ -376,7 +374,8 @@ static int modeset_create_fb(int fd, struct modeset_buf *buf)
 		goto err_destroy;
 	}
 
-	/* prepare buffer for memory mapping */
+	// prepare buffer for memory mapping
+    struct drm_mode_map_dumb mreq;
 	memset(&mreq, 0, sizeof(mreq));
 	mreq.handle = buf->handle;
 	ret = drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq);
@@ -387,7 +386,7 @@ static int modeset_create_fb(int fd, struct modeset_buf *buf)
 		goto err_fb;
 	}
 
-	/* perform actual memory mapping */
+	// perform actual memory mapping
 	buf->map = (uint8_t*)mmap(0, buf->size, PROT_READ | PROT_WRITE, MAP_SHARED,
 		        fd, mreq.offset);
 	if (buf->map == MAP_FAILED) {
@@ -405,6 +404,7 @@ static int modeset_create_fb(int fd, struct modeset_buf *buf)
 err_fb:
 	drmModeRmFB(fd, buf->fb);
 err_destroy:
+    struct drm_mode_destroy_dumb dreq;
 	memset(&dreq, 0, sizeof(dreq));
 	dreq.handle = buf->handle;
 	drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &dreq);

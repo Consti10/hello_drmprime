@@ -5,6 +5,9 @@
 #ifndef HELLO_DRMPRIME_EXTRA_DRM_H
 #define HELLO_DRMPRIME_EXTRA_DRM_H
 
+#include <xf86drm.h>
+#include <xf86drmMode.h>
+
 #define Xmemclear(s) memset(&s, 0, sizeof(s))
 
 static inline int XDRM_IOCTL(int fd, unsigned long cmd, void *arg)
@@ -36,5 +39,57 @@ static int XdrmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
     s.src_h = src_h;
     return XDRM_IOCTL(fd, DRM_IOCTL_MODE_SETPLANE, &s);
 }
+
+
+struct DumpBuffer{
+    uint32_t width=1920;
+    uint32_t height=1080;
+    uint32_t stride;
+    uint32_t size;
+    uint32_t handle;
+    uint8_t *map;
+    uint32_t fb;
+    static void allocateAndMap(int fd,DumpBuffer* buf){
+        // create dumb buffer
+        struct drm_mode_create_dumb creq;
+        memset(&creq, 0, sizeof(creq));
+        creq.width = buf->width;
+        creq.height = buf->height;
+        creq.bpp = 32;
+        ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &creq);
+        if (ret < 0) {
+            fprintf(stderr, "cannot create dumb buffer (%d): %m\n",errno);
+            return;
+        }
+        buf->stride = creq.pitch;
+        buf->size = creq.size;
+        buf->handle = creq.handle;
+        // create framebuffer object for the dumb-buffer
+        ret = drmModeAddFB(fd, buf->width, buf->height, 24, 32, buf->stride,buf->handle, &buf->fb);
+        if (ret) {
+            fprintf(stderr, "cannot create framebuffer (%d): %m\n",errno);
+            return;
+        }
+        // prepare buffer for memory mapping
+        struct drm_mode_map_dumb mreq;
+        memset(&mreq, 0, sizeof(mreq));
+        mreq.handle = buf->handle;
+        ret = drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq);
+        if (ret) {
+            fprintf(stderr, "cannot map dumb buffer (%d): %m\n",errno);
+            return;
+        }
+        // perform actual memory mapping
+        buf->map = (uint8_t*)mmap(0, buf->size, PROT_READ | PROT_WRITE, MAP_SHARED,fd, mreq.offset);
+        if (buf->map == MAP_FAILED) {
+            fprintf(stderr, "cannot mmap dumb buffer (%d): %m\n",
+                    errno);
+            return;
+        }
+        // clear the framebuffer to 0
+        memset(buf->map, 0, buf->size);
+        return 0;
+    }
+};
 
 #endif //HELLO_DRMPRIME_EXTRA_DRM_H
