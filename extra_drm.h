@@ -66,7 +66,7 @@ struct DumpBuffer{
         buf->size = creq.size;
         buf->bo_handle = creq.handle;
         // create framebuffer object for the dumb-buffer
-        ret = drmModeAddFB(fd, buf->width, buf->height, 24, 32, buf->stride,buf-bo_handle, &buf->fb);
+        ret = drmModeAddFB(fd, buf->width, buf->height, 24, 32, buf->stride,buf->bo_handle, &buf->fb);
         if (ret) {
             fprintf(stderr, "cannot create framebuffer (%d): %m\n",errno);
             return;
@@ -100,7 +100,7 @@ struct DumpBuffer{
         drmModeRmFB(fd, buf->fb);
         // delete dumb buffer
         memset(&dreq, 0, sizeof(dreq));
-        dreq.handle = buf->handle;
+        dreq.handle = buf->bo_handle;
         drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &dreq);
         fprintf(stderr,"Deleted dump buffer\n");
     }
