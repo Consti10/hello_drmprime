@@ -89,7 +89,7 @@ struct DumpBuffer{
         }
         // clear the framebuffer to 0
         memset(buf->map, 0, buf->size);
-        fprintf(stderr,"Created dump buffer w:%d h:%d stride:%d size:%d\n",width,height,stride,size);
+        fprintf(stderr,"Created dump buffer w:%d h:%d stride:%d size:%d\n",buf->width,buf->height,buf->stride,buf->size);
     }
     //
     static void unmapAndDelete(int fd,DumpBuffer* buf){
@@ -102,7 +102,7 @@ struct DumpBuffer{
         memset(&dreq, 0, sizeof(dreq));
         dreq.handle = buf->handle;
         drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &dreq);
-        fprintf(stderr,"Deleted dump buffer\n",width,height);
+        fprintf(stderr,"Deleted dump buffer\n");
     }
 };
 
