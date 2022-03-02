@@ -49,6 +49,8 @@ struct DumpBuffer{
     uint32_t bo_handle;
     uint8_t *map;
     uint32_t fb;
+    //
+    uint32_t xPixelFormat;
     static void allocateAndMap(int fd,DumpBuffer* buf){
         int ret;
         // create dumb buffer
@@ -67,6 +69,7 @@ struct DumpBuffer{
         buf->bo_handle = creq.handle;
         // create framebuffer object for the dumb-buffer
         ret = drmModeAddFB(fd, buf->width, buf->height, 24, 32, buf->stride,buf->bo_handle, &buf->fb);
+        //ret= drmModeAddFB2(fd, buf->width, buf->height,buf->xPixelFormat, 32, buf->stride,buf->bo_handle, &buf->fb)
         if (ret) {
             fprintf(stderr, "cannot create framebuffer (%d): %m\n",errno);
             return;
