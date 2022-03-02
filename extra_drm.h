@@ -91,7 +91,7 @@ struct DumpBuffer{
         memset(buf->map, 0, buf->size);
     }
     //
-    static void unmapAndDelete(DumpBuffer* buf){
+    static void unmapAndDelete(int fd,DumpBuffer* buf){
         struct drm_mode_destroy_dumb dreq;
         // unmap buffer
         munmap(buf->map, buf->size);
