@@ -89,7 +89,18 @@ struct DumpBuffer{
         }
         // clear the framebuffer to 0
         memset(buf->map, 0, buf->size);
-        return 0;
+    }
+    //
+    static void unmapAndDelete(DumpBuffer* buf){
+        struct drm_mode_destroy_dumb dreq;
+        // unmap buffer
+        munmap(buf->map, buf->size);
+        /// delete framebuffer
+        drmModeRmFB(fd, buf->fb);
+        // delete dumb buffer
+        memset(&dreq, 0, sizeof(dreq));
+        dreq.handle = buf->handle;
+        drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &dreq);
     }
 };
 
