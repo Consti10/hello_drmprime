@@ -356,12 +356,12 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         chronoCopyFrameMMap.stop();
         chronoCopyFrameMMap.printInIntervals(CALCULATOR_LOG_INTERVAL);
         //av_frame_free(&frame);
-        if(da->frame==frame){
+        /*if(da->frame==frame){
             MLOGD<<"weird\n";
         }else{
             MLOGD<<"okay\n";
             av_frame_free(&frame);
-        }
+        }*/
     }
     // Not needed / doesn't have the desired effect anyways
     //waitForVSYNC(de);
