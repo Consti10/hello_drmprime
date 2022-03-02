@@ -343,7 +343,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         return -1;
     }
     //registerModesetPageFlipEvent(de);
-    /*if(first){
+    if(first){
         da_uninit(de, da);
         //
         da_init(de,da,frame);
@@ -356,15 +356,15 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
         chronoCopyFrameMMap.stop();
         chronoCopyFrameMMap.printInIntervals(CALCULATOR_LOG_INTERVAL);
         //av_frame_free(&frame);
-    }*/
+    }
     // Not needed / doesn't have the desired effect anyways
     //waitForVSYNC(de);
     //
-    da_uninit(de, da);
+    /*da_uninit(de, da);
     //
     da_init(de,da,frame);
     // use another de aux for the next frame
-    de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
+    de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;*/
     avgTotalDecodeAndDisplayLatency.addUs(getTimeUs()- frame->pts);
     avgTotalDecodeAndDisplayLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
     return 0;
