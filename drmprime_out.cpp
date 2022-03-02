@@ -388,7 +388,9 @@ static void* display_thread(void *v){
             const auto allBuffers=de->queue->getAllAndClear();
             if(allBuffers.size()>0){
                 const int nDroppedFrames=allBuffers.size()-1;
-                MLOGD<<"N dropped:"<<nDroppedFrames<<"\n";
+                if(nDroppedFrames!=0){
+                    MLOGD<<"N dropped:"<<nDroppedFrames<<"\n";
+                }
                 // don't forget to free the dropped frames
                 for(int i=0;i<nDroppedFrames;i++){
                     av_frame_free(&allBuffers[i]->frame);
