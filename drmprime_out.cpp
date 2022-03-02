@@ -289,7 +289,6 @@ static int updateCRTCFormatIfNeeded(drmprime_out_env_t *const de,const uint32_t 
     const uint32_t format = frameFormat;
     if (de->setup.out_fourcc != format) {
         if (find_plane(de->drm_fd, de->setup.crtcIdx, format, &de->setup.planeId)) {
-            av_frame_free(&frame);
             fprintf(stderr, "No plane for format: %#x\n", format);
             return -1;
         }
@@ -344,6 +343,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     avgDisplayThreadQueueLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
     drm_aux_t *da = de->aux + de->ano;
     if(updateCRTCFormatIfNeeded(de, getFormatForFrame(frame))!=0){
+        av_frame_free(&frame);
         return -1;
     }
     //registerModesetPageFlipEvent(de);
