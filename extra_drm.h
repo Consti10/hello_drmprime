@@ -50,6 +50,7 @@ struct DumpBuffer{
     uint8_t *map;
     uint32_t fb;
     static void allocateAndMap(int fd,DumpBuffer* buf){
+        int ret;
         // create dumb buffer
         struct drm_mode_create_dumb creq;
         memset(&creq, 0, sizeof(creq));
