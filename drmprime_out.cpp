@@ -277,12 +277,16 @@ static void da_update(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame
 
 }
 
+static int getFormatForFrame(AVFrame* frame){
+    const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
+    const uint32_t format = desc->layers[0].format;
+    return format;
+}
 
 // If the crtc plane we have for video is not updated to use the same frame format (yet),
 // do so. Only needs to be done once.
-static int updateCRTCFormatIfNeeded(drmprime_out_env_t *const de, AVFrame *frame){
-    const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
-    const uint32_t format = desc->layers[0].format;
+static int updateCRTCFormatIfNeeded(drmprime_out_env_t *const de,const uint32_t frameFormat){
+    const uint32_t format = frameFormat;
     if (de->setup.out_fourcc != format) {
         if (find_plane(de->drm_fd, de->setup.crtcIdx, format, &de->setup.planeId)) {
             av_frame_free(&frame);
@@ -339,7 +343,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame)
     avgDisplayThreadQueueLatency.addUs(getTimeUs()-frame->pts);
     avgDisplayThreadQueueLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
     drm_aux_t *da = de->aux + de->ano;
-    if(updateCRTCFormatIfNeeded(de,frame)!=0){
+    if(updateCRTCFormatIfNeeded(de, getFormatForFrame(frame))!=0){
         return -1;
     }
     //registerModesetPageFlipEvent(de);
