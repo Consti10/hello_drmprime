@@ -46,7 +46,7 @@ struct DumpBuffer{
     uint32_t height=1080;
     uint32_t stride;
     uint32_t size;
-    uint32_t handle;
+    uint32_t bo_handle;
     uint8_t *map;
     uint32_t fb;
     static void allocateAndMap(int fd,DumpBuffer* buf){
@@ -64,9 +64,9 @@ struct DumpBuffer{
         }
         buf->stride = creq.pitch;
         buf->size = creq.size;
-        buf->handle = creq.handle;
+        buf->bo_handle = creq.handle;
         // create framebuffer object for the dumb-buffer
-        ret = drmModeAddFB(fd, buf->width, buf->height, 24, 32, buf->stride,buf->handle, &buf->fb);
+        ret = drmModeAddFB(fd, buf->width, buf->height, 24, 32, buf->stride,buf-bo_handle, &buf->fb);
         if (ret) {
             fprintf(stderr, "cannot create framebuffer (%d): %m\n",errno);
             return;
@@ -74,7 +74,7 @@ struct DumpBuffer{
         // prepare buffer for memory mapping
         struct drm_mode_map_dumb mreq;
         memset(&mreq, 0, sizeof(mreq));
-        mreq.handle = buf->handle;
+        mreq.handle = buf->bo_handle;
         ret = drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq);
         if (ret) {
             fprintf(stderr, "cannot map dumb buffer (%d): %m\n",errno);
@@ -89,6 +89,7 @@ struct DumpBuffer{
         }
         // clear the framebuffer to 0
         memset(buf->map, 0, buf->size);
+        fprintf(stderr,"Created dump buffer w:%d h:%d stride:%d size:%d\n",width,height,stride,size);
     }
     //
     static void unmapAndDelete(int fd,DumpBuffer* buf){
@@ -101,6 +102,7 @@ struct DumpBuffer{
         memset(&dreq, 0, sizeof(dreq));
         dreq.handle = buf->handle;
         drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &dreq);
+        fprintf(stderr,"Deleted dump buffer\n",width,height);
     }
 };
 
