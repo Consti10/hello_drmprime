@@ -68,6 +68,7 @@ extern "C" {
 #include "common_consti/TimeHelper.hpp"
 #include "common_consti/LEDSwap.h"
 #include "common_consti/Logger.hpp"
+//#include "common_consti/UDPReceiver.h"
 //
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -602,6 +603,15 @@ int main(int argc, char *argv[]){
             return -1;
         }
     }
+    /*if(true){
+        UDPReceiver::DATA_CALLBACK callback=[const uint8_t[] data,size_t data_len]{
+            ret = av_parser_parse2(m_pCodecPaser, m_codec_ctx, &pkt->data,&pkt->size,
+                                   m_packet.data,m_packet.size, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
+        };
+        UDPReceiver udpReceiver=new UDPReceiver(5600,"UDPRec",callback);
+        udpReceiver.startReceiving();
+        //
+    }*/
 
     /* actual decoding and dump the raw data */
     const auto decodingStart=std::chrono::steady_clock::now();

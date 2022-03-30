@@ -296,6 +296,26 @@ static int updateCRTCFormatIfNeeded(drmprime_out_env_t *const de,const uint32_t 
     }
     return 0;
 }
+
+// X
+/*static void XcreateProperFrameBuffer(drmprime_out_env_t *const de,AVFrame* frame){
+    const int width=1280;
+    const int height=720;
+    const int bpp=12;
+    struct drm_mode_create_dumb creq;
+    memset(&creq, 0, sizeof(creq));
+    creq.width = width;
+    creq.height = height;
+    creq.bpp = bpp;
+    ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &creq);
+    if (ret < 0) {
+        fprintf(stderr, "cannot create dumb buffer (%d): %m\n",
+                errno);
+        return;
+    }
+
+}*/
+
 // This was in the original code, but it won't have an effect anyways since swapping the fb aparently does VSYNC anyways nowadays
 static void waitForVSYNC(drmprime_out_env_t *const de){
     chronoVsync.start();
@@ -361,6 +381,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
         mmap_and_copy_frame_data(da->frame,frame);
         chronoCopyFrameMMap.stop();
         chronoCopyFrameMMap.printInIntervals(CALCULATOR_LOG_INTERVAL);
+        MLOGD<<"YX\n";
         //av_frame_free(&frame);
         /*if(da->frame==frame){
             MLOGD<<"weird\n";
