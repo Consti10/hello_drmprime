@@ -377,12 +377,12 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
     }else{
         // Instead of using any drm crap, just copy the raw data
         // takes longer than expected, though.
-        chronoCopyFrameMMap.start();
+        /*chronoCopyFrameMMap.start();
         mmap_and_copy_frame_data(da->frame,frame);
         chronoCopyFrameMMap.stop();
         chronoCopyFrameMMap.printInIntervals(CALCULATOR_LOG_INTERVAL);
-        MLOGD<<"YX\n";
-        //av_frame_free(&frame);
+        MLOGD<<"YX\n";*/
+        av_frame_free(&frame);
         //av_frame_free(&frame);
         /*if(da->frame==frame){
             MLOGD<<"weird\n";
