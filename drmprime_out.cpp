@@ -384,7 +384,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
             MLOGD<<"weird\n";
         }else{
             MLOGD<<"okay\n";
-            av_frame_free(&frame);
+            //av_frame_free(&frame);
         }
     }
     // Not needed / doesn't have the desired effect anyways
