@@ -54,7 +54,7 @@ Chronometer chronometer2{"X2"};
 Chronometer chronometer3{"X3"};
 Chronometer chronometerDaInit{"DA_INIT"};
 Chronometer chronoCopyFrameMMap{"CopyFrameMMap"};
-static bool DROP_FRAMES= false;
+static int RENDER_MODE= 0;
 
 #define DRM_MODULE "vc4"
 
@@ -416,7 +416,16 @@ static void* display_thread(void *v){
     drmprime_out_env_t *const de = (drmprime_out_env_t *)v;
     for (;;) {
         if(de->terminate)break;
-        if(DROP_FRAMES){
+        if(RENDER_MODE==0){
+            AVFrame* frame=de->sbQueue->getBuffer();
+            if(frame==NULL){
+                MLOGD<<"Got NULL frame\n";
+                break;
+            }else{
+                //MLOGD<<"Got frame\n";
+            }
+            do_display(de, frame);
+        }else{
             const auto allBuffers=de->queue->getAllAndClear();
             if(allBuffers.size()>0){
                 const int nDroppedFrames=allBuffers.size()-1;
@@ -437,15 +446,6 @@ static void* display_thread(void *v){
             }else{
                 MLOGD<<"Busy wait, no frame yet\n";
             }
-        }else{
-            AVFrame* frame=de->sbQueue->getBuffer();
-            if(frame==NULL){
-                MLOGD<<"Got NULL frame\n";
-                break;
-            }else{
-                //MLOGD<<"Got frame\n";
-            }
-            do_display(de, frame);
         }
     }
     for (int i = 0; i != AUX_SIZE; ++i)
@@ -569,12 +569,12 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
     // Here the delay is still neglegible,aka ~0.15ms
     const auto delayBeforeDisplayQueueUs=getTimeUs()-frame->pts;
     MLOGD<<"delayBeforeDisplayQueue:"<<frame->pts<<" delay:"<<(delayBeforeDisplayQueueUs/1000.0)<<" ms\n";
-    if(DROP_FRAMES){
-        // push it immediately, even though frame(s) might already be inside the queue
-        de->queue->push(std::make_shared<AVFrameHolder>(frame));
-    }else{
+    if(RENDER_MODE==0){
         // wait for the last buffer to be processed, then update
         de->sbQueue->setBuffer(frame);
+    }else{
+        // push it immediately, even though frame(s) might already be inside the queue
+        de->queue->push(std::make_shared<AVFrameHolder>(frame));
     }
     return 0;
 }
@@ -604,7 +604,7 @@ void drmprime_out_delete(drmprime_out_env_t *de)
     free(de);
 }
 
-drmprime_out_env_t* drmprime_out_new(bool dropFrames)
+drmprime_out_env_t* drmprime_out_new(int renderMode)
 {
     int rv;
     drmprime_out_env_t* const de = (drmprime_out_env_t*)calloc(1, sizeof(*de));
@@ -613,7 +613,7 @@ drmprime_out_env_t* drmprime_out_new(bool dropFrames)
 
     de->sbQueue=std::make_unique<ThreadsafeSingleBuffer<AVFrame*>>();
     de->queue=std::make_unique<ThreadsafeQueue<AVFrameHolder>>();
-    DROP_FRAMES=dropFrames;
+    RENDER_MODE=renderMode;
 
     const char *drm_module = DRM_MODULE;
 

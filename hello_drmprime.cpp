@@ -434,7 +434,7 @@ struct Options{
     const char* out_filename=NULL;
     bool deinterlace=false;
     bool keyboard_led_toggle=false;
-    bool drop_frames=false;
+    int render_mode=0;
     int limitedFrameRate=-1;
 };
 static const char optstr[] = "?:i:o:ykdf:";
@@ -443,7 +443,7 @@ static const struct option long_options[] = {
         {"out_filename", required_argument, NULL, 'o'},
         {"deinterlace", no_argument, NULL, 'y'},
         {"keyboard_led_toggle", no_argument, NULL, 'k'},
-        {"drop_frames", no_argument, NULL, 'd'},
+        {"render_mode", no_argument, NULL, 'r'},
         {"framerate", no_argument, NULL, 'f'},
         {NULL, 0, NULL, 0},
 };
@@ -477,8 +477,8 @@ int main(int argc, char *argv[]){
                 case 'k':
                     mXOptions.keyboard_led_toggle=true;
                     break;
-                case 'd':
-                    mXOptions.drop_frames=true;
+                case 'r':
+                    mXOptions.render_mode=atoi(tmp_optarg);
                     break;
                 case 'f':
                     mXOptions.limitedFrameRate= atoi(tmp_optarg);
@@ -487,7 +487,7 @@ int main(int argc, char *argv[]){
                 default:
                     MLOGD<<"Usage: -i --in_filename [in_filename] -o --out_filename [optional raw out filename] "<<
                     "-y --deinterlace [enable interlacing] -k --keyboard_led_toggle [enable keyboard led toggle] "<<
-                    "-d --drop_frames [drop frames on display out queue]"<<" -f --framerate [limit framerate]"
+                    "-r --render_mode [render mode for frames]"<<" -f --framerate [limit framerate]"
                     "\n";
                     return 0;
             }
@@ -500,7 +500,7 @@ int main(int argc, char *argv[]){
         MLOGD<<"out_filename: "<<(mXOptions.out_filename==NULL ? "NONE": mXOptions.out_filename)<<"\n";
         MLOGD<<"deinterlace: "<<(mXOptions.deinterlace ? "Y":"N")<<"\n";
         MLOGD<<"keyboard_led_toggle: "<<(mXOptions.keyboard_led_toggle ? "Y":"N")<<"\n";
-        MLOGD<<"drop_frames: "<<(mXOptions.drop_frames ? "Y":"N")<<"\n";
+        MLOGD<<"render_mode: "<<mXOptions.render_mode<<"\n";
         MLOGD<<"limited framerate: "<<mXOptions.limitedFrameRate<<"\n";
     }
 
