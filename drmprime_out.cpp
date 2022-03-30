@@ -350,6 +350,8 @@ static void waitForVSYNC(drmprime_out_env_t *const de){
     drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC,de);
 }*/
 
+static AVFrame* xLast=nullptr;
+
 static bool first=true;
 static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
     assert(frame!=NULL);
@@ -382,6 +384,10 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
         MLOGD<<"YX\n";*/
         //av_frame_free(&frame);
         //av_frame_free(&frame);
+        if(xLast){
+            av_frame_free(&xLast);
+        }
+        xLast=frame;
         const AVDRMFrameDescriptor *desc1 = (AVDRMFrameDescriptor *)da->frame->data[0];
         const AVDRMFrameDescriptor *desc2 = (AVDRMFrameDescriptor *)frame->data[0];
         const AVDRMObjectDescriptor *obj1 = &desc1->objects[0];
@@ -391,7 +397,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
             fprintf(stderr, "weird\n");
         }else{
             fprintf(stderr, "okay\n");
-            av_frame_free(&frame);
+            //av_frame_free(&frame);
         }
     }
     // Not needed / doesn't have the desired effect anyways
