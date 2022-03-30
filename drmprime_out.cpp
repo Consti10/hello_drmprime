@@ -362,47 +362,46 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
         av_frame_free(&frame);
         return -1;
     }
-    //registerModesetPageFlipEvent(de);
-    if(first){
+    if(RENDER_MODE==0 || RENDER_MODE==1){
         da_uninit(de, da);
         //
         da_init(de,da,frame);
-        first=false;
-        AVFrame* extraFrame = av_frame_alloc();
-        av_frame_ref(extraFrame, frame);
+        // use another de aux for the next frame
+        de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
     }else{
-        // Instead of using any drm crap, just copy the raw data
-        // takes longer than expected, though.
-        chronoCopyFrameMMap.start();
-        mmap_and_copy_frame_data(da->frame,frame);
-        chronoCopyFrameMMap.stop();
-        chronoCopyFrameMMap.printInIntervals(CALCULATOR_LOG_INTERVAL);
-        //av_frame_free(&frame);
-        //av_frame_free(&frame);
-        // for some reason, we need to trail one frame behind when freeing it ?!
-        if(xLast){
-            av_frame_free(&xLast);
-        }
-        xLast=frame;
-        const AVDRMFrameDescriptor *desc1 = (AVDRMFrameDescriptor *)da->frame->data[0];
-        const AVDRMFrameDescriptor *desc2 = (AVDRMFrameDescriptor *)frame->data[0];
-        const AVDRMObjectDescriptor *obj1 = &desc1->objects[0];
-        const AVDRMObjectDescriptor *obj2 = &desc2->objects[0];
-        if(obj1->fd==obj2->fd){
-            fprintf(stderr, "weird\n");
+        if(first){
+            da_uninit(de, da);
+            //
+            da_init(de,da,frame);
+            first=false;
+            AVFrame* extraFrame = av_frame_alloc();
+            av_frame_ref(extraFrame, frame);
         }else{
-            //fprintf(stderr, "okay\n");
+            // Instead of using any drm crap, just copy the raw data
+            // takes longer than expected, though.
+            chronoCopyFrameMMap.start();
+            mmap_and_copy_frame_data(da->frame,frame);
+            chronoCopyFrameMMap.stop();
+            chronoCopyFrameMMap.printInIntervals(CALCULATOR_LOG_INTERVAL);
             //av_frame_free(&frame);
+            //av_frame_free(&frame);
+            // for some reason, we need to trail one frame behind when freeing it ?!
+            if(xLast){
+                av_frame_free(&xLast);
+            }
+            xLast=frame;
+            const AVDRMFrameDescriptor *desc1 = (AVDRMFrameDescriptor *)da->frame->data[0];
+            const AVDRMFrameDescriptor *desc2 = (AVDRMFrameDescriptor *)frame->data[0];
+            const AVDRMObjectDescriptor *obj1 = &desc1->objects[0];
+            const AVDRMObjectDescriptor *obj2 = &desc2->objects[0];
+            if(obj1->fd==obj2->fd){
+                fprintf(stderr, "weird\n");
+            }else{
+                //fprintf(stderr, "okay\n");
+                //av_frame_free(&frame);
+            }
         }
     }
-    // Not needed / doesn't have the desired effect anyways
-    //waitForVSYNC(de);
-    //
-    /*da_uninit(de, da);
-    //
-    da_init(de,da,frame);
-    // use another de aux for the next frame
-    de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;*/
     avgTotalDecodeAndDisplayLatency.addUs(getTimeUs()- frame->pts);
     avgTotalDecodeAndDisplayLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
     return 0;
