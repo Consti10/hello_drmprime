@@ -272,10 +272,6 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     return 0;
 }
 
-static void da_update(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
-
-}
-
 static int getFormatForFrame(AVFrame* frame){
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
     const uint32_t format = desc->layers[0].format;
@@ -382,14 +378,14 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
         chronoCopyFrameMMap.stop();
         chronoCopyFrameMMap.printInIntervals(CALCULATOR_LOG_INTERVAL);
         MLOGD<<"YX\n";*/
-        av_frame_free(&frame);
         //av_frame_free(&frame);
-        /*if(da->frame==frame){
+        //av_frame_free(&frame);
+        if(da->frame==frame){
             MLOGD<<"weird\n";
         }else{
             MLOGD<<"okay\n";
             av_frame_free(&frame);
-        }*/
+        }
     }
     // Not needed / doesn't have the desired effect anyways
     //waitForVSYNC(de);
