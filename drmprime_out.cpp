@@ -380,8 +380,10 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
         MLOGD<<"YX\n";*/
         //av_frame_free(&frame);
         //av_frame_free(&frame);
-        const AVDRMObjectDescriptor *obj1 = frame->data[0].desc->objects[0];;
-        const AVDRMObjectDescriptor *obj2 = frame->data[0].desc->objects[0];;
+        const AVDRMFrameDescriptor *desc1 = (AVDRMFrameDescriptor *)frame->data[0];
+        const AVDRMFrameDescriptor *desc2 = (AVDRMFrameDescriptor *)frame->data[0];
+        const AVDRMObjectDescriptor *obj1 = &desc1->objects[0];
+        const AVDRMObjectDescriptor *obj2 = &desc2->objects[0];
 
         if(obj1->fd==obj2->fd){
             fprintf(stderr, "weird\n");
