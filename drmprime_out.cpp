@@ -380,7 +380,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
         MLOGD<<"YX\n";*/
         //av_frame_free(&frame);
         //av_frame_free(&frame);
-        if(da->frame->data[0]==frame->data[0]){
+        if(da->frame->data[0]->fd==frame->data[0]->fd){
             fprintf(stderr, "weird\n");
         }else{
             fprintf(stderr, "okay\n");
