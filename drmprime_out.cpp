@@ -381,10 +381,10 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
         //av_frame_free(&frame);
         //av_frame_free(&frame);
         if(da->frame->data[0]==frame->data[0]){
-            MLOGD<<"weird\n";
+            fprintf(stderr, "weird\n");
         }else{
-            MLOGD<<"okay\n";
-            //av_frame_free(&frame);
+            fprintf(stderr, "okay\n");
+            av_frame_free(&frame);
         }
     }
     // Not needed / doesn't have the desired effect anyways
