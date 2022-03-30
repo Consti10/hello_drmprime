@@ -382,7 +382,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
         chronoCopyFrameMMap.stop();
         chronoCopyFrameMMap.printInIntervals(CALCULATOR_LOG_INTERVAL);
         MLOGD<<"YX\n";
-        av_frame_free(&frame);
+        //av_frame_free(&frame);
         //av_frame_free(&frame);
         /*if(da->frame==frame){
             MLOGD<<"weird\n";
