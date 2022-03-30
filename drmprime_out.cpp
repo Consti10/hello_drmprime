@@ -370,6 +370,8 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
         //
         da_init(de,da,frame);
         first=false;
+        AVFrame* extraFrame = av_frame_alloc();
+        av_frame_ref(extraFrame, frame);
     }else{
         // Instead of using any drm crap, just copy the raw data
         // takes longer than expected, though.
