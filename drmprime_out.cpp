@@ -426,6 +426,8 @@ static void* display_thread(void *v){
                 // For a 60fps display a 12ms sleep seems to be the highest we can do before
                 // we actually then miss a VSYNC again
                 //busySleep(12*1000);
+            }else{
+                MLOGD<<"Busy wait, no frame yet\n";
             }
         }else{
             AVFrame* frame=de->sbQueue->getBuffer();

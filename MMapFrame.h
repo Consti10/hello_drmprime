@@ -20,6 +20,7 @@ class MMapFrame{
 public:
     uint8_t* map=NULL;
     int map_size=0;
+    int image_data_size=0;
     static constexpr const int PROT_READ_WRITE=(PROT_READ | PROT_WRITE);
     MMapFrame(AVFrame* frame,int prot=PROT_READ_WRITE){
         mapFrame(frame,prot);
@@ -61,7 +62,8 @@ static void mmap_and_copy_frame_data(AVFrame* dst, AVFrame* src){
         fprintf(stderr,"Cannot copy data from mapped buffer size %d to buff size %d",srcMap.map_size,dstMap.map_size);
     }else{
         printf("Copying start\n");
-        memcpy_uint8(dstMap.map,srcMap.map,srcMap.map_size);
+        //memcpy_uint8(dstMap.map,srcMap.map,srcMap.map_size);
+        memcpy_uint8(dstMap.map,srcMap.map,srcMap.map_size/8);
         printf("Copying stop\n");
     }
     //copy data
