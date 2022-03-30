@@ -54,7 +54,7 @@ public:
 };
 
 // copy data from one AVFrame drm prime frame to another via mmap
-static void workaround_copy_frame_data(AVFrame* dst, AVFrame* src){
+static void mmap_and_copy_frame_data(AVFrame* dst, AVFrame* src){
     MMapFrame dstMap(dst,PROT_WRITE);
     MMapFrame srcMap(src,PROT_READ);
     if(dstMap.map_size!=srcMap.map_size){

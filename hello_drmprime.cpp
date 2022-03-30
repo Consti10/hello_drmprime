@@ -267,8 +267,7 @@ std::vector<std::chrono::steady_clock::time_point> feedDecoderTimePoints;
 int nTotalPulledFrames=0;
 // testing, obsolete
 static int decode_write(AVCodecContext * const avctx,drmprime_out_env_t * const dpo,AVPacket *packet){
-    AVFrame *frame = NULL, *sw_frame = NULL;
-    uint8_t *buffer_for_something = NULL;
+    AVFrame *frame = NULL;
     int size;
     int ret = 0;
     unsigned int i;
@@ -289,12 +288,10 @@ static int decode_write(AVCodecContext * const avctx,drmprime_out_env_t * const 
     const std::chrono::steady_clock::time_point pullFramesStartTimePoint=std::chrono::steady_clock::now();
 
     for (;;) {
-        if (!(frame = av_frame_alloc()) || !(sw_frame = av_frame_alloc())) {
+        if (!(frame = av_frame_alloc()) ) {
             fprintf(stderr, "Can not alloc frame\n");
             ret = AVERROR(ENOMEM);
             av_frame_free(&frame);
-            av_frame_free(&sw_frame);
-            av_freep(&buffer_for_something);
             return ret;
         }
 
@@ -302,7 +299,6 @@ static int decode_write(AVCodecContext * const avctx,drmprime_out_env_t * const 
 
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             av_frame_free(&frame);
-            av_frame_free(&sw_frame);
             //fprintf(stderr, "Got eagain. N Pulled frames: %d\n",nPulledFramesThisIteraton);
             /*const auto timePulling=std::chrono::steady_clock::now()-pullFramesStartTimePoint;
             if(timePulling>std::chrono::milliseconds(1000)){
@@ -339,8 +335,6 @@ static int decode_write(AVCodecContext * const avctx,drmprime_out_env_t * const 
         return 0;
     fail:
         av_frame_free(&frame);
-        av_frame_free(&sw_frame);
-        av_freep(&buffer_for_something);
         if (ret < 0)
             return ret;
     }

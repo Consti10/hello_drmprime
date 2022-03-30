@@ -23,14 +23,15 @@ void switch_led_on_off(){
         pinMode (0, OUTPUT) ;
         initialized=true;
     }*/
+    int result;
     led_on=!led_on;
     //digitalWrite (0, led_on ? 1 : 0);
     if(led_on){
-        system("echo 1 > /sys/class/leds/led1/brightness");
+        result=system("echo 1 > /sys/class/leds/led1/brightness");
     }else{
-        system("echo 0 > /sys/class/leds/led1/brightness");
+        result=system("echo 0 > /sys/class/leds/led1/brightness");
     }
-    printf("Switched LED %s \n",led_on ? "on":"off");
+    printf("Switched LED %s Syscall:%d\n",led_on ? "on":"off",result);
 }
 
 
