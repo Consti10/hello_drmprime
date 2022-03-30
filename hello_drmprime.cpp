@@ -434,7 +434,7 @@ struct Options{
     const char* out_filename=NULL;
     bool deinterlace=false;
     bool keyboard_led_toggle=false;
-    int render_mode=1;
+    int render_mode=2;
     int limitedFrameRate=-1;
 };
 static const char optstr[] = "?:i:o:ykdf:";
