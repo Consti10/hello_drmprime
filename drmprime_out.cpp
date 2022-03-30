@@ -355,10 +355,6 @@ static AVFrame* xLast=nullptr;
 static bool first=true;
 static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
     assert(frame!=NULL);
-    /*DumpBuffer dumpBuffer;
-    DumpBuffer::allocateAndMap(de->drm_fd,&dumpBuffer);
-    DumpBuffer::unmapAndDelete(de->drm_fd,&dumpBuffer);*/
-
     avgDisplayThreadQueueLatency.addUs(getTimeUs()-frame->pts);
     avgDisplayThreadQueueLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
     drm_aux_t *da = de->aux + de->ano;
