@@ -42,7 +42,7 @@ public:
             return;
         }
         map_size=obj->size;
-        MLOGD<<"Mapped buffer size:" << obj->size << "\n";
+        //MLOGD<<"Mapped buffer size:" << obj->size << "\n";
     }
     void unmap(){
         if(map!=NULL){
@@ -61,11 +61,10 @@ static void mmap_and_copy_frame_data(AVFrame* dst, AVFrame* src){
     if(dstMap.map_size!=srcMap.map_size){
         fprintf(stderr,"Cannot copy data from mapped buffer size %d to buff size %d",srcMap.map_size,dstMap.map_size);
     }else{
-        printf("Copying start\n");
-        //memcpy_uint8(dstMap.map,srcMap.map,srcMap.map_size);
-        MLOGD<<"XY\n";
-        memcpy_uint8(dstMap.map,srcMap.map,1920*1080*12/8);
-        printf("Copying stop\n");
+        //printf("Copying start\n");
+        memcpy_uint8(dstMap.map,srcMap.map,srcMap.map_size);
+        //memcpy_uint8(dstMap.map,srcMap.map,1920*1080*12/8);
+        //printf("Copying stop\n");
     }
     //copy data
     dstMap.unmap();
