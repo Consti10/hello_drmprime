@@ -437,13 +437,13 @@ struct Options{
     int render_mode=2;
     int limitedFrameRate=-1;
 };
-static const char optstr[] = "?:i:o:ykdf:";
+static const char optstr[] = "?:i:o:ykr:f:";
 static const struct option long_options[] = {
         {"in_filename", required_argument, NULL, 'i'},
         {"out_filename", required_argument, NULL, 'o'},
         {"deinterlace", no_argument, NULL, 'y'},
         {"keyboard_led_toggle", no_argument, NULL, 'k'},
-        {"render_mode", no_argument, NULL, 'r'},
+        {"render_mode", required_argument, NULL, 'r'},
         {"framerate", no_argument, NULL, 'f'},
         {NULL, 0, NULL, 0},
 };
