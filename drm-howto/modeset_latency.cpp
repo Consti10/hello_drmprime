@@ -43,7 +43,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 // Consti10
-#include <drm/drm_fourcc.h>
+#include <drm_fourcc.h>
 
 #include "../common_consti/LEDSwap.h"
 #include "../common_consti/TimeHelper.hpp"
