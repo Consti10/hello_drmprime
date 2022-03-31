@@ -484,12 +484,14 @@ static int modeset_create_fb(int fd, struct modeset_dev *dev)
     bo_handles[0]=dev->handle;
     //bo_handles[1]=dev->handle;
     //
-    pitches[0] = creq.width * 2;
+    //pitches[0] = creq.width * 2;
+    pitches[0]=creq.pitch;
     offsets[0] = 0;
     //
 
     //DRM_FORMAT_XRGB8888
-    ret = drmModeAddFB2(fd, dev->width, dev->height,DRM_FORMAT_YUYV,bo_handles,pitches,offsets,&dev->fb,0);
+    //DRM_FORMAT_YUYV
+    ret = drmModeAddFB2(fd, dev->width, dev->height,DRM_FORMAT_XRGB8888,bo_handles,pitches,offsets,&dev->fb,0);
 	if (ret) {
 		fprintf(stderr, "cannot create framebuffer (%d): %m\n",errno);
 		ret = -errno;
