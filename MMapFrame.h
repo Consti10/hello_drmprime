@@ -34,6 +34,10 @@ public:
             fprintf(stderr,"Unexpected desc->nb_objects: %d\n",desc->nb_objects);
         }
         const AVDRMObjectDescriptor *obj = &desc->objects[0];
+        // from https://blog.eiler.eu/posts/20210117/
+        // The total size of the buffer (in luminance and chrominance cases) is width * stride2, where stride2 is >= (height+1)*stride1.
+
+
         map = (uint8_t *) mmap(0, obj->size, prot, MAP_SHARED,
                                obj->fd, 0);
         if (map == MAP_FAILED) {
@@ -63,7 +67,7 @@ static void mmap_and_copy_frame_data(AVFrame* dst, AVFrame* src){
     }else{
         //printf("Copying start\n");
         //memcpy_uint8(dstMap.map,srcMap.map,srcMap.map_size);
-        memcpy_uint8(dstMap.map,srcMap.map,1280*720*12);
+        memcpy_uint8(dstMap.map,srcMap.map,1280*720*12/8);
         //printf("Copying stop\n");
     }
     //copy data
