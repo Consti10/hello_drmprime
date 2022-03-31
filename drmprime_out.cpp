@@ -439,7 +439,7 @@ static void* display_thread(void *v){
                 // we actually then miss a VSYNC again
                 //busySleep(12*1000);
             }else{
-                MLOGD<<"Busy wait, no frame yet\n";
+                //MLOGD<<"Busy wait, no frame yet\n";
             }
         }
     }
