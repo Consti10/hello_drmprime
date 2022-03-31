@@ -109,6 +109,10 @@ static void fillFrame(uint8_t* dest,const int width,const int height,const int s
 
 }*/
 
+#define RED   2
+#define GREEN 1
+#define BLUE  0
+
 // from https://chromium.googlesource.com/chromiumos/third_party/drm/+/9b44fbd393b8db571badae41881f490145404ae0/tests/modetest/modetest.c
 static void fill420(unsigned char *y, unsigned char *u, unsigned char *v,
         int cs /*chroma pixel stride */,
