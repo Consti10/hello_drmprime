@@ -14,6 +14,7 @@ extern "C" {
 #include "libavutil/pixdesc.h"
 }
 #include "extra.h"
+#include "common_consti/Logger.hpp"
 
 // MMap a drm prime ffmpeg frame
 class MMapFrame{
