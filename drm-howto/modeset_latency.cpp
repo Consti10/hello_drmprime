@@ -485,7 +485,8 @@ static int modeset_create_fb(int fd, struct modeset_dev *dev)
     uint32_t offsets[4];
     offsets[0]=0;
 
-    ret = drmModeAddFB2(fd, dev->width, dev->height,DRM_FORMAT_XRGB8888,bo_handles,pitches,offsets,&dev->fb,0);
+    //DRM_FORMAT_XRGB8888
+    ret = drmModeAddFB2(fd, dev->width, dev->height,DRM_FORMAT_YUYV,bo_handles,pitches,offsets,&dev->fb,0);
 	if (ret) {
 		fprintf(stderr, "cannot create framebuffer (%d): %m\n",errno);
 		ret = -errno;
