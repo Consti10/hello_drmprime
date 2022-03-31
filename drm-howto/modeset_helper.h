@@ -94,8 +94,46 @@ static void fillFrame(uint8_t* dest,const int width,const int height,const int s
     }
 }
 
+/*static void createDumpBuffer(int fd){
+    struct drm_mode_create_dumb creq;
+    // create dumb buffer
+    memset(&creq, 0, sizeof(creq));
+    creq.width = dev->width;
+    creq.height = dev->height;
+    creq.bpp = 32;
+    ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &creq);
+    if (ret < 0) {
+        fprintf(stderr, "cannot create dumb buffer (%d): %m\n",errno);
+        return;
+    }
 
+}*/
 
+// from https://chromium.googlesource.com/chromiumos/third_party/drm/+/9b44fbd393b8db571badae41881f490145404ae0/tests/modetest/modetest.c
+static void fill420(unsigned char *y, unsigned char *u, unsigned char *v,
+        int cs /*chroma pixel stride */,
+        int n, int width, int height, int stride){
+    int i, j;
+    /* paint the buffer with colored tiles, in blocks of 2x2 */
+    for (j = 0; j < height; j+=2) {
+        unsigned char *y1p = y + j * stride;
+        unsigned char *y2p = y1p + stride;
+        unsigned char *up = u + (j/2) * stride * cs / 2;
+        unsigned char *vp = v + (j/2) * stride * cs / 2;
+        for (i = 0; i < width; i+=2) {
+            div_t d = div(n+i+j, width);
+            uint32_t rgb = 0x00130502 * (d.quot >> 6) + 0x000a1120 * (d.rem >> 6);
+            unsigned char *rgbp = (unsigned char *)&rgb;
+            unsigned char y = (0.299 * rgbp[RED]) + (0.587 * rgbp[GREEN]) + (0.114 * rgbp[BLUE]);
+            *(y2p++) = *(y1p++) = y;
+            *(y2p++) = *(y1p++) = y;
+            *up = (rgbp[BLUE] - y) * 0.565 + 128;
+            *vp = (rgbp[RED] - y) * 0.713 + 128;
+            up += cs;
+            vp += cs;
+        }
+    }
+}
 
 
 #endif //HELLO_DRMPRIME_MODESET_ARGS_H

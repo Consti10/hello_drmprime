@@ -208,7 +208,7 @@ static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
     for (int j = 0; j < desc->layers[0].nb_planes; ++j) {
         const AVDRMPlaneDescriptor *const p = desc->layers[0].planes + j;
         const AVDRMObjectDescriptor *const obj = desc->objects + p->object_index;
-        //MLOGD<<"Plane "<<j<<" has pitch:"<<p->pitch<<" offset:"<<p->offset<<" object_index:"<<p->object_index<<"\n";
+        MLOGD<<"Plane "<<j<<" has pitch:"<<p->pitch<<" offset:"<<p->offset<<" object_index:"<<p->object_index<<"\n";
         pitches[n] = p->pitch;
         offsets[n] = p->offset;
         modifiers[n] = obj->format_modifier;
