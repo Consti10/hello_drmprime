@@ -479,11 +479,14 @@ static int modeset_create_fb(int fd, struct modeset_dev *dev)
 	// create framebuffer object for the dumb-buffer
 	//ret = drmModeAddFB(fd, dev->width, dev->height, 24, 32, dev->stride,dev->handle, &dev->fb);
     uint32_t bo_handles[4];
-    bo_handles[0]=dev->handle;
     uint32_t pitches[4];
-    pitches[0]=dev->stride;
     uint32_t offsets[4];
-    offsets[0]=0;
+    bo_handles[0]=dev->handle;
+    bo_handles[1]=dev->handle;
+    //
+    pitches[0] = creq.width * 2;
+    offsets[0] = 0;
+    //
 
     //DRM_FORMAT_XRGB8888
     ret = drmModeAddFB2(fd, dev->width, dev->height,DRM_FORMAT_YUYV,bo_handles,pitches,offsets,&dev->fb,0);
