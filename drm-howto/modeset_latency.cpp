@@ -481,7 +481,10 @@ static int modeset_create_fb(int fd, struct modeset_dev *dev)
     uint32_t bo_handles[4];
     uint32_t pitches[4];
     uint32_t offsets[4];
-    bo_handles[0]=dev->handle;
+    for(int i=0;i<4;i++){
+        bo_handles[i]=dev->handle;
+    }
+    //bo_handles[0]=dev->handle;
     //bo_handles[1]=dev->handle;
     //
     //pitches[0] = creq.width * 2;
