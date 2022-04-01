@@ -666,6 +666,7 @@ static void modeset_draw(void)
 	r_up = g_up = b_up = true;
 
     const int N_FRAMES_DRAWN=options.drawFramesOnKeyboardClick ? 1000000 : 50000;
+    auto lastFrame=std::chrono::steady_clock::now();
 
 	for (int i = 0; i < N_FRAMES_DRAWN; ++i) {
         if(options.drawFramesOnKeyboardClick){
