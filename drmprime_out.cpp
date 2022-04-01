@@ -55,7 +55,6 @@ Chronometer chronometer3{"X3"};
 Chronometer chronometerDaInit{"DA_INIT"};
 Chronometer chronoCopyFrameMMap{"CopyFrameMMap"};
 static int RENDER_MODE= 0;
-static int CALCULATOR_LOG_INTERVAL=10;
 
 #define DRM_MODULE "vc4"
 
