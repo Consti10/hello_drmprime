@@ -20,7 +20,7 @@ static int modesetParseArguments(int argc, char **argv,modeset_options& options)
     //modeset_options options;
     options.card="/dev/dri/card0";
     int opt;
-    while ((opt = getopt(argc, argv, "d:l")) != -1) {
+    while ((opt = getopt(argc, argv, "d:lf:")) != -1) {
         switch (opt) {
             case 'd':
                 options.card=optarg;
