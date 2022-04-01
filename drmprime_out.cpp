@@ -155,7 +155,8 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
         MLOGD<<"Plane "<<j<<" has pitch:"<<p->pitch<<" offset:"<<p->offset<<" object_index:"<<p->object_index<<"modifiers:"<<obj->format_modifier<<"\n";
         pitches[n] = p->pitch;
         offsets[n] = p->offset;
-        MLOGD<<"X:"<<DRM_FORMAT_MOD_INVALID<<"Y:"<<DRM_FORMAT_MOD_BROADCOM_SAND128<<"Z:"<<DRM_FORMAT_MOD_BROADCOM_SAND256<<"\n";
+        //DRM_FORMAT_MOD_INVALID
+        MLOGD<<"X:"<<DRM_FORMAT_MOD_BROADCOM_SAND32<<"Y:"<<DRM_FORMAT_MOD_BROADCOM_SAND128<<"Z:"<<DRM_FORMAT_MOD_BROADCOM_SAND256<<"\n";
         modifiers[n] = obj->format_modifier;
         bo_handles[n] = da->bo_handles[p->object_index];
         ++n;
