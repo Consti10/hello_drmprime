@@ -15,6 +15,8 @@ extern "C" {
 }
 #include "extra.h"
 #include "common_consti/Logger.hpp"
+#include <fcntl.h>
+#include <unistd.h>
 
 // MMap a drm prime ffmpeg frame
 class MMapFrame{
