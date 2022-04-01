@@ -6,6 +6,10 @@ struct AVFrame;
 #include <memory>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <xf86drm.h>
+#include <xf86drmMode.h>
+
 #include "common_consti/ThreadsafeQueue.hpp"
 
 class AVFrameHolder{
