@@ -19,6 +19,7 @@ struct modeset_options{
 static int modesetParseArguments(int argc, char **argv,modeset_options& options){
     //modeset_options options;
     options.card="/dev/dri/card0";
+    options.limitedFrameRate=-1;
     int opt;
     while ((opt = getopt(argc, argv, "d:lf:")) != -1) {
         switch (opt) {
@@ -30,6 +31,7 @@ static int modesetParseArguments(int argc, char **argv,modeset_options& options)
                 break;
             case 'f':
                 options.limitedFrameRate=atoi(optarg);
+                break;
             default: /* '?' */
             show_usage:
                 fprintf(stderr,"Usage: -d device/card to open -l enable LED\n");
