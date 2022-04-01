@@ -40,6 +40,8 @@
 #include "extra_drm.h"
 #include "drmprime_out.h"
 
+#include "drm_fourcc.h"
+
 AvgCalculator avgDisplayThreadQueueLatency{"DisplayThreadQueue"};
 AvgCalculator avgTotalDecodeAndDisplayLatency{"TotalDecodeDisplayLatency"};
 Chronometer chronoVsync{"VSYNC"};
@@ -153,6 +155,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
         MLOGD<<"Plane "<<j<<" has pitch:"<<p->pitch<<" offset:"<<p->offset<<" object_index:"<<p->object_index<<"modifiers:"<<obj->format_modifier<<"\n";
         pitches[n] = p->pitch;
         offsets[n] = p->offset;
+        MLOGD<<"X:"<<DRM_FORMAT_MOD_INVALID<<"\n";
         modifiers[n] = obj->format_modifier;
         bo_handles[n] = da->bo_handles[p->object_index];
         ++n;
