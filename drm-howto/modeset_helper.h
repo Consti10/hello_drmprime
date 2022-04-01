@@ -40,6 +40,7 @@ static int modesetParseArguments(int argc, char **argv,modeset_options& options)
     }
     fprintf(stderr,"using card '%s'\n",options.card);
     fprintf(stderr,"Enable led and redraw on keyboard click:%s\n",options.drawFramesOnKeyboardClick ? "Y":"N");
+    fprintf(stderr,"limitedFrameRate:%d\n",options.limitedFrameRate);
     return 0;
 }
 
