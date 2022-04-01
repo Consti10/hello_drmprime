@@ -60,57 +60,6 @@ static int RENDER_MODE= 0;
 
 #define ERRSTR strerror(errno)
 
-struct drm_setup{
-    int conId;
-    uint32_t crtcId;
-    int crtcIdx;
-    uint32_t planeId;
-    unsigned int out_fourcc;
-    struct{
-        int x, y, width, height;
-    } compose;
-};
-
-typedef struct drm_aux_s{
-    unsigned int fb_handle;
-    // buffer out handles - set to the drm prime handles of the frame
-    uint32_t bo_handles[AV_DRM_MAX_PLANES];
-    AVFrame *frame;
-} drm_aux_t;
-
-class AVFrameHolder{
-public:
-    AVFrameHolder(AVFrame* f):frame(f){};
-    ~AVFrameHolder(){
-        //av_frame_free(f)
-    };
-    AVFrame* frame;
-};
-
-// Aux size should only need to be 2, but on a few streams (Hobbit) under FKMS
-// we get initial flicker probably due to dodgy drm timing
-//#define AUX_SIZE 3
-#define AUX_SIZE 5
-typedef struct drmprime_out_env_s{
-    int drm_fd;
-    uint32_t con_id;
-    struct drm_setup setup;
-    enum AVPixelFormat avfmt;
-    // multiple (frame buffer?) objects such that we can create a new one without worrying about the last one still in use.
-    unsigned int ano;
-    drm_aux_t aux[AUX_SIZE];
-    // the thread hat handles the drm display update, decoupled from decoder thread
-    pthread_t q_thread;
-    bool terminate=false;
-    // used when frame drops are not wanted, aka how the original implementation was done
-    std::unique_ptr<ThreadsafeSingleBuffer<AVFrame*>> sbQueue;
-    // allows frame drops (higher video fps than display refresh).
-    std::unique_ptr<ThreadsafeQueue<AVFrameHolder>> queue;
-    // extra
-    //drm_aux_t extraAux;
-} drmprime_out_env_t;
-
-
 static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
                       uint32_t *const pplane_id){
     drmModePlaneResPtr planes;
@@ -152,7 +101,7 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
 // clears up the drm_aux_t to be reused with a new frame
 // Note that if this drm_aux_t is currently read out, this call
 // might block. Otherwise, it will return almost immediately
-static void da_uninit(drmprime_out_env_t *const de, drm_aux_t *da){
+static void da_uninit(DRMPrimeOut *const de, DRMPrimeOut::drm_aux_t *da){
     chronometerDaUninit.start();
     unsigned int i;
     if (da->fb_handle != 0) {
@@ -175,7 +124,7 @@ static void modeset_page_flip_event(int fd, unsigned int frame,unsigned int sec,
     MLOGD<<"Got modeset_page_flip_event for frame "<<frame<<"\n";
 }
 
-static void registerModesetPageFlipEvent(drmprime_out_env_t *const de){
+static void registerModesetPageFlipEvent(DRMPrimeOut *const de){
     drmEventContext ev;
     memset(&ev, 0, sizeof(ev));
     ev.version = 2;
@@ -187,7 +136,7 @@ static int countLol=0;
 
 // initializes the drm_aux_to for the new frame, including the raw frame data
 // unfortunately blocks until the ? VSYNC or some VSYNC related time point ?
-static int da_init(drmprime_out_env_t *const de, drm_aux_t *da,AVFrame* frame){
+static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux_t *da,AVFrame* frame){
     chronometerDaInit.start();
     chronometer2.start();
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
@@ -280,7 +229,7 @@ static int getFormatForFrame(AVFrame* frame){
 
 // If the crtc plane we have for video is not updated to use the same frame format (yet),
 // do so. Only needs to be done once.
-static int updateCRTCFormatIfNeeded(drmprime_out_env_t *const de,const uint32_t frameFormat){
+static int updateCRTCFormatIfNeeded(DRMPrimeOut *const de,const uint32_t frameFormat){
     const uint32_t format = frameFormat;
     if (de->setup.out_fourcc != format) {
         if (find_plane(de->drm_fd, de->setup.crtcIdx, format, &de->setup.planeId)) {
@@ -313,7 +262,7 @@ static int updateCRTCFormatIfNeeded(drmprime_out_env_t *const de,const uint32_t 
 }*/
 
 // This was in the original code, but it won't have an effect anyways since swapping the fb aparently does VSYNC anyways nowadays
-static void waitForVSYNC(drmprime_out_env_t *const de){
+static void waitForVSYNC(DRMPrimeOut *const de){
     chronoVsync.start();
     drmVBlank vbl = {
             .request = {
@@ -353,11 +302,11 @@ static void waitForVSYNC(drmprime_out_env_t *const de){
 static AVFrame* xLast=nullptr;
 
 static bool first=true;
-static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
+static int do_display(DRMPrimeOut *const de, AVFrame *frame){
     assert(frame!=NULL);
     avgDisplayThreadQueueLatency.addUs(getTimeUs()-frame->pts);
     avgDisplayThreadQueueLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    drm_aux_t *da = de->aux + de->ano;
+    DRMPrimeOut::drm_aux_t *da = de->aux + de->ano;
     if(updateCRTCFormatIfNeeded(de, getFormatForFrame(frame))!=0){
         av_frame_free(&frame);
         return -1;
@@ -367,7 +316,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
         //
         da_init(de,da,frame);
         // use another de aux for the next frame
-        de->ano = de->ano + 1 >= AUX_SIZE ? 0 : de->ano + 1;
+        de->ano = de->ano + 1 >= DRMPrimeOut::AUX_SIZE ? 0 : de->ano + 1;
     }else{
         if(first){
             da_uninit(de, da);
@@ -408,7 +357,7 @@ static int do_display(drmprime_out_env_t *const de, AVFrame *frame){
 }
 
 static void* display_thread(void *v){
-    drmprime_out_env_t *const de = (drmprime_out_env_t *)v;
+    DRMPrimeOut *const de = (DRMPrimeOut *)v;
     for (;;) {
         if(de->terminate)break;
         if(RENDER_MODE==0){
@@ -443,12 +392,12 @@ static void* display_thread(void *v){
             }
         }
     }
-    for (int i = 0; i != AUX_SIZE; ++i)
+    for (int i = 0; i != DRMPrimeOut::AUX_SIZE; ++i)
         da_uninit(de, de->aux + i);
-    return NULL;
+    return nullptr;
 }
 
-static int find_crtc(int drmfd, struct drm_setup *s, uint32_t *const pConId)
+static int find_crtc(int drmfd, struct DRMPrimeOut::drm_setup *s, uint32_t *const pConId)
 {
     int ret = -1;
     int i;
@@ -536,7 +485,7 @@ fail_res:
     return ret;
 }
 
-int DRMPrimeOut::drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
+int DRMPrimeOut::drmprime_out_display(struct AVFrame *src_frame)
 {
     AVFrame *frame;
     int ret;
@@ -566,85 +515,76 @@ int DRMPrimeOut::drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *sr
     MLOGD<<"delayBeforeDisplayQueue:"<<frame->pts<<" delay:"<<(delayBeforeDisplayQueueUs/1000.0)<<" ms\n";
     if(RENDER_MODE==0){
         // wait for the last buffer to be processed, then update
-        de->sbQueue->setBuffer(frame);
+        sbQueue->setBuffer(frame);
     }else{
         // push it immediately, even though frame(s) might already be inside the queue
-        de->queue->push(std::make_shared<AVFrameHolder>(frame));
+        queue->push(std::make_shared<AVFrameHolder>(frame));
     }
     return 0;
 }
 
-void DRMPrimeOut::drmprime_out_delete(drmprime_out_env_t *de)
+DRMPrimeOut::~DRMPrimeOut()
 {
-    de->terminate=true;
-    de->sbQueue->terminate();
-    pthread_join(de->q_thread, NULL);
+    terminate=true;
+    sbQueue->terminate();
+    pthread_join(q_thread, NULL);
     // free any frames that might be inside some queues - since the queue thread
     // is now stopped, we don't have to worry about any synchronization
-    if(de->sbQueue->unsafeGetFrame()!=NULL){
-        AVFrame* frame=de->sbQueue->unsafeGetFrame();
+    if(sbQueue->unsafeGetFrame()!=NULL){
+        AVFrame* frame=sbQueue->unsafeGetFrame();
         av_frame_free(&frame);
     }
-    auto tmp=de->queue->getAllAndClear();
+    auto tmp=queue->getAllAndClear();
     for(int i=0;i<tmp.size();i++){
         auto element=tmp[i];
         av_frame_free(&element->frame);
     }
-    if (de->drm_fd >= 0) {
-        close(de->drm_fd);
-        de->drm_fd = -1;
+    if (drm_fd >= 0) {
+        close(drm_fd);
+        drm_fd = -1;
     }
-    de->sbQueue.reset();
-    de->queue.reset();
-    free(de);
+    sbQueue.reset();
+    queue.reset();
 }
 
-drmprime_out_env_t* DRMPrimeOut::drmprime_out_new(int renderMode)
+DRMPrimeOut::DRMPrimeOut(int renderMode)
 {
     int rv;
-    drmprime_out_env_t* const de = (drmprime_out_env_t*)calloc(1, sizeof(*de));
-    if (de == NULL)
-        return NULL;
 
-    de->sbQueue=std::make_unique<ThreadsafeSingleBuffer<AVFrame*>>();
-    de->queue=std::make_unique<ThreadsafeQueue<AVFrameHolder>>();
+    sbQueue=std::make_unique<ThreadsafeSingleBuffer<AVFrame*>>();
+    queue=std::make_unique<ThreadsafeQueue<AVFrameHolder>>();
     RENDER_MODE=renderMode;
 
     const char *drm_module = DRM_MODULE;
 
-    de->drm_fd = -1;
-    de->con_id = 0;
-    de->setup = (struct drm_setup) { 0 };
-    de->terminate=false;
+    drm_fd = -1;
+    con_id = 0;
+    setup = (struct drm_setup) { 0 };
+    terminate=false;
 
-    if ((de->drm_fd = drmOpen(drm_module, NULL)) < 0) {
+    if ((drm_fd = drmOpen(drm_module, NULL)) < 0) {
         rv = AVERROR(errno);
         // comp error fprintf(stderr, "Failed to drmOpen %s: %s\n", drm_module, av_err2str(rv));
         fprintf(stderr, "Failed to drmOpen %s: \n", drm_module);
         goto fail_free;
     }
 
-    if (find_crtc(de->drm_fd, &de->setup, &de->con_id) != 0) {
+    if (find_crtc(drm_fd, &setup, &con_id) != 0) {
         fprintf(stderr, "failed to find valid mode\n");
         rv = AVERROR(EINVAL);
         goto fail_close;
     }
 
-    if (pthread_create(&de->q_thread, NULL, display_thread, de)) {
+    if (pthread_create(&q_thread, NULL, display_thread,this)) {
         rv = AVERROR(errno);
         //comp error fprintf(stderr, "Failed to create display thread: %s\n", av_err2str(rv));
         fprintf(stderr, "Failed to create display thread:\n");
         goto fail_close;
     }
-
-    return de;
-
 fail_close:
-    close(de->drm_fd);
-    de->drm_fd = -1;
+    close(drm_fd);
+    drm_fd = -1;
 fail_free:
-    free(de);
     fprintf(stderr, ">>> %s: FAIL\n", __func__);
-    return NULL;
 }
 
