@@ -3,6 +3,10 @@
 
 struct AVFrame;
 
+#include <memory>
+#include <stdio.h>
+#include <stdlib.h>
+
 class AVFrameHolder{
 public:
     AVFrameHolder(AVFrame* f):frame(f){};
