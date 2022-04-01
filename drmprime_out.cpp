@@ -32,12 +32,6 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
-extern "C" {
-#include "libavutil/frame.h"
-#include "libavutil/hwcontext.h"
-#include "libavutil/hwcontext_drm.h"
-#include "libavutil/pixdesc.h"
-}
 #include "common_consti/TimeHelper.hpp"
 #include "common_consti/Logger.hpp"
 #include "common_consti/ThreadsafeQueue.hpp"
