@@ -208,7 +208,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
         }
         //MLOGD<<"x_push_into_filter_graph:pts:"<<frame->pts<<"\n";
         if(dpo!=NULL){
-            drmprime_out_display(dpo, frame);
+            DRMPrimeOut::drmprime_out_display(dpo, frame);
         }
         //map_frame_test(frame);
         save_frame_to_file_if_enabled(frame);
@@ -514,7 +514,7 @@ int main(int argc, char *argv[]){
         return -1;
     }
 
-    dpo = drmprime_out_new(mXOptions.render_mode);
+    dpo = DRMPrimeOut::drmprime_out_new(mXOptions.render_mode);
     if (dpo == NULL) {
         fprintf(stderr, "Failed to open drmprime output\n");
         // Display out optional
@@ -663,7 +663,7 @@ int main(int argc, char *argv[]){
     avformat_close_input(&input_ctx);
 
     if(dpo!=NULL){
-        drmprime_out_delete(dpo);
+        DRMPrimeOut::drmprime_out_delete(dpo);
     }
 
     return 0;

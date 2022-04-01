@@ -44,8 +44,8 @@ extern "C" {
 
 #include "MMapFrame.h"
 #include "extra_drm.h"
+#include "drmprime_out.h"
 
-static int CALCULATOR_LOG_INTERVAL=10;
 AvgCalculator avgDisplayThreadQueueLatency{"DisplayThreadQueue"};
 AvgCalculator avgTotalDecodeAndDisplayLatency{"TotalDecodeDisplayLatency"};
 Chronometer chronoVsync{"VSYNC"};
@@ -55,6 +55,7 @@ Chronometer chronometer3{"X3"};
 Chronometer chronometerDaInit{"DA_INIT"};
 Chronometer chronoCopyFrameMMap{"CopyFrameMMap"};
 static int RENDER_MODE= 0;
+static int CALCULATOR_LOG_INTERVAL=10;
 
 #define DRM_MODULE "vc4"
 
@@ -536,7 +537,7 @@ fail_res:
     return ret;
 }
 
-int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
+int DRMPrimeOut::drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
 {
     AVFrame *frame;
     int ret;
@@ -574,7 +575,7 @@ int drmprime_out_display(drmprime_out_env_t *de, struct AVFrame *src_frame)
     return 0;
 }
 
-void drmprime_out_delete(drmprime_out_env_t *de)
+void DRMPrimeOut::drmprime_out_delete(drmprime_out_env_t *de)
 {
     de->terminate=true;
     de->sbQueue->terminate();
@@ -599,7 +600,7 @@ void drmprime_out_delete(drmprime_out_env_t *de)
     free(de);
 }
 
-drmprime_out_env_t* drmprime_out_new(int renderMode)
+drmprime_out_env_t* DRMPrimeOut::drmprime_out_new(int renderMode)
 {
     int rv;
     drmprime_out_env_t* const de = (drmprime_out_env_t*)calloc(1, sizeof(*de));
