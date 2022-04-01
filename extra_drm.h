@@ -109,4 +109,29 @@ struct DumpBuffer{
     }
 };
 
+// --------------------------------------------------- from drm-howto ---------------------------------------------------
+static int modeset_open(int *out, const char *node)
+{
+    int fd, ret;
+    uint64_t has_dumb;
+
+    fd = open(node, O_RDWR | O_CLOEXEC);
+    if (fd < 0) {
+        ret = -errno;
+        fprintf(stderr, "cannot open '%s': %m\n", node);
+        return ret;
+    }
+
+    if (drmGetCap(fd, DRM_CAP_DUMB_BUFFER, &has_dumb) < 0 ||
+        !has_dumb) {
+        fprintf(stderr, "drm device '%s' does not support dumb buffers\n",
+                node);
+        close(fd);
+        return -EOPNOTSUPP;
+    }
+
+    *out = fd;
+    return 0;
+}
+
 #endif //HELLO_DRMPRIME_EXTRA_DRM_H
