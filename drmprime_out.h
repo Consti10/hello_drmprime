@@ -75,6 +75,7 @@ public:
     std::unique_ptr<ThreadsafeQueue<AVFrameHolder>> queue;
     // extra
     //drm_aux_t extraAux;
+    const int renderMode=0;
 };
 
 static int CALCULATOR_LOG_INTERVAL=10;

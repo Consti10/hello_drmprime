@@ -48,7 +48,6 @@ Chronometer chronometer2{"X2"};
 Chronometer chronometer3{"X3"};
 Chronometer chronometerDaInit{"DA_INIT"};
 Chronometer chronoCopyFrameMMap{"CopyFrameMMap"};
-static int RENDER_MODE= 0;
 
 #define DRM_MODULE "vc4"
 
@@ -305,7 +304,7 @@ static int do_display(DRMPrimeOut *const de, AVFrame *frame){
         av_frame_free(&frame);
         return -1;
     }
-    if(RENDER_MODE==0 || RENDER_MODE==1){
+    if(de->renderMode==0 || de->renderMode==1){
         da_uninit(de, da);
         //
         da_init(de,da,frame);
@@ -354,7 +353,7 @@ static void* display_thread(void *v){
     DRMPrimeOut *const de = (DRMPrimeOut *)v;
     for (;;) {
         if(de->terminate)break;
-        if(RENDER_MODE==0){
+        if(de->renderMode==0){
             AVFrame* frame=de->sbQueue->getBuffer();
             if(frame==NULL){
                 MLOGD<<"Got NULL frame\n";
@@ -507,7 +506,7 @@ int DRMPrimeOut::drmprime_out_display(struct AVFrame *src_frame)
     // Here the delay is still neglegible,aka ~0.15ms
     const auto delayBeforeDisplayQueueUs=getTimeUs()-frame->pts;
     MLOGD<<"delayBeforeDisplayQueue:"<<frame->pts<<" delay:"<<(delayBeforeDisplayQueueUs/1000.0)<<" ms\n";
-    if(RENDER_MODE==0){
+    if(renderMode==0){
         // wait for the last buffer to be processed, then update
         sbQueue->setBuffer(frame);
     }else{
@@ -541,13 +540,12 @@ DRMPrimeOut::~DRMPrimeOut()
     queue.reset();
 }
 
-DRMPrimeOut::DRMPrimeOut(int renderMode)
+DRMPrimeOut::DRMPrimeOut(int renderMode1):renderMode(renderMode1)
 {
     int rv;
 
     sbQueue=std::make_unique<ThreadsafeSingleBuffer<AVFrame*>>();
     queue=std::make_unique<ThreadsafeQueue<AVFrameHolder>>();
-    RENDER_MODE=renderMode;
 
     const char *drm_module = DRM_MODULE;
 
