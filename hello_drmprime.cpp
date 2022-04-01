@@ -180,7 +180,7 @@ static void save_frame_to_file_if_enabled(AVFrame *frame){
     av_frame_free(&sw_frame);
 }
 
-static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *frame){
+static void x_push_into_filter_graph(DRMPrimeOut * const dpo,AVFrame *frame){
     int size;
     int ret=0;
     // push the decoded frame into the filtergraph if it exists
@@ -208,7 +208,7 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
         }
         //MLOGD<<"x_push_into_filter_graph:pts:"<<frame->pts<<"\n";
         if(dpo!=NULL){
-            DRMPrimeOut::drmprime_out_display(dpo, frame);
+            dpo->drmprime_out_display(frame);
         }
         //map_frame_test(frame);
         save_frame_to_file_if_enabled(frame);
@@ -217,8 +217,8 @@ static void x_push_into_filter_graph(drmprime_out_env_t * const dpo,AVFrame *fra
 }
 
 //Sends one frame to the decoder, then waits for the output frame to become available
-static int decode_and_wait_for_frame(AVCodecContext * const avctx,drmprime_out_env_t * const dpo,AVPacket *packet){
-    AVFrame *frame = NULL;
+static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * const dpo,AVPacket *packet){
+    AVFrame *frame = nullptr;
     // testing
     //check_single_nalu(packet->data,packet->size);
     MLOGD<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
@@ -267,8 +267,8 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,drmprime_out_e
 std::vector<std::chrono::steady_clock::time_point> feedDecoderTimePoints;
 int nTotalPulledFrames=0;
 // testing, obsolete
-static int decode_write(AVCodecContext * const avctx,drmprime_out_env_t * const dpo,AVPacket *packet){
-    AVFrame *frame = NULL;
+static int decode_write(AVCodecContext * const avctx,DRMPrimeOut * const dpo,AVPacket *packet){
+    AVFrame *frame = nullptr;
     int size;
     int ret = 0;
     unsigned int i;
@@ -457,7 +457,7 @@ int main(int argc, char *argv[]){
     AVPacket packet;
     enum AVHWDeviceType type;
     const char * hwdev = "drm";
-    drmprime_out_env_t * dpo;
+    DRMPrimeOut * dpo;
 
     Options mXOptions{};
     {
@@ -513,17 +513,16 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "\n");
         return -1;
     }
-
-    dpo = DRMPrimeOut::drmprime_out_new(mXOptions.render_mode);
-    if (dpo == NULL) {
+    dpo = new DRMPrimeOut(mXOptions.render_mode);
+    if (dpo == nullptr) {
         fprintf(stderr, "Failed to open drmprime output\n");
         // Display out optional
         //return 1;
-        dpo=NULL;
+        dpo= nullptr;
     }
 
     // open the file to dump raw data
-    if (mXOptions.out_filename != NULL) {
+    if (mXOptions.out_filename != nullptr) {
         std::cout<<"Opening output fle:"<<std::string(mXOptions.out_filename)<<"\n";
         if ((output_file = fopen(mXOptions.out_filename, "w+")) == NULL) {
             fprintf(stderr, "Failed to open output file %s: %s\n", mXOptions.out_filename, strerror(errno));
@@ -663,7 +662,7 @@ int main(int argc, char *argv[]){
     avformat_close_input(&input_ctx);
 
     if(dpo!=NULL){
-        DRMPrimeOut::drmprime_out_delete(dpo);
+        delete dpo;
     }
 
     return 0;
