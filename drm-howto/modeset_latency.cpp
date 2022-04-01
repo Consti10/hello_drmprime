@@ -487,7 +487,8 @@ static int modeset_create_fb(int fd, struct modeset_dev *dev)
         bo_handles[i]=dev->handle;
     }
     for(int i=0;i<2;i++){
-        modifiers[i]=504403158265772036;
+        //modifiers[i]=504403158265772036;
+        modifiers[i]=DRM_FORMAT_MOD_INVALID;
     }
     //bo_handles[0]=dev->handle;
     //bo_handles[1]=dev->handle;
