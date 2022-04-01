@@ -92,10 +92,10 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
     return ret;
 }
 
-// clears up the drm_aux_t to be reused with a new frame
-// Note that if this drm_aux_t is currently read out, this call
+// clears up the drm_aux to be reused with a new frame
+// Note that if this drm_aux is currently read out, this call
 // might block. Otherwise, it will return almost immediately
-static void da_uninit(DRMPrimeOut *const de, DRMPrimeOut::drm_aux_t *da){
+static void da_uninit(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da){
     chronometerDaUninit.start();
     unsigned int i;
     if (da->fb_handle != 0) {
@@ -128,9 +128,9 @@ static void registerModesetPageFlipEvent(DRMPrimeOut *const de){
 
 static int countLol=0;
 
-// initializes the drm_aux_to for the new frame, including the raw frame data
+// initializes the drm_aux for the new frame, including the raw frame data
 // unfortunately blocks until the ? VSYNC or some VSYNC related time point ?
-static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux_t *da,AVFrame* frame){
+static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* frame){
     chronometerDaInit.start();
     chronometer2.start();
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
@@ -300,7 +300,7 @@ static int do_display(DRMPrimeOut *const de, AVFrame *frame){
     assert(frame!=NULL);
     avgDisplayThreadQueueLatency.addUs(getTimeUs()-frame->pts);
     avgDisplayThreadQueueLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    DRMPrimeOut::drm_aux_t *da = de->aux + de->ano;
+    DRMPrimeOut::drm_aux *da = de->aux + de->ano;
     if(updateCRTCFormatIfNeeded(de, getFormatForFrame(frame))!=0){
         av_frame_free(&frame);
         return -1;

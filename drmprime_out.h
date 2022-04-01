@@ -30,12 +30,14 @@ public:
 
 class DRMPrimeOut{
 public:
-    DRMPrimeOut(int renderMode);
+    explicit DRMPrimeOut(int renderMode);
     ~DRMPrimeOut();
+    /**
+     * Display this frame via drm prime
+     * @param frame the frame to display
+     */
     int drmprime_out_display(struct AVFrame * frame);
-    // Aux size should only need to be 2, but on a few streams (Hobbit) under FKMS
-    // we get initial flicker probably due to dodgy drm timing
-    static constexpr auto AUX_SIZE=5;
+
     // --------
     struct drm_setup{
         int conId;
@@ -47,20 +49,23 @@ public:
             int x, y, width, height;
         } compose;
     };
-    typedef struct drm_aux_s{
+    struct drm_aux{
         unsigned int fb_handle;
         // buffer out handles - set to the drm prime handles of the frame
         uint32_t bo_handles[AV_DRM_MAX_PLANES];
         AVFrame *frame;
-    } drm_aux_t;
+    };
     // --------
     int drm_fd;
     uint32_t con_id;
-    struct drm_setup setup;
+    struct drm_setup setup{};
     enum AVPixelFormat avfmt;
     // multiple (frame buffer?) objects such that we can create a new one without worrying about the last one still in use.
     unsigned int ano;
-    drm_aux_t aux[AUX_SIZE];
+    // Aux size should only need to be 2, but on a few streams (Hobbit) under FKMS
+    // we get initial flicker probably due to dodgy drm timing
+    static constexpr auto AUX_SIZE=5;
+    drm_aux aux[AUX_SIZE];
     // the thread hat handles the drm display update, decoupled from decoder thread
     pthread_t q_thread;
     bool terminate=false;
