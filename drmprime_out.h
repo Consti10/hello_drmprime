@@ -6,6 +6,7 @@ struct AVFrame;
 #include <memory>
 #include <stdio.h>
 #include <stdlib.h>
+#include "common_consti/ThreadsafeQueue.hpp"
 
 class AVFrameHolder{
 public:
