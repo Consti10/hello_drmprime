@@ -13,6 +13,7 @@
 struct modeset_options{
     const char *card="/dev/dri/card0";
     bool drawFramesOnKeyboardClick;
+    int limitedFrameRate=-1;
 };
 
 static int modesetParseArguments(int argc, char **argv,modeset_options& options){
@@ -27,6 +28,8 @@ static int modesetParseArguments(int argc, char **argv,modeset_options& options)
             case 'l':
                 options.drawFramesOnKeyboardClick=true;
                 break;
+            case 'f':
+                options.limitedFrameRate=atoi(optarg);
             default: /* '?' */
             show_usage:
                 fprintf(stderr,"Usage: -d device/card to open -l enable LED\n");

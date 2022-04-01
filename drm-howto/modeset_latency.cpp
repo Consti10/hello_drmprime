@@ -48,6 +48,7 @@
 #include "../common_consti/LEDSwap.h"
 #include "../common_consti/TimeHelper.hpp"
 #include "modeset_helper.h"
+#include <chrono>
 
 struct modeset_dev;
 static int modeset_find_crtc(int fd, drmModeRes *res, drmModeConnector *conn,
@@ -676,6 +677,14 @@ static void modeset_draw(void)
             }
             // change LED, feed one new frame
             switch_led_on_off();
+        }else{
+            if(options.limitedFrameRate!=-1){
+                const long frameDeltaNs=1000*1000*1000 / options.limitedFrameRate;
+                while (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now()-lastFrame).count()<frameDeltaNs){
+                    // busy wait
+                }
+                lastFrame=std::chrono::steady_clock::now();
+            }
         }
 
         avgCpuDrawTime.start();
