@@ -575,6 +575,7 @@ DRMPrimeOut::DRMPrimeOut(int renderMode)
         fprintf(stderr, "Failed to create display thread:\n");
         goto fail_close;
     }
+    return;
 fail_close:
     close(drm_fd);
     drm_fd = -1;
