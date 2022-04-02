@@ -63,7 +63,9 @@ public:
 
 // copy data from one AVFrame drm prime frame to another via mmap
 static void mmap_and_copy_frame_data(AVFrame* dst, AVFrame* src){
+    std::cout<<"Dst\n";
     MMapFrame dstMap(dst,PROT_WRITE);
+    std::cout<<"Src\n";
     MMapFrame srcMap(src,PROT_READ);
     if(dstMap.map_size!=srcMap.map_size){
         fprintf(stderr,"Cannot copy data from mapped buffer size %d to buff size %d",srcMap.map_size,dstMap.map_size);
