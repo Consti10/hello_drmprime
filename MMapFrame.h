@@ -69,9 +69,9 @@ static void mmap_and_copy_frame_data(AVFrame* dst, AVFrame* src){
         fprintf(stderr,"Cannot copy data from mapped buffer size %d to buff size %d",srcMap.map_size,dstMap.map_size);
     }else{
         //printf("Copying start\n");
-        //memcpy_uint8(dstMap.map,srcMap.map,srcMap.map_size);
+        memcpy_uint8(dstMap.map,srcMap.map,srcMap.map_size);
         //memcpy_uint8(dstMap.map,srcMap.map,1280*720*12/8);
-        memcpy_uint8(dstMap.map,srcMap.map,128*100);
+        //memcpy_uint8(dstMap.map,srcMap.map,128*100);
         //printf("Copying stop\n");
     }
     //copy data

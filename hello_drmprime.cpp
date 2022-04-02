@@ -257,7 +257,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * 
             // display frame
             x_push_into_filter_graph(dpo,frame);
         }else{
-            std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";
+            //std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";
         }
     }
     av_frame_free(&frame);
