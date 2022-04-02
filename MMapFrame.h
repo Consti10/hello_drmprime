@@ -44,7 +44,7 @@ public:
         map = (uint8_t *) mmap(0, obj->size, prot, MAP_SHARED,
                                obj->fd, 0);
         if (map == MAP_FAILED) {
-            fprintf(stderr,"Cannot map buffer\n");
+            fprintf(stderr,"Cannot map buffer size %ld\n",obj->size);
             map = NULL;
             return;
         }
