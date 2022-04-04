@@ -54,6 +54,7 @@ public:
         // buffer out handles - set to the drm prime handles of the frame
         uint32_t bo_handles[AV_DRM_MAX_PLANES];
         AVFrame *frame;
+        MMapFrame mappedFrame;
     };
     // --------
     int drm_fd;
@@ -61,7 +62,7 @@ public:
     struct drm_setup setup{};
     enum AVPixelFormat avfmt;
     // multiple (frame buffer?) objects such that we can create a new one without worrying about the last one still in use.
-    unsigned int ano;
+    unsigned int ano=0;
     // Aux size should only need to be 2, but on a few streams (Hobbit) under FKMS
     // we get initial flicker probably due to dodgy drm timing
     static constexpr auto AUX_SIZE=5;

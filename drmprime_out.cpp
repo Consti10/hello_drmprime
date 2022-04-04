@@ -322,11 +322,13 @@ static int do_display(DRMPrimeOut *const de, AVFrame *frame){
             first=false;
             AVFrame* extraFrame = av_frame_alloc();
             av_frame_ref(extraFrame, frame);
+            da->mappedFrame.mapFrame(da->frame,PROT_WRITE,"DstX");
         }else{
             // Instead of using any drm crap, just copy the raw data
             // takes longer than expected, though.
             chronoCopyFrameMMap.start();
-            mmap_and_copy_frame_data(da->frame,frame);
+            //mmap_and_copy_frame_data(da->frame,frame);
+            mmap_and_copy_frame2(da->mappedFrame,src);
             chronoCopyFrameMMap.stop();
             chronoCopyFrameMMap.printInIntervals(CALCULATOR_LOG_INTERVAL);
             //av_frame_free(&frame);
@@ -493,9 +495,9 @@ int DRMPrimeOut::drmprime_out_display(struct AVFrame *src_frame)
     if (src_frame->format == AV_PIX_FMT_DRM_PRIME) {
         frame = av_frame_alloc();
         av_frame_ref(frame, src_frame);
-        printf("format == AV_PIX_FMT_DRM_PRIME\n");
+        //printf("format == AV_PIX_FMT_DRM_PRIME\n");
     } else if (src_frame->format == AV_PIX_FMT_VAAPI) {
-        printf("format == AV_PIX_FMT_VAAPI\n");
+        //printf("format == AV_PIX_FMT_VAAPI\n");
         frame = av_frame_alloc();
         frame->format = AV_PIX_FMT_DRM_PRIME;
         if (av_hwframe_map(frame, src_frame, 0) != 0) {
@@ -518,30 +520,6 @@ int DRMPrimeOut::drmprime_out_display(struct AVFrame *src_frame)
         queue->push(std::make_shared<AVFrameHolder>(frame));
     }
     return 0;
-}
-
-DRMPrimeOut::~DRMPrimeOut()
-{
-    terminate=true;
-    sbQueue->terminate();
-    pthread_join(q_thread, NULL);
-    // free any frames that might be inside some queues - since the queue thread
-    // is now stopped, we don't have to worry about any synchronization
-    if(sbQueue->unsafeGetFrame()!=NULL){
-        AVFrame* frame=sbQueue->unsafeGetFrame();
-        av_frame_free(&frame);
-    }
-    auto tmp=queue->getAllAndClear();
-    for(int i=0;i<tmp.size();i++){
-        auto element=tmp[i];
-        av_frame_free(&element->frame);
-    }
-    if (drm_fd >= 0) {
-        close(drm_fd);
-        drm_fd = -1;
-    }
-    sbQueue.reset();
-    queue.reset();
 }
 
 DRMPrimeOut::DRMPrimeOut(int renderMode1):renderMode(renderMode1)
@@ -585,3 +563,26 @@ fail_free:
     fprintf(stderr, ">>> %s: FAIL\n", __func__);
 }
 
+DRMPrimeOut::~DRMPrimeOut()
+{
+    terminate=true;
+    sbQueue->terminate();
+    pthread_join(q_thread, NULL);
+    // free any frames that might be inside some queues - since the queue thread
+    // is now stopped, we don't have to worry about any synchronization
+    if(sbQueue->unsafeGetFrame()!=NULL){
+        AVFrame* frame=sbQueue->unsafeGetFrame();
+        av_frame_free(&frame);
+    }
+    auto tmp=queue->getAllAndClear();
+    for(int i=0;i<tmp.size();i++){
+        auto element=tmp[i];
+        av_frame_free(&element->frame);
+    }
+    if (drm_fd >= 0) {
+        close(drm_fd);
+        drm_fd = -1;
+    }
+    sbQueue.reset();
+    queue.reset();
+}
