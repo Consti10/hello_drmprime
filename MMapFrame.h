@@ -78,7 +78,7 @@ static void mmap_and_copy_frame_data(AVFrame* dst, AVFrame* src){
     srcMap.unmap();
 }
 
-static void mmap_and_copy_frame2(MMapFrame& dst,AVFrame* src){
+static void mmap_and_copy_frame2(MMapFrame& dstMap,AVFrame* src){
     MMapFrame srcMap(src,PROT_READ,"Src");
     if(dstMap.map_size!=srcMap.map_size){
         fprintf(stderr,"Cannot copy data from mapped buffer size %d to buff size %d",srcMap.map_size,dstMap.map_size);
