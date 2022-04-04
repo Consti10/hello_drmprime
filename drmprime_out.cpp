@@ -328,7 +328,7 @@ static int do_display(DRMPrimeOut *const de, AVFrame *frame){
             // takes longer than expected, though.
             chronoCopyFrameMMap.start();
             //mmap_and_copy_frame_data(da->frame,frame);
-            mmap_and_copy_frame2(da->mappedFrame.get(),src);
+            mmap_and_copy_frame2(da->mappedFrame.get(),frame);
             chronoCopyFrameMMap.stop();
             chronoCopyFrameMMap.printInIntervals(CALCULATOR_LOG_INTERVAL);
             //av_frame_free(&frame);
