@@ -322,13 +322,13 @@ static int do_display(DRMPrimeOut *const de, AVFrame *frame){
             first=false;
             AVFrame* extraFrame = av_frame_alloc();
             av_frame_ref(extraFrame, frame);
-            da->mappedFrame.mapFrame(da->frame,PROT_WRITE,"DstX");
+            da->mappedFrame=std::make_unique<MMapFrame>(da->frame,PROT_WRITE,"DstX");
         }else{
             // Instead of using any drm crap, just copy the raw data
             // takes longer than expected, though.
             chronoCopyFrameMMap.start();
             //mmap_and_copy_frame_data(da->frame,frame);
-            mmap_and_copy_frame2(da->mappedFrame,src);
+            mmap_and_copy_frame2(da->mappedFrame.get(),src);
             chronoCopyFrameMMap.stop();
             chronoCopyFrameMMap.printInIntervals(CALCULATOR_LOG_INTERVAL);
             //av_frame_free(&frame);

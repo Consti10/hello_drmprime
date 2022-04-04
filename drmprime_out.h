@@ -19,6 +19,7 @@ extern "C" {
 
 #include "common_consti/ThreadsafeQueue.hpp"
 #include "MMapFrame.h"
+#include <memory>
 
 class AVFrameHolder{
 public:
@@ -55,7 +56,7 @@ public:
         // buffer out handles - set to the drm prime handles of the frame
         uint32_t bo_handles[AV_DRM_MAX_PLANES];
         AVFrame *frame;
-        MMapFrame mappedFrame;
+        std::unique_ptr<MMapFrame> mappedFrame;
     };
     // --------
     int drm_fd;
