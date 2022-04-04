@@ -18,6 +18,7 @@ extern "C" {
 }
 
 #include "common_consti/ThreadsafeQueue.hpp"
+#include "MMapFrame.h"
 
 class AVFrameHolder{
 public:
