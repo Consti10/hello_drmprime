@@ -493,7 +493,8 @@ fail_res:
 
 int DRMPrimeOut::drmprime_out_display(struct AVFrame *src_frame)
 {
-    std::cout<<"DRMPrimeOut::drmprime_out_display w:"<<(src_frame ? src_frame->width: -1)<<"\n";
+    assert(src_frame):
+    std::cout<<"DRMPrimeOut::drmprime_out_display "<<src_frame->width<<"x"<<src_frame->height<<"\n";
     AVFrame *frame;
     if ((src_frame->flags & AV_FRAME_FLAG_CORRUPT) != 0) {
         fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", src_frame->format, src_frame->pts);
