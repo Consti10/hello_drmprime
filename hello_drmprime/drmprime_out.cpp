@@ -309,11 +309,13 @@ static int do_display(DRMPrimeOut *const de, AVFrame *frame){
         return -1;
     }
     if(de->renderMode==0 || de->renderMode==1){
+	  std::cout<<"X\n";
         da_uninit(de, da);
         //
         da_init(de,da,frame);
         // use another de aux for the next frame
         de->ano = de->ano + 1 >= DRMPrimeOut::AUX_SIZE ? 0 : de->ano + 1;
+	  std::cout<<"Y\n";
     }else{
         if(first){
             da_uninit(de, da);
