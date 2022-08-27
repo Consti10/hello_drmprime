@@ -496,6 +496,7 @@ fail_res:
 
 int DRMPrimeOut::drmprime_out_display(struct AVFrame *src_frame)
 {
+    std::cout<<"DRMPrimeOut::drmprime_out_display w:"<<(src_frame ? src_frame->width: -1)<<"\n";
     AVFrame *frame;
     int ret;
     if ((src_frame->flags & AV_FRAME_FLAG_CORRUPT) != 0) {
