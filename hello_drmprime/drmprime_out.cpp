@@ -524,6 +524,7 @@ int DRMPrimeOut::drmprime_out_display(struct AVFrame *src_frame)
 
 DRMPrimeOut::DRMPrimeOut(int renderMode1):renderMode(renderMode1)
 {
+   std::cout<<"DRMPrimeOut::DRMPrimeOut() begin\n";
     int rv;
 
     sbQueue=std::make_unique<ThreadsafeSingleBuffer<AVFrame*>>();
@@ -555,6 +556,7 @@ DRMPrimeOut::DRMPrimeOut(int renderMode1):renderMode(renderMode1)
         fprintf(stderr, "Failed to create display thread:\n");
         goto fail_close;
     }
+    std::cout<<"DRMPrimeOut::DRMPrimeOut() end\n";
     return;
 fail_close:
     close(drm_fd);
