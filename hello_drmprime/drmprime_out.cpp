@@ -104,6 +104,7 @@ static void da_uninit(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da){
         drmModeRmFB(de->drm_fd, da->fb_handle);
         da->fb_handle = 0;
     }
+  std::cout<<"da_uninit()x1\n";
     for (i = 0; i != AV_DRM_MAX_PLANES; ++i) {
         if (da->bo_handles[i]) {
             struct drm_gem_close gem_close = {.handle = da->bo_handles[i]};
