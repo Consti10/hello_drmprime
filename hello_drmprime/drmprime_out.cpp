@@ -97,14 +97,13 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
 // Note that if this drm_aux is currently read out, this call
 // might block. Otherwise, it will return almost immediately
 static void da_uninit(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da){
-    std::cout<<"da_uninit()begin\n";
+    //std::cout<<"da_uninit()begin\n";
     chronometerDaUninit.start();
     unsigned int i;
     if (da->fb_handle != 0) {
         drmModeRmFB(de->drm_fd, da->fb_handle);
         da->fb_handle = 0;
     }
-  std::cout<<"da_uninit()x1\n";
     for (i = 0; i != AV_DRM_MAX_PLANES; ++i) {
         if (da->bo_handles[i]) {
             struct drm_gem_close gem_close = {.handle = da->bo_handles[i]};
@@ -112,14 +111,12 @@ static void da_uninit(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da){
             da->bo_handles[i] = 0;
         }
     }
-  std::cout<<"da_uninit()x3\n";
 	if(da->frame){
 	  av_frame_free(&da->frame);
 	}
-  std::cout<<"da_uninit()x4\n";
     chronometerDaUninit.stop();
     chronometerDaUninit.printInIntervals(CALCULATOR_LOG_INTERVAL);
-  std::cout<<"da_uninit()end\n";
+  	//std::cout<<"da_uninit()end\n";
 }
 
 static void modeset_page_flip_event(int fd, unsigned int frame,unsigned int sec, unsigned int usec,void *data){
