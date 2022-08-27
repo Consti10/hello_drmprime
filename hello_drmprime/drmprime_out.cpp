@@ -32,9 +32,9 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
-#include "common_consti/TimeHelper.hpp"
-#include "common_consti/Logger.hpp"
-#include "common_consti/ThreadsafeQueue.hpp"
+#include "../common_consti/TimeHelper.hpp"
+#include "../common_consti/Logger.hpp"
+#include "../common_consti/ThreadsafeQueue.hpp"
 
 #include "MMapFrame.h"
 #include "extra_drm.h"

@@ -65,10 +65,9 @@ extern "C" {
 #include <memory>
 #include <vector>
 #include "extra.h"
-#include "common_consti/TimeHelper.hpp"
-#include "common_consti/LEDSwap.h"
-#include "common_consti/Logger.hpp"
-//#include "common_consti/UDPReceiver.h"
+#include "../common_consti/TimeHelper.hpp"
+#include "../common_consti/LEDSwap.h"
+#include "../common_consti/Logger.hpp"
 //
 #include <xf86drm.h>
 #include <xf86drmMode.h>
