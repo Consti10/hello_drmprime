@@ -310,7 +310,7 @@ static int do_display(DRMPrimeOut *const de, AVFrame *frame){
     assert(frame!=NULL);
     avgDisplayThreadQueueLatency.addUs(getTimeUs()-frame->pts);
     avgDisplayThreadQueueLatency.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    DRMPrimeOut::drm_aux *da = de->aux + de->ano;
+    DRMPrimeOut::drm_aux *da = &de->aux[de->ano];
     if(updateCRTCFormatIfNeeded(de, getFormatForFrame(frame))!=0){
         av_frame_free(&frame);
         return -1;
@@ -318,7 +318,7 @@ static int do_display(DRMPrimeOut *const de, AVFrame *frame){
     if(de->renderMode==0 || de->renderMode==1){
 	  std::cout<<"X\n";
         da_uninit(de, da);
-	  std::cout<<"Y\n";
+	    std::cout<<"Y\n";
         //
         da_init(de,da,frame);
         // use another de aux for the next frame
@@ -498,7 +498,6 @@ int DRMPrimeOut::drmprime_out_display(struct AVFrame *src_frame)
 {
     std::cout<<"DRMPrimeOut::drmprime_out_display w:"<<(src_frame ? src_frame->width: -1)<<"\n";
     AVFrame *frame;
-    int ret;
     if ((src_frame->flags & AV_FRAME_FLAG_CORRUPT) != 0) {
         fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", src_frame->format, src_frame->pts);
         return 0;

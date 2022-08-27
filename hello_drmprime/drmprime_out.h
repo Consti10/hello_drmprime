@@ -55,7 +55,7 @@ public:
         unsigned int fb_handle;
         // buffer out handles - set to the drm prime handles of the frame
         uint32_t bo_handles[AV_DRM_MAX_PLANES];
-        AVFrame *frame;
+        AVFrame *frame= nullptr;
         std::unique_ptr<MMapFrame> mappedFrame;
     };
     // --------
