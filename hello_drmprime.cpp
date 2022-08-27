@@ -237,6 +237,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * 
         return ret;
     }
     // Poll until we get the frame out
+	const auto loopUntilFrameBegin=std::chrono::steady_clock::now();
     bool gotFrame=false;
     while (!gotFrame){
         ret = avcodec_receive_frame(avctx, frame);
@@ -258,6 +259,10 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * 
             x_push_into_filter_graph(dpo,frame);
         }else{
             //std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";
+			if(std::chrono::steady_clock::now()-loopUntilFrameBegin > std::chrono::seconds(5)){
+			  std::cout<<"Go no frame after X seconds. Break, but decode delay witll be reported wrong\n";
+			  break;
+			}
         }
     }
     av_frame_free(&frame);
