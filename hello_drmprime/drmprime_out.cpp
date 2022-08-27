@@ -112,6 +112,7 @@ static void da_uninit(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da){
             da->bo_handles[i] = 0;
         }
     }
+  std::cout<<"da_uninit()x3\n";
     av_frame_free(&da->frame);
     chronometerDaUninit.stop();
     chronometerDaUninit.printInIntervals(CALCULATOR_LOG_INTERVAL);
