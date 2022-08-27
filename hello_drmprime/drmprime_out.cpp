@@ -156,7 +156,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
     for (int j = 0; j < desc->layers[0].nb_planes; ++j) {
         const AVDRMPlaneDescriptor *const p = desc->layers[0].planes + j;
         const AVDRMObjectDescriptor *const obj = desc->objects + p->object_index;
-        MLOGD<<"Plane "<<j<<" has pitch:"<<p->pitch<<" offset:"<<p->offset<<" object_index:"<<p->object_index<<"modifiers:"<<obj->format_modifier<<"\n";
+        //MLOGD<<"Plane "<<j<<" has pitch:"<<p->pitch<<" offset:"<<p->offset<<" object_index:"<<p->object_index<<"modifiers:"<<obj->format_modifier<<"\n";
         pitches[n] = p->pitch;
         offsets[n] = p->offset;
         //DRM_FORMAT_MOD_INVALID
@@ -494,7 +494,7 @@ fail_res:
 int DRMPrimeOut::drmprime_out_display(struct AVFrame *src_frame)
 {
     assert(src_frame);
-    std::cout<<"DRMPrimeOut::drmprime_out_display "<<src_frame->width<<"x"<<src_frame->height<<"\n";
+    //std::cout<<"DRMPrimeOut::drmprime_out_display "<<src_frame->width<<"x"<<src_frame->height<<"\n";
     AVFrame *frame;
     if ((src_frame->flags & AV_FRAME_FLAG_CORRUPT) != 0) {
         fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", src_frame->format, src_frame->pts);
