@@ -454,14 +454,14 @@ int main(int argc, char **argv)
 	/* open the DRM device */
 	ret = modeset_open(&fd,options.card);
 	if (ret){
-	  fprintf("modeset_open failed\n");
+	  fprintf(stderr,"modeset_open failed\n");
 	  goto out_return;
 	}
 
 	/* prepare all connectors and CRTCs */
 	ret = modeset_prepare(fd);
 	if (ret){
-	  fprintf("modeset_prepare failed\n");
+	  fprintf(stderr,"modeset_prepare failed\n");
 	  goto out_close;
 	}
 
