@@ -455,7 +455,11 @@ int main(int argc, char **argv)
 	ret = modeset_open(&fd,options.card);
 	if (ret){
 	  fprintf(stderr,"modeset_open failed\n");
-	  goto out_return;
+	  // This is how hello_drmprime does things
+	  if ((fd = drmOpen("vc4", NULL)) < 0) {
+		fprintf(stderr,"modeset_open second approach failed\n");
+		goto out_return;
+	  }
 	}
 
 	/* prepare all connectors and CRTCs */
