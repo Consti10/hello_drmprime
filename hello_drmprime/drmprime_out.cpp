@@ -493,7 +493,7 @@ fail_res:
 
 int DRMPrimeOut::drmprime_out_display(struct AVFrame *src_frame)
 {
-    assert(src_frame):
+    assert(src_frame);
     std::cout<<"DRMPrimeOut::drmprime_out_display "<<src_frame->width<<"x"<<src_frame->height<<"\n";
     AVFrame *frame;
     if ((src_frame->flags & AV_FRAME_FLAG_CORRUPT) != 0) {
