@@ -97,6 +97,7 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
 // Note that if this drm_aux is currently read out, this call
 // might block. Otherwise, it will return almost immediately
 static void da_uninit(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da){
+    std::cout<<"da_uninit()begin\n";
     chronometerDaUninit.start();
     unsigned int i;
     if (da->fb_handle != 0) {
@@ -113,6 +114,7 @@ static void da_uninit(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da){
     av_frame_free(&da->frame);
     chronometerDaUninit.stop();
     chronometerDaUninit.printInIntervals(CALCULATOR_LOG_INTERVAL);
+  std::cout<<"da_uninit()end\n";
 }
 
 static void modeset_page_flip_event(int fd, unsigned int frame,unsigned int sec, unsigned int usec,void *data){
