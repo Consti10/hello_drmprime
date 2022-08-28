@@ -438,7 +438,7 @@ struct Options{
     const char* out_filename=NULL;
     bool deinterlace=false;
     bool keyboard_led_toggle=false;
-    int render_mode=2;
+    int render_mode=1; //default to 1, whcih measn no CPU copy or similar, but dropping frames if encoder prodcues them faster than display
     int limitedFrameRate=-1;
 };
 static const char optstr[] = "?:i:o:ykr:f:";
