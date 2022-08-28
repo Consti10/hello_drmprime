@@ -575,10 +575,9 @@ static void modeset_draw(int fd)
         modeset_buf* currBuff = i % 2==0 ? frontBuffer : backBuffer;
         modeset_list->mode.flags=DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK;
 
-        /*const auto ret = drmModeSetCrtc(fd, modeset_list->crtc, currBuff->fb, 0, 0,
-                             &modeset_list->conn, 1, &modeset_list->mode);*/
-	  const auto ret = drmModeSetCrtc(fd, modeset_list->crtc, currBuff->fb, 0, 0,
-									  &modeset_list->conn, 1, nullptr);
+
+        const auto ret = drmModeSetCrtc(fd, modeset_list->crtc, currBuff->fb, 0, 0,
+                             &modeset_list->conn, 1, &modeset_list->mode);
 
         avgSwapTime.stop();
         avgSwapTime.printInIntervals(LOG_INTERVALL);

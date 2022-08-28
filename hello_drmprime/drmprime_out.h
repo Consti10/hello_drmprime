@@ -90,6 +90,8 @@ public:
 	};
 	void add_dummy_overlay_plane();
 	static int modeset_create_fb(int fd, ModesetBuff *buf);
+	//
+	drmModeModeInfo m_mode;
 };
 
 static int CALCULATOR_LOG_INTERVAL=10;
