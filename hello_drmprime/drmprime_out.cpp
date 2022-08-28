@@ -614,13 +614,12 @@ DRMPrimeOut::~DRMPrimeOut()
 void DRMPrimeOut::add_dummy_overlay_plane() {
   std::cout<<"DRMPrimeOut::add_dummy_overlay_plane() begin\n";
   //
-  {
-	uint32_t lol;
-	if(find_plane(de->drm_fd,de->setup.crtcIdx,format,lol,1)){
-	  std::cout<<"Cannot find overlay plane \n";
-	  return;
-	}
+  uint32_t lol;
+  int pplane_id=0;
+  if(find_plane(drm_fd,setup.crtcIdx, format,pplane_id,1)){
+	std::cout<<"Cannot find overlay plane \n";
+	return;
   }
-
+  std::cout<<"Found overlay plane, pplane_id:"<<pplane_id<<"\n";
   std::cout<<"DRMPrimeOut::add_dummy_overlay_plane() end\n";
 }
