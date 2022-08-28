@@ -59,7 +59,7 @@ Chronometer chronoCopyFrameMMap{"CopyFrameMMap"};
 // 1) The given crtc
 // 2) the given format
 static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
-                      uint32_t *const pplane_id){
+                      uint32_t& pplane_id){
     drmModePlaneResPtr planes;
     drmModePlanePtr plane;
     unsigned int i;
@@ -93,7 +93,7 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
             drmModeFreePlane(plane);
             continue;
         }
-        *pplane_id = plane->plane_id;
+        pplane_id = plane->plane_id;
         drmModeFreePlane(plane);
         break;
     }
@@ -244,10 +244,10 @@ static int updateCRTCFormatIfNeeded(DRMPrimeOut *const de,const uint32_t frameFo
     if (de->setup.out_format != format) {
 	    // test
 	  {
-		int lol;
+		uint32_t lol;
 		find_plane(de->drm_fd,de->setup.crtcIdx,format,lol);
 	  }
-        if (find_plane(de->drm_fd, de->setup.crtcIdx, format, &de->setup.planeId)) {
+        if (find_plane(de->drm_fd, de->setup.crtcIdx, format, de->setup.planeId)) {
             fprintf(stderr, "No plane for format: %#x\n", format);
             return -1;
         }
@@ -490,6 +490,7 @@ static int find_crtc(int drmfd, struct DRMPrimeOut::drm_setup *s, uint32_t *cons
     }
     {
         drmModeCrtc *crtc = drmModeGetCrtc(drmfd, s->crtcId);
+		std::cout<<"CRTC x,y,w,h"<<crtc->x<<","<<crtc->y," "<<crtc->width<<"x"<<crtc->height<<"\n";
         s->compose.x = crtc->x;
         s->compose.y = crtc->y;
         s->compose.width = crtc->width;
