@@ -89,7 +89,7 @@ public:
 	  uint32_t fb;
 	};
 	void add_dummy_overlay_plane();
-	static int modeset_create_fb(int fd, struct modeset_buf *buf);
+	static int modeset_create_fb(int fd, ModesetBuff *buf);
 };
 
 static int CALCULATOR_LOG_INTERVAL=10;
