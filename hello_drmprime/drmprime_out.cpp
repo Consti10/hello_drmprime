@@ -622,6 +622,13 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
   }
   std::cout<<"Found overlay plane, pplane_id:"<<pplane_id<<"\n";
   // add dummy framebuffer to that plane
+  DRMPrimeOut::ModesetBuff modeset_buff;
+  modeset_buff.width=1920;
+  modeset_buff.height=1080;
+
+  if(modeset_create_fb(drm_fd,&modeset_buff)){
+	std::cout<<"Cannot create dummy fb\n";
+  }
   std::cout<<"DRMPrimeOut::add_dummy_overlay_plane() end\n";
 }
 
