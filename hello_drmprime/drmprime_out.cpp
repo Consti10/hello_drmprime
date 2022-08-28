@@ -625,7 +625,7 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
   std::cout<<"DRMPrimeOut::add_dummy_overlay_plane() end\n";
 }
 
-int DRMPrimeOut::modeset_create_fb(int fd,DRMPrimeOut::ModesetBuff *buf)
+static int DRMPrimeOut::modeset_create_fb(int fd,DRMPrimeOut::ModesetBuff *buf)
 {
 	int ret;
 	// create dumb buffer

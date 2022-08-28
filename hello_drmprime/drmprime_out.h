@@ -77,9 +77,8 @@ public:
     // allows frame drops (higher video fps than display refresh).
     std::unique_ptr<ThreadsafeQueue<AVFrameHolder>> queue;
     // extra
-    //drm_aux_t extraAux;
     const int renderMode=0;
-	// hacky testing begin, from drm-howto
+	// hacky testing begin, from drm-howto -----------------------------------------------------------
 	struct ModesetBuff {
 	  uint32_t width;
 	  uint32_t height;
