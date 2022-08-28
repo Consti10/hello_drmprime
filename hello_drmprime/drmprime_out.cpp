@@ -79,7 +79,7 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
             drmModeFreePlane(plane);
             continue;
         }
-		std::cout<<"Plane "<<i<<" count_formats:"<<planes->count_formats<<"\n";
+		std::cout<<"Plane "<<i<<" count_formats:"<<plane->count_formats<<"\n";
         for (j = 0; j < plane->count_formats; ++j) {
             if (plane->formats[j] == format) {
 			  break;
