@@ -616,7 +616,7 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
   //
   uint32_t lol;
   uint32_t pplane_id=0;
-  if(find_plane(drm_fd,setup.crtcIdx, ,DRM_FORMAT_XRGB8888,pplane_id,1)){
+  if(find_plane(drm_fd,setup.crtcIdx,DRM_FORMAT_XRGB8888,pplane_id,1)){
 	std::cout<<"Cannot find overlay plane \n";
 	return;
   }
