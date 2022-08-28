@@ -635,9 +635,8 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
   connectors[0]=(uint32_t)setup.conId;
   drmModeModeInfo mode;
   mode.flags=DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK;
-
   const auto ret = drmModeSetCrtc(drm_fd,setup.crtcId,modeset_buff.fb, 0, 0,
-								  connectors, 1, &mode);
+								  connectors, 1, nullptr);
   if (ret){
 	std::cout<<"Cannot set CRTC\n";
 	return;
