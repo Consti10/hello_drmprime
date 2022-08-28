@@ -628,7 +628,21 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
 
   if(modeset_create_fb(drm_fd,&modeset_buff)){
 	std::cout<<"Cannot create dummy fb\n";
+	return;
   }
+  std::cout<<"Created dummy fb\n";
+  modeset_buf* currBuff = &modeset_buff;
+  uint32_t connectors[1];
+  connectors[0]=(uint32_t)setup.conId;
+  uint32_t flags=DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK;
+
+  const auto ret = drmModeSetCrtc(drm_fd,setup.crtcId,currBuff->fb, 0, 0,
+								  connectors, 1, flags);
+  if (ret){
+	std::cout<<"Cannot set CRTC\n";
+	return;
+  }
+  std::cout<<"CRTC set\n";
   std::cout<<"DRMPrimeOut::add_dummy_overlay_plane() end\n";
 }
 
