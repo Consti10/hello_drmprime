@@ -58,8 +58,9 @@ Chronometer chronoCopyFrameMMap{"CopyFrameMMap"};
 // on success, writes into pplane_id the id of a plane that supports
 // 1) The given crtc
 // 2) the given format
+// skip index: skip the first n planes, then try and find the one to use
 static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
-                      uint32_t& pplane_id){
+                      uint32_t& pplane_id,int skip_index=0){
     drmModePlaneResPtr planes;
     drmModePlanePtr plane;
     unsigned int i;
@@ -71,7 +72,7 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
         return -1;
     }
 	std::cout<<"find_plane: count_planes:"<<planes->count_planes<<"\n";
-    for (i = 0; i < planes->count_planes; ++i) {
+    for (i = skip_index; i < planes->count_planes; ++i) {
         plane = drmModeGetPlane(drmfd, planes->planes[i]);
         if (!plane) {
             fprintf(stderr, "drmModeGetPlane failed: %s\n", ERRSTR);
@@ -245,7 +246,7 @@ static int updateCRTCFormatIfNeeded(DRMPrimeOut *const de,const uint32_t frameFo
 	    // test
 	  {
 		uint32_t lol;
-		find_plane(de->drm_fd,de->setup.crtcIdx,format,lol);
+		find_plane(de->drm_fd,de->setup.crtcIdx,format,lol,1);
 	  }
         if (find_plane(de->drm_fd, de->setup.crtcIdx, format, de->setup.planeId)) {
             fprintf(stderr, "No plane for format: %#x\n", format);
