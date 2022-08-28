@@ -490,7 +490,7 @@ static int find_crtc(int drmfd, struct DRMPrimeOut::drm_setup *s, uint32_t *cons
     }
     {
         drmModeCrtc *crtc = drmModeGetCrtc(drmfd, s->crtcId);
-		std::cout<<"CRTC x,y,w,h"<<crtc->x<<","<<crtc->y," "<<crtc->width<<"x"<<crtc->height<<"\n";
+		std::cout<<"CRTC x,y,w,h"<<crtc->x<<","<<crtc->y" "<<crtc->width<<"x"<<crtc->height<<"\n";
         s->compose.x = crtc->x;
         s->compose.y = crtc->y;
         s->compose.width = crtc->width;
