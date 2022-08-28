@@ -631,6 +631,8 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
 	return;
   }
   std::cout<<"Created dummy fb\n";
+  std::cout<<"stride:"<<modeset_buff.stride<<"\n";
+
   uint32_t connectors[1];
   connectors[0]=(uint32_t)setup.conId;
   drmModeModeInfo mode;
