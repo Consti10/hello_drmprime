@@ -244,11 +244,6 @@ static int getFormatForFrame(AVFrame* frame){
 static int updateCRTCFormatIfNeeded(DRMPrimeOut *const de,const uint32_t frameFormat){
     const uint32_t format = frameFormat;
     if (de->setup.out_format != format) {
-	    // test
-	  {
-		uint32_t lol;
-		find_plane(de->drm_fd,de->setup.crtcIdx,format,lol,1);
-	  }
         if (find_plane(de->drm_fd, de->setup.crtcIdx, format, de->setup.planeId)) {
             fprintf(stderr, "No plane for format: %#x\n", format);
             return -1;
@@ -583,6 +578,7 @@ DRMPrimeOut::DRMPrimeOut(int renderMode1):renderMode(renderMode1)
         goto fail_close;
     }
     std::cout<<"DRMPrimeOut::DRMPrimeOut() end\n";
+	add_dummy_overlay_plane();
     return;
 fail_close:
     close(drm_fd);
@@ -613,4 +609,18 @@ DRMPrimeOut::~DRMPrimeOut()
     }
     sbQueue.reset();
     queue.reset();
+}
+
+void DRMPrimeOut::add_dummy_overlay_plane() {
+  std::cout<<"DRMPrimeOut::add_dummy_overlay_plane() begin\n";
+  //
+  {
+	uint32_t lol;
+	if(find_plane(de->drm_fd,de->setup.crtcIdx,format,lol,1)){
+	  std::cout<<"Cannot find overlay plane \n";
+	  return;
+	}
+  }
+
+  std::cout<<"DRMPrimeOut::add_dummy_overlay_plane() end\n";
 }

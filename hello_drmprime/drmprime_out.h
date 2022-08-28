@@ -79,6 +79,8 @@ public:
     // extra
     //drm_aux_t extraAux;
     const int renderMode=0;
+
+	void add_dummy_overlay_plane();
 };
 
 static int CALCULATOR_LOG_INTERVAL=10;
