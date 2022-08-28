@@ -621,5 +621,72 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
 	return;
   }
   std::cout<<"Found overlay plane, pplane_id:"<<pplane_id<<"\n";
+  // add dummy framebuffer to that plane
   std::cout<<"DRMPrimeOut::add_dummy_overlay_plane() end\n";
+}
+
+int DRMPrimeOut::modeset_create_fb(int fd,DRMPrimeOut::ModesetBuff *buf)
+{
+	int ret;
+	// create dumb buffer
+    struct drm_mode_create_dumb creq;
+	memset(&creq, 0, sizeof(creq));
+	creq.width = buf->width;
+	creq.height = buf->height;
+	creq.bpp = 32;
+	ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &creq);
+	if (ret < 0) {
+		fprintf(stderr, "cannot create dumb buffer (%d): %m\n",
+			errno);
+		return -errno;
+	}
+	buf->stride = creq.pitch;
+	buf->size = creq.size;
+	buf->handle = creq.handle;
+
+	// create framebuffer object for the dumb-buffer
+	ret = drmModeAddFB(fd, buf->width, buf->height, 24, 32, buf->stride,
+			   buf->handle, &buf->fb);
+	if (ret) {
+		fprintf(stderr, "cannot create framebuffer (%d): %m\n",
+			errno);
+		ret = -errno;
+		goto err_destroy;
+	}
+
+	// prepare buffer for memory mapping
+    struct drm_mode_map_dumb mreq;
+	memset(&mreq, 0, sizeof(mreq));
+	mreq.handle = buf->handle;
+	ret = drmIoctl(fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq);
+	if (ret) {
+		fprintf(stderr, "cannot map dumb buffer (%d): %m\n",
+			errno);
+		ret = -errno;
+		goto err_fb;
+	}
+
+	// perform actual memory mapping
+	buf->map = (uint8_t*)mmap(0, buf->size, PROT_READ | PROT_WRITE, MAP_SHARED,
+		        fd, mreq.offset);
+	if (buf->map == MAP_FAILED) {
+		fprintf(stderr, "cannot mmap dumb buffer (%d): %m\n",
+			errno);
+		ret = -errno;
+		goto err_fb;
+	}
+
+	/* clear the framebuffer to 0 */
+	memset(buf->map, 0, buf->size);
+
+	return 0;
+
+err_fb:
+	drmModeRmFB(fd, buf->fb);
+err_destroy:
+    struct drm_mode_destroy_dumb dreq;
+	memset(&dreq, 0, sizeof(dreq));
+	dreq.handle = buf->handle;
+	drmIoctl(fd, DRM_IOCTL_MODE_DESTROY_DUMB, &dreq);
+	return ret;
 }

@@ -79,8 +79,18 @@ public:
     // extra
     //drm_aux_t extraAux;
     const int renderMode=0;
-
+	// hacky testing begin, from drm-howto
+	struct ModesetBuff {
+	  uint32_t width;
+	  uint32_t height;
+	  uint32_t stride;
+	  uint32_t size;
+	  uint32_t handle;
+	  uint8_t *map;
+	  uint32_t fb;
+	};
 	void add_dummy_overlay_plane();
+	static int modeset_create_fb(int fd, struct modeset_buf *buf);
 };
 
 static int CALCULATOR_LOG_INTERVAL=10;
