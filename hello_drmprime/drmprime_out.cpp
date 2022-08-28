@@ -55,6 +55,9 @@ Chronometer chronoCopyFrameMMap{"CopyFrameMMap"};
 
 #define ERRSTR strerror(errno)
 
+// on success, writes into pplane_id the id of a plane that supports
+// 1) The given crtc
+// 2) the given format
 static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
                       uint32_t *const pplane_id){
     drmModePlaneResPtr planes;
@@ -86,6 +89,7 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
 			}
         }
         if (j == plane->count_formats) {
+		  // we haven't found a plane that supports the given format
             drmModeFreePlane(plane);
             continue;
         }
@@ -238,6 +242,11 @@ static int getFormatForFrame(AVFrame* frame){
 static int updateCRTCFormatIfNeeded(DRMPrimeOut *const de,const uint32_t frameFormat){
     const uint32_t format = frameFormat;
     if (de->setup.out_format != format) {
+	    // test
+	  {
+		int lol;
+		find_plane(de->drm_fd,de->setup.crtcIdx,format,lol);
+	  }
         if (find_plane(de->drm_fd, de->setup.crtcIdx, format, &de->setup.planeId)) {
             fprintf(stderr, "No plane for format: %#x\n", format);
             return -1;
