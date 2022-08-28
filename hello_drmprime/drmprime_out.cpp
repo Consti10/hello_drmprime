@@ -79,8 +79,11 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
             drmModeFreePlane(plane);
             continue;
         }
+		std::cout<<"Plane "<<i<<" count_formats:"<<planes->count_formats<<"\n";
         for (j = 0; j < plane->count_formats; ++j) {
-            if (plane->formats[j] == format) break;
+            if (plane->formats[j] == format) {
+			  break;
+			}
         }
         if (j == plane->count_formats) {
             drmModeFreePlane(plane);
@@ -315,14 +318,14 @@ static int do_display(DRMPrimeOut *const de, AVFrame *frame){
         return -1;
     }
     if(de->renderMode==0 || de->renderMode==1){
-	  std::cout<<"X\n";
+	    //std::cout<<"X\n";
         da_uninit(de, da);
-	    std::cout<<"Y\n";
+	    //std::cout<<"Y\n";
         //
         da_init(de,da,frame);
         // use another de aux for the next frame
         de->ano = de->ano + 1 >= DRMPrimeOut::AUX_SIZE ? 0 : de->ano + 1;
-	  std::cout<<"Z\n";
+	    //std::cout<<"Z\n";
     }else{
         if(first){
             da_uninit(de, da);
