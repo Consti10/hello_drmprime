@@ -46,7 +46,7 @@ public:
         uint32_t crtcId;
         int crtcIdx;
         uint32_t planeId;
-        unsigned int out_fourcc;
+        unsigned int out_format;// aka the video frame*s format
         struct{
             int x, y, width, height;
         } compose;

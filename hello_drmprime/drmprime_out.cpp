@@ -69,11 +69,12 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
     }
     for (i = 0; i < planes->count_planes; ++i) {
         plane = drmModeGetPlane(drmfd, planes->planes[i]);
-        if (!planes) {
+        if (!plane) {
             fprintf(stderr, "drmModeGetPlane failed: %s\n", ERRSTR);
             break;
         }
         if (!(plane->possible_crtcs & (1 << crtcidx))) {
+		    // pane does nor work with this crtc
             drmModeFreePlane(plane);
             continue;
         }
@@ -232,13 +233,13 @@ static int getFormatForFrame(AVFrame* frame){
 // do so. Only needs to be done once.
 static int updateCRTCFormatIfNeeded(DRMPrimeOut *const de,const uint32_t frameFormat){
     const uint32_t format = frameFormat;
-    if (de->setup.out_fourcc != format) {
+    if (de->setup.out_format != format) {
         if (find_plane(de->drm_fd, de->setup.crtcIdx, format, &de->setup.planeId)) {
             fprintf(stderr, "No plane for format: %#x\n", format);
             return -1;
         }
-        de->setup.out_fourcc = format;
-        printf("Changed drm_setup(aka CRTC) format to %#x\n",de->setup.out_fourcc);
+        de->setup.out_format = format;
+        printf("Changed drm_setup(aka CRTC) format to %#x\n",de->setup.out_format);
     }
     return 0;
 }
