@@ -67,6 +67,7 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
         fprintf(stderr, "drmModeGetPlaneResources failed: %s\n", ERRSTR);
         return -1;
     }
+	std::cout<<"find_plane: count_planes:"<<planes->count_planes<<"\n";
     for (i = 0; i < planes->count_planes; ++i) {
         plane = drmModeGetPlane(drmfd, planes->planes[i]);
         if (!plane) {
