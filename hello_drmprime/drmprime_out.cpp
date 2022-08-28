@@ -86,6 +86,7 @@ static int find_plane(const int drmfd, const int crtcidx, const uint32_t format,
 		std::cout<<"Plane "<<i<<" count_formats:"<<plane->count_formats<<"\n";
         for (j = 0; j < plane->count_formats; ++j) {
             if (plane->formats[j] == format) {
+			  std::cout<<"Found matching plane,index:"<<j<<" plane_id:"<<plane->plane_id<<"\n";
 			  break;
 			}
         }
