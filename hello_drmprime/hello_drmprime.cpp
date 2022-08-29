@@ -156,7 +156,7 @@ static void x_push_into_filter_graph(DRMPrimeOut * const dpo,AVFrame *frame){
             dpo->drmprime_out_display(frame);
         }
         //map_frame_test(frame);
-        save_frame_to_file_if_enabled(frame);
+        save_frame_to_file_if_enabled(frame,output_file);
 
     } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
 }

@@ -33,7 +33,7 @@ static Chronometer copyDataChrono{"CopyData"};
 // used for testing
 static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
 
-static void save_frame_to_file_if_enabled(const char* output_file,AVFrame *frame){
+static void save_frame_to_file_if_enabled(FILE * output_file,AVFrame *frame){
   if(output_file==NULL)return;
   const AVPixelFormat hw_pix_fmt=AV_PIX_FMT_DRM_PRIME;
   copyDataChrono.start();
