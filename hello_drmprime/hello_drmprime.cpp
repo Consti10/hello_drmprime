@@ -648,7 +648,7 @@ int main(int argc, char *argv[]){
                     lastFrame=std::chrono::steady_clock::now();
                 }
             }
-            ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet);
+            ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet, false);
             nFeedFrames++;
             const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
             const double runTimeS=runTimeMs/1000.0f;
