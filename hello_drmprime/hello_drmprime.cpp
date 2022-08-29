@@ -85,8 +85,6 @@ static AVFilterGraph *filter_graph = NULL;
 static AvgCalculator avgDecodeTime{"DecodeTime"};
 static Chronometer mmapBuffer{"mmapBuffer"};
 static Chronometer copyMmappedBuffer{"copyMmappedBuffer"};
-// used for testing
-static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
 
 static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type){
     int err = 0;
