@@ -23,6 +23,8 @@ extern "C" {
 #include "libavutil/pixdesc.h"
 }
 
+#include "../common_consti/Logger.hpp"
+
 static Chronometer transferCpuGpu{"Transfer"};
 static Chronometer copyDataChrono{"CopyData"};
 // used for testing
