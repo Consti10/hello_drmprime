@@ -642,7 +642,7 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
   const auto ret = drmModeSetCrtc(drm_fd,setup.crtcId,modeset_buff.fb, 0, 0,
 								  connectors, 1, &mode);
   if (ret){
-	std::cout<<"Cannot set CRTC\n";
+	std::cout<<"Cannot set CRTC"<<strerror(errno)<<"\n";
 	return;
   }
   std::cout<<"CRTC set\n";
