@@ -216,7 +216,7 @@ static void x_push_into_filter_graph(DRMPrimeOut * const dpo,AVFrame *frame){
 }
 
 //Sends one frame to the decoder, then waits for the output frame to become available
-static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * const dpo,AVPacket *packet){
+static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * const dpo,AVPacket *packet,bool enable_filter_graph){
     AVFrame *frame = nullptr;
     // testing
     //check_single_nalu(packet->data,packet->size);
@@ -255,7 +255,13 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * 
             //frame->pts=now;
             frame->pts=beforeUs;
             // display frame
-            x_push_into_filter_graph(dpo,frame);
+			if(enable_filter_graph){
+			  x_push_into_filter_graph(dpo,frame);
+			}else{
+			  if(dpo!= nullptr){
+				dpo->drmprime_out_display(frame);
+			  }
+			}
         }else{
             //std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";
 			if(std::chrono::steady_clock::now()-loopUntilFrameBegin > std::chrono::seconds(5)){
@@ -655,7 +661,7 @@ int main(int argc, char *argv[]){
     // flush the decoder
     packet.data = NULL;
     packet.size = 0;
-    ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet);
+    ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet, false);
     av_packet_unref(&packet);
 
     if (output_file){
