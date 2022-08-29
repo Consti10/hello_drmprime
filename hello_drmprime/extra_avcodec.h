@@ -25,6 +25,8 @@ extern "C" {
 
 static Chronometer transferCpuGpu{"Transfer"};
 static Chronometer copyDataChrono{"CopyData"};
+// used for testing
+static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
 
 static void save_frame_to_file_if_enabled(const char* output_file,AVFrame *frame){
   if(output_file==NULL)return;
