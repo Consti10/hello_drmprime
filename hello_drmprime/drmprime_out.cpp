@@ -636,7 +636,7 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
   uint32_t connectors[1];
   connectors[0]=(uint32_t)setup.conId;
 
-  drmModeConnectorPtr xConnector=drmModeGetConnector(de->drm_fd,de->setup.conId);
+  drmModeConnectorPtr xConnector=drmModeGetConnector(drm_fd,setup.conId);
   drmModeModeInfo mode=xConnector->modes[0];
   mode.flags=DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK;
   const auto ret = drmModeSetCrtc(drm_fd,setup.crtcId,modeset_buff.fb, 0, 0,
