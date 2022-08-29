@@ -16,7 +16,7 @@ endif
 
 all: hello_drmprime
 
-hello_drmprime: hello_drmprime.cpp drmprime_out.cpp extra.h drmprime_out.h MMapFrame.h av_decoder.cpp av_decoder.h
+hello_drmprime: hello_drmprime.cpp drmprime_out.cpp extra.h drmprime_out.h MMapFrame.h
 	$(CXX) -o $@ $^ $(_CFLAGS) $(_LDFLAGS) $(_LDLIBS) -std=c++17
 
 clean:
