@@ -1,0 +1,12 @@
+//
+// Created by consti10 on 29.08.22.
+//
+
+#ifndef HELLO_DRMPRIME_HELLO_DRMPRIME_AV_DECODER_H_
+#define HELLO_DRMPRIME_HELLO_DRMPRIME_AV_DECODER_H_
+
+class AVDecoder {
+
+};
+
+#endif //HELLO_DRMPRIME_HELLO_DRMPRIME_AV_DECODER_H_
