@@ -24,6 +24,9 @@ extern "C" {
 }
 
 #include "../common_consti/Logger.hpp"
+#include "../common_consti/TimeHelper.hpp"
+#include <memory>
+#include <vector>
 
 static Chronometer transferCpuGpu{"Transfer"};
 static Chronometer copyDataChrono{"CopyData"};
