@@ -30,6 +30,7 @@ static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::ve
 
 static void save_frame_to_file_if_enabled(const char* output_file,AVFrame *frame){
   if(output_file==NULL)return;
+  const AVPixelFormat hw_pix_fmt=AV_PIX_FMT_DRM_PRIME;
   copyDataChrono.start();
   std::cout<<"Saving frame to file\n";
   AVFrame* sw_frame=NULL;
