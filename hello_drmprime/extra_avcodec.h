@@ -33,7 +33,7 @@ class SaveFramesToFile{
  public:
   SaveFramesToFile(const char* out_filename){
 	std::cout<<"Opening output fle:"<<std::string(out_filename)<<"\n";
-	if ((output_file = fopen(mXOptions.out_filename, "w+")) == NULL) {
+	if ((output_file = fopen(out_filename, "w+")) == NULL) {
 	  fprintf(stderr, "Failed to open output file %s: %s\n", out_filename, strerror(errno));
 	  output_file= nullptr;
 	}
@@ -74,12 +74,12 @@ class SaveFramesToFile{
 	const int size = av_image_get_buffer_size((AVPixelFormat)tmp_frame->format, tmp_frame->width,
 											  tmp_frame->height, 1);
 	MLOGD<<"Frame size in Bytes:"<<size<<"\n";
-	if(size>copyBuffer->size()){
+	if(size>m_copyBuffer->size()){
 	  MLOGD<<"Resize to "<<size<<"\n";
-	  copyBuffer->resize(size);
+	  m_copyBuffer->resize(size);
 	}
 	//uint8_t buffer[size];
-	int ret = av_image_copy_to_buffer(copyBuffer->data(), size,
+	int ret = av_image_copy_to_buffer(m_copyBuffer->data(), size,
 									  (const uint8_t * const *)tmp_frame->data,
 									  (const int *)tmp_frame->linesize, (AVPixelFormat)tmp_frame->format,
 									  tmp_frame->width, tmp_frame->height, 1);
@@ -90,7 +90,7 @@ class SaveFramesToFile{
 	}
 	copyDataChrono.stop();
 	copyDataChrono.printInIntervals(10);
-	if ((ret = fwrite(copyBuffer->data(), 1, size, output_file)) < 0) {
+	if ((ret = fwrite(m_copyBuffer->data(), 1, size, output_file)) < 0) {
 	  fprintf(stderr, "Failed to dump raw data.\n");
 	  av_frame_free(&sw_frame);
 	  return;
@@ -102,7 +102,7 @@ class SaveFramesToFile{
   Chronometer transferCpuGpu{"Transfer"};
   Chronometer copyDataChrono{"CopyData"};
   // used for testing
-  std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
+  std::unique_ptr<std::vector<uint8_t>> m_copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
 };
 
 

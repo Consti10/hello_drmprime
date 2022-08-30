@@ -50,6 +50,7 @@ Chronometer chronometer2{"X2"};
 Chronometer chronometer3{"X3"};
 Chronometer chronometerDaInit{"DA_INIT"};
 Chronometer chronoCopyFrameMMap{"CopyFrameMMap"};
+static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
 
 #define DRM_MODULE "vc4"
 
