@@ -154,16 +154,23 @@ static uint32_t createColor(const int idx){
   const uint32_t rgb=(r << 16) | (g << 8) | b;
   return rgb;
 }
+
+static inline void memset32_loop(uint32_t* dest,const uint32_t value,int num){
+  for ( ; num ; dest+=1, num-=1) {
+	*dest=value;
+  }
+}
+
 // fill a RGBA frame buffer with a specific color, taking stride into account
 static void fillFrame(uint8_t* dest,const int width,const int height,const int stride,const uint32_t rgb){
   if(stride==width*4){
-	memset32_fast((uint32_t*)dest,rgb,height*width);
+	memset32_loop((uint32_t*)dest,rgb,height*width);
   }else{
 	//std::cout<<stride<<" "<<width<<"\n";
 	for (int j = 0; j < height; ++j) {
 	  const int offsetStride=stride * j;
 	  uint32_t* lineStart=(uint32_t*)&dest[offsetStride];
-	  memset32_fast(lineStart,rgb,width);
+	  memset32_loop(lineStart,rgb,width);
 	}
   }
 }

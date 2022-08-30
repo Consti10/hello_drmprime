@@ -632,7 +632,7 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
   }
   std::cout<<"Created dummy fb"<<modeset_buff.width<<"x"<<modeset_buff.height<<" "<<modeset_buff.fb<<"\n";
   std::cout<<"stride:"<<modeset_buff.stride<<"\n";
-  fillFrame(frontBuffer->map,frontBuffer->width,frontBuffer->height,frontBuffer->stride, createColor(0));
+  fillFrame(modeset_buff.map,modeset_buff.width,modeset_buff.height,modeset_buff.stride, createColor(0));
 
   if(drmModeSetPlane(drm_fd, pplane_id, setup.crtcId,
 					 modeset_buff.fb, DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK,
