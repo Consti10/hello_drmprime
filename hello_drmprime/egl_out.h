@@ -38,6 +38,15 @@ extern "C" {
 #include <thread>
 #include <memory>
 
+class XAVFrameHolder{
+ public:
+  XAVFrameHolder(AVFrame* f):frame(f){};
+  ~XAVFrameHolder(){
+	//av_frame_free(f)
+  };
+  AVFrame* frame;
+};
+
 class EGLOut {
  public:
   EGLOut(int width,int height):window_width(width),window_height(height){
@@ -54,6 +63,10 @@ class EGLOut {
   }
   void initializeWindowRender();
   void render_once();
+  /**
+	* Display this frame via egl / OpenGL render
+	*/
+  int out_display(struct AVFrame * frame);
  private:
   std::unique_ptr<std::thread> render_thread;
   const int window_width;
@@ -64,6 +77,9 @@ class EGLOut {
   GLint pos;
   GLint uvs;
   GLFWwindow* window;
+  //
+  // allows frame drops (higher video fps than display refresh).
+  std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue;
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
