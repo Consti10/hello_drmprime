@@ -128,7 +128,7 @@ void EGLOut::render_once() {
 }
 
 
-int EGLOut::drmprime_out_display(struct AVFrame *frame) {
+int EGLOut::out_display(struct AVFrame *src_frame) {
   assert(src_frame);
   //std::cout<<"DRMPrimeOut::drmprime_out_display "<<src_frame->width<<"x"<<src_frame->height<<"\n";
   AVFrame *frame;
