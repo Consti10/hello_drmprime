@@ -3,6 +3,7 @@
 //
 
 #include "egl_out.h"
+#include <cassert>
 
 static const GLchar* vertex_shader_source =
 	"#version 300 es\n"
