@@ -39,6 +39,17 @@ extern "C" {
 #include <memory>
 #include "../common_consti/ThreadsafeQueue.hpp"
 
+typedef struct egl_aux_s {
+  int fd;
+  GLuint texture;
+} egl_aux_t;
+
+struct FrameTexture{
+  AVFrame* av_frame= nullptr;
+  int fd=-1;
+  GLuint texture=0;
+};
+
 class XAVFrameHolder{
  public:
   XAVFrameHolder(AVFrame* f):frame(f){};
@@ -65,7 +76,9 @@ class EGLOut {
   void initializeWindowRender();
   void render_once();
   /**
-	* Display this frame via egl / OpenGL render
+   * Display this frame via egl / OpenGL render.
+   * This does not directly render the frame, but rather pushes it onto a queue
+   * where it is then picked up by the render thread.
 	*/
   int out_display(struct AVFrame * frame);
  private:
@@ -81,6 +94,10 @@ class EGLOut {
   //
   // allows frame drops (higher video fps than display refresh).
   std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue;
+  //
+  //
+  std::unique_ptr<FrameTexture> egl_frame= nullptr;
+  GLuint texture=0;
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_

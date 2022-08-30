@@ -7,6 +7,23 @@
 
 #include <cassert>
 
+static EGLint texgen_attrs[] = {
+	EGL_DMA_BUF_PLANE0_FD_EXT,
+	EGL_DMA_BUF_PLANE0_OFFSET_EXT,
+	EGL_DMA_BUF_PLANE0_PITCH_EXT,
+	EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT,
+	EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT,
+	EGL_DMA_BUF_PLANE1_FD_EXT,
+	EGL_DMA_BUF_PLANE1_OFFSET_EXT,
+	EGL_DMA_BUF_PLANE1_PITCH_EXT,
+	EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT,
+	EGL_DMA_BUF_PLANE1_MODIFIER_HI_EXT,
+	EGL_DMA_BUF_PLANE2_FD_EXT,
+	EGL_DMA_BUF_PLANE2_OFFSET_EXT,
+	EGL_DMA_BUF_PLANE2_PITCH_EXT,
+	EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT,
+	EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT,
+};
 
 static const GLchar* vertex_shader_source =
 	"#version 300 es\n"
@@ -125,9 +142,99 @@ void EGLOut::initializeWindowRender() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+std::unique_ptr<FrameTexture> make_egl_texture(AVFrame* frame,EGLDisplay *egl_display){
+  auto before=std::chrono::steady_clock::now();
+  auto ret=std::make_unique<FrameTexture>();
+  ret->av_frame=frame;
+  const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor*)frame->data[0];
+  ret->fd = desc->objects[0].fd;
+  EGLint attribs[50];
+  EGLint * a = attribs;
+  const EGLint * b = texgen_attrs;
+
+  *a++ = EGL_WIDTH;
+  *a++ = av_frame_cropped_width(frame);
+  *a++ = EGL_HEIGHT;
+  *a++ = av_frame_cropped_height(frame);
+  *a++ = EGL_LINUX_DRM_FOURCC_EXT;
+  *a++ = desc->layers[0].format;
+
+  int i, j;
+  for (i = 0; i < desc->nb_layers; ++i) {
+	for (j = 0; j < desc->layers[i].nb_planes; ++j) {
+	  const AVDRMPlaneDescriptor * const p = desc->layers[i].planes + j;
+	  const AVDRMObjectDescriptor * const obj = desc->objects + p->object_index;
+	  *a++ = *b++;
+	  *a++ = obj->fd;
+	  *a++ = *b++;
+	  *a++ = p->offset;
+	  *a++ = *b++;
+	  *a++ = p->pitch;
+	  if (obj->format_modifier == 0) {
+		b += 2;
+	  }
+	  else {
+		*a++ = *b++;
+		*a++ = (EGLint)(obj->format_modifier & 0xFFFFFFFF);
+		*a++ = *b++;
+		*a++ = (EGLint)(obj->format_modifier >> 32);
+	  }
+	}
+  }
+  *a = EGL_NONE;
+  const EGLImage image = eglCreateImageKHR(*egl_display,
+										   EGL_NO_CONTEXT,
+										   EGL_LINUX_DMA_BUF_EXT,
+										   NULL, attribs);
+  if (!image) {
+	printf("Failed to create EGLImage\n");
+	return nullptr;
+  }
+  /// his
+  glGenTextures(1, &ret->texture);
+  glEnable(GL_TEXTURE_EXTERNAL_OES);
+  glBindTexture(GL_TEXTURE_EXTERNAL_OES, ret->texture);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, image);
+
+  eglDestroyImageKHR(*egl_display, image);
+  auto delta=std::chrono::steady_clock::now()-before;
+  std::cout<<"Creating texture took:"<<std::chrono::duration_cast<std::chrono::milliseconds>(delta).count()<<"ms\n";
+}
+
 void EGLOut::render_once() {
+  // update the frame to the most recent one
+  // A bit overkill, but it was quicker to just copy paste the logic from hello_drmprime.
+  const auto allBuffers=queue->getAllAndClear();
+  if(allBuffers.size()>0) {
+	const int nDroppedFrames = allBuffers.size() - 1;
+	if (nDroppedFrames != 0) {
+	  MLOGD << "N dropped:" << nDroppedFrames << "\n";
+	}
+	// don't forget to free the dropped frames
+	for (int i = 0; i < nDroppedFrames; i++) {
+	  av_frame_free(&allBuffers[i]->frame);
+	}
+	const auto latest_new_frame = allBuffers[nDroppedFrames];
+	// cleanup
+	if(egl_frame!= nullptr){
+	  glDeleteTextures(1, &egl_frame->texture);
+	  egl_frame->texture = 0;
+	  egl_frame->fd = -1;
+	  av_frame_free(&egl_frame->av_frame);
+	  egl_frame= nullptr;
+	}
+	// and create a new egl texture for this frame, such that it can be rendered
+	egl_frame= make_egl_texture(latest_new_frame,&eglGetCurrentDisplay());
+  }
   glClearColor(1.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
+  if(egl_frame!= nullptr){
+	glUseProgram(shader_program);
+	glBindTexture(GL_TEXTURE_EXTERNAL_OES, egl_frame->texture);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  }
   glfwSwapBuffers(window);
 }
 

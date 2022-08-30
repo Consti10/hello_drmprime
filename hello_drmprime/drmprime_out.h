@@ -37,7 +37,9 @@ public:
     explicit DRMPrimeOut(int renderMode);
     ~DRMPrimeOut();
     /**
-     * Display this frame via drm prime
+     * Display this frame via drm prime. Depending on the rendering mode,
+     * the flow is different, but in general, this pushes the frame into a queue
+     * to be picked up by the display thread.
      * @param frame the frame to display
      */
     int drmprime_out_display(struct AVFrame * frame);
