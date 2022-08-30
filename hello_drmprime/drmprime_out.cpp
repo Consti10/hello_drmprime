@@ -535,7 +535,8 @@ DRMPrimeOut::DRMPrimeOut(int renderMode1):renderMode(renderMode1)
         goto fail_close;
     }
     std::cout<<"DRMPrimeOut::DRMPrimeOut() end\n";
-	add_dummy_overlay_plane();
+	// disable the dummy overlay plane for now
+	//add_dummy_overlay_plane();
     return;
 fail_close:
     close(drm_fd);
