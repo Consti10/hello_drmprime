@@ -232,7 +232,7 @@ void EGLOut::render_once() {
   glClearColor(1.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
   // Only render the texture if we have one (aka we have gotten at least one frame from the decoder)
-  if(frame_texture.has_valid_image){
+  if(true){
 	glUseProgram(shader_program);
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES, frame_texture.texture);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
