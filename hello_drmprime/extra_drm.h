@@ -134,4 +134,38 @@ static int modeset_open(int *out, const char *node)
     return 0;
 }
 
+// returns fully red,green,blue color alternating and wrapping around
+static uint32_t createColor(const int idx){
+  uint8_t r,g,b;
+  int colorIdx= idx % 3;
+  if(colorIdx==0){
+	r=255;
+	g=0;
+	b=0;
+  }else if(colorIdx==1){
+	r=0;
+	g=255;
+	b=0;
+  }else{
+	r=0;
+	g=0;
+	b=255;
+  }
+  const uint32_t rgb=(r << 16) | (g << 8) | b;
+  return rgb;
+}
+// fill a RGBA frame buffer with a specific color, taking stride into account
+static void fillFrame(uint8_t* dest,const int width,const int height,const int stride,const uint32_t rgb){
+  if(stride==width*4){
+	memset32_fast((uint32_t*)dest,rgb,height*width);
+  }else{
+	//std::cout<<stride<<" "<<width<<"\n";
+	for (int j = 0; j < height; ++j) {
+	  const int offsetStride=stride * j;
+	  uint32_t* lineStart=(uint32_t*)&dest[offsetStride];
+	  memset32_fast(lineStart,rgb,width);
+	}
+  }
+}
+
 #endif //HELLO_DRMPRIME_EXTRA_DRM_H
