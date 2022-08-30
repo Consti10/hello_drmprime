@@ -52,7 +52,7 @@ class EGLOut {
  private:
   std::unique_ptr<std::thread> render_thread;
   const int window_width;
-  const int window_height:
+  const int window_height;
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_

@@ -264,7 +264,7 @@ int main(int argc, char *argv[]){
     }
     drm_prime_out = new DRMPrimeOut(mXOptions.render_mode);
 
-	EGLOut* egl_out=new EGLOut(1280,720);
+	auto* egl_out=new EGLOut(1280,720);
 
 	SaveFramesToFile* save_frames_to_file=nullptr;
     // open the file to dump raw data
