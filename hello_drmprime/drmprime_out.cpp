@@ -234,7 +234,8 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 			fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
 		  }
 		}
-		xFirst= false;
+		// drmModePageFlip doesn't work
+		//xFirst= false;
     }
     chronometerDaInit.stop();
     chronometerDaInit.printInIntervals(CALCULATOR_LOG_INTERVAL);
