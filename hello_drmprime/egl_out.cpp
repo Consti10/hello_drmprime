@@ -145,10 +145,11 @@ void EGLOut::initializeWindowRender() {
 bool update_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame){
   auto before=std::chrono::steady_clock::now();
   // cleanup old texture if given
-  if(frame_texture.texture!=0){
+  /*if(frame_texture.texture!=0){
 	glDeleteTextures(1, &frame_texture.texture);
 	frame_texture.texture=0;
-  }
+  }*/
+  // We can now also give the frame back to av, since we are updating to a new one.
   if(frame_texture.av_frame!= nullptr){
 	av_frame_free(&frame_texture.av_frame);
   }
@@ -193,11 +194,13 @@ bool update_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFr
 										   NULL, attribs);
   if (!image) {
 	printf("Failed to create EGLImage\n");
-	frame_texture.texture=0;
+	frame_texture.has_valid_image= false;
 	return false;
   }
+  if(frame_texture.texture==0){
+	glGenTextures(1, &frame_texture.texture);
+  }
   /// his
-  glGenTextures(1, &frame_texture.texture);
   glEnable(GL_TEXTURE_EXTERNAL_OES);
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, frame_texture.texture);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -231,7 +234,7 @@ void EGLOut::render_once() {
   glClearColor(1.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
   // Only render the texture if we have one (aka we have gotten at least one frame from the decoder)
-  if(frame_texture.texture!=0){
+  if(frame_texture.has_valid_image){
 	glUseProgram(shader_program);
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES, frame_texture.texture);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

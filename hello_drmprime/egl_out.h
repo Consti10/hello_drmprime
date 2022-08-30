@@ -42,6 +42,7 @@ extern "C" {
 struct FrameTexture{
   AVFrame* av_frame= nullptr;
   GLuint texture=0;
+  bool has_valid_image=false;
 };
 
 class XAVFrameHolder{
