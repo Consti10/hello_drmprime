@@ -13,7 +13,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <chrono>
-#include "include/LEDSwap.h"
 
 #define GLFW_INCLUDE_ES2
 extern "C" {
@@ -39,6 +38,7 @@ extern "C" {
 
 class EGLOut {
  public:
+  void initializeWindowRender(int width,int height);
  private:
 };
 

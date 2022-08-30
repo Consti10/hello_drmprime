@@ -73,7 +73,7 @@ include_directories(
 	/home/pi/dev/rpi-ffmpeg/out/armv7-buster-shared-rel )
 
 
-add_executable(hello_drmprime hello_drmprime.cpp drmprime_out.cpp)
+add_executable(hello_drmprime hello_drmprime.cpp drmprime_out.cpp egl_out.cpp)
 	
 target_link_libraries(hello_drmprime ${FFMPEG_LIBRARIES} -ldrm -lpthread)
 
