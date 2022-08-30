@@ -69,8 +69,6 @@ extern "C" {
 #include "../common_consti/LEDSwap.h"
 #include "../common_consti/Logger.hpp"
 //
-#include <xf86drm.h>
-#include <xf86drmMode.h>
 
 #include "MMapFrame.h"
 #include "extra_avcodec.h"
@@ -78,9 +76,6 @@ extern "C" {
 static enum AVPixelFormat hw_pix_fmt;
 static FILE *output_file = NULL;
 
-static AVFilterContext *buffersink_ctx = NULL;
-static AVFilterContext *buffersrc_ctx = NULL;
-static AVFilterGraph *filter_graph = NULL;
 
 static AvgCalculator avgDecodeTime{"DecodeTime"};
 static Chronometer mmapBuffer{"mmapBuffer"};
@@ -126,7 +121,7 @@ static void map_frame_test(AVFrame* frame){
 }
 
 //Sends one frame to the decoder, then waits for the output frame to become available
-static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * const drm_prime_out,AVPacket *packet,bool enable_filter_graph){
+static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * const drm_prime_out,AVPacket *packet){
     AVFrame *frame = nullptr;
     // testing
     //check_single_nalu(packet->data,packet->size);
@@ -386,7 +381,6 @@ int main(int argc, char *argv[]){
     if (output_file){
         fclose(output_file);
     }
-    avfilter_graph_free(&filter_graph);
     avcodec_free_context(&decoder_ctx);
     avformat_close_input(&input_ctx);
 
