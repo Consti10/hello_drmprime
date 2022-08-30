@@ -74,7 +74,6 @@ extern "C" {
 #include "extra_avcodec.h"
 
 static enum AVPixelFormat hw_pix_fmt;
-static FILE *output_file = NULL;
 
 
 static AvgCalculator avgDecodeTime{"DecodeTime"};
@@ -261,13 +260,10 @@ int main(int argc, char *argv[]){
     }
     drm_prime_out = new DRMPrimeOut(mXOptions.render_mode);
 
+	SaveFramesToFile* save_frames_to_file=nullptr;
     // open the file to dump raw data
     if (mXOptions.out_filename != nullptr) {
-        std::cout<<"Opening output fle:"<<std::string(mXOptions.out_filename)<<"\n";
-        if ((output_file = fopen(mXOptions.out_filename, "w+")) == NULL) {
-            fprintf(stderr, "Failed to open output file %s: %s\n", mXOptions.out_filename, strerror(errno));
-            return -1;
-        }
+	  save_frames_to_file=new SaveFramesToFile(mXOptions.out_filename);
     }
 
     const char * in_file=mXOptions.in_filename;
@@ -378,8 +374,8 @@ int main(int argc, char *argv[]){
     ret = decode_and_wait_for_frame(decoder_ctx, drm_prime_out, &packet);
     av_packet_unref(&packet);
 
-    if (output_file){
-        fclose(output_file);
+    if (save_frames_to_file){
+        delete save_frames_to_file;
     }
     avcodec_free_context(&decoder_ctx);
     avformat_close_input(&input_ctx);
