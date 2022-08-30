@@ -3,7 +3,10 @@
 //
 
 #include "egl_out.h"
+#include "../common_consti/TimeHelper.hpp"
+
 #include <cassert>
+
 
 static const GLchar* vertex_shader_source =
 	"#version 300 es\n"
