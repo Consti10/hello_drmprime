@@ -97,11 +97,6 @@ void EGLOut::initializeWindowRender(int width, int height) {
   window = glfwCreateWindow(width, height, __FILE__,NULL, NULL);
 
   glfwMakeContextCurrent(window);
-  if(options.disable_vsync){
-	// Doesn't work
-	//std::cout<<"Disabling VSYNC\n";
-	glfwSwapInterval( 0 );
-  }
 
   //EGLDisplay egl_display = glfwGetEGLDisplay();
   EGLDisplay egl_display = eglGetCurrentDisplay();
