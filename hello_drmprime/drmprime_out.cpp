@@ -623,8 +623,8 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
   std::cout<<"Found overlay plane, pplane_id:"<<pplane_id<<"\n";
   // add dummy framebuffer to that plane
   DRMPrimeOut::ModesetBuff modeset_buff;
-  modeset_buff.width=640;
-  modeset_buff.height=480;
+  modeset_buff.width=1280;
+  modeset_buff.height=720;
 
   if(modeset_create_fb(drm_fd,&modeset_buff)){
 	std::cout<<"Cannot create dummy fb\n";
@@ -633,7 +633,7 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
   std::cout<<"Created dummy fb\n";
   std::cout<<"stride:"<<modeset_buff.stride<<"\n";
 
-  uint32_t connectors[1];
+  /*uint32_t connectors[1];
   connectors[0]=(uint32_t)setup.conId;
 
   drmModeConnectorPtr xConnector=drmModeGetConnector(drm_fd,setup.conId);
@@ -645,7 +645,18 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
 	std::cout<<"Cannot set CRTC"<<strerror(errno)<<"\n";
 	return;
   }
-  std::cout<<"CRTC set\n";
+  std::cout<<"CRTC set\n";*/
+  if(drmModeSetPlane(de->drm_fd, pplane_id, de->setup.crtcId,
+					 modeset_buff.fb, DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK,
+					 0, ,
+					 1920,
+					 1080,
+					 0, 0,
+					 1280,
+					 720)!=0){
+	fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
+	return -1;
+  }
   std::cout<<"DRMPrimeOut::add_dummy_overlay_plane() end\n";
 }
 
