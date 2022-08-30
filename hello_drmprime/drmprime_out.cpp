@@ -646,7 +646,7 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
 	return;
   }
   std::cout<<"CRTC set\n";*/
-  if(drmModeSetPlane(de->drm_fd, pplane_id, de->setup.crtcId,
+  if(drmModeSetPlane(drm_fd, pplane_id, setup.crtcId,
 					 modeset_buff.fb, DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK,
 					 0, ,
 					 1920,
