@@ -39,14 +39,8 @@ extern "C" {
 #include <memory>
 #include "../common_consti/ThreadsafeQueue.hpp"
 
-typedef struct egl_aux_s {
-  int fd;
-  GLuint texture;
-} egl_aux_t;
-
 struct FrameTexture{
   AVFrame* av_frame= nullptr;
-  int fd=-1;
   GLuint texture=0;
 };
 
@@ -95,9 +89,7 @@ class EGLOut {
   // allows frame drops (higher video fps than display refresh).
   std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue=std::make_unique<ThreadsafeQueue<XAVFrameHolder>>();
   //
-  //
-  std::unique_ptr<FrameTexture> egl_frame= nullptr;
-  GLuint texture=0;
+  FrameTexture frame_texture{};
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_

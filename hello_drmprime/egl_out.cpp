@@ -142,12 +142,17 @@ void EGLOut::initializeWindowRender() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-std::unique_ptr<FrameTexture> make_egl_texture(AVFrame* frame,EGLDisplay *egl_display){
+bool update_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame){
   auto before=std::chrono::steady_clock::now();
-  auto ret=std::make_unique<FrameTexture>();
-  ret->av_frame=frame;
+  // cleanup old texture if given
+  if(frame_texture.texture!=0){
+	glDeleteTextures(1, &frame_texture.texture);
+	frame_texture.texture=0;
+  }
+  if(frame_texture.av_frame!= nullptr){
+	av_frame_free(&frame_texture.av_frame);
+  }
   const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor*)frame->data[0];
-  ret->fd = desc->objects[0].fd;
   EGLint attribs[50];
   EGLint * a = attribs;
   const EGLint * b = texgen_attrs;
@@ -188,12 +193,13 @@ std::unique_ptr<FrameTexture> make_egl_texture(AVFrame* frame,EGLDisplay *egl_di
 										   NULL, attribs);
   if (!image) {
 	printf("Failed to create EGLImage\n");
-	return nullptr;
+	frame_texture.texture=0;
+	return false;
   }
   /// his
-  glGenTextures(1, &ret->texture);
+  glGenTextures(1, &frame_texture.texture);
   glEnable(GL_TEXTURE_EXTERNAL_OES);
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, ret->texture);
+  glBindTexture(GL_TEXTURE_EXTERNAL_OES, frame_texture.texture);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, image);
@@ -201,7 +207,7 @@ std::unique_ptr<FrameTexture> make_egl_texture(AVFrame* frame,EGLDisplay *egl_di
   eglDestroyImageKHR(*egl_display, image);
   auto delta=std::chrono::steady_clock::now()-before;
   std::cout<<"Creating texture took:"<<std::chrono::duration_cast<std::chrono::milliseconds>(delta).count()<<"ms\n";
-  return ret;
+  return true;
 }
 
 void EGLOut::render_once() {
@@ -218,21 +224,12 @@ void EGLOut::render_once() {
 	  av_frame_free(&allBuffers[i]->frame);
 	}
 	const auto latest_new_frame = allBuffers[nDroppedFrames];
-	// cleanup
-	if(egl_frame!= nullptr){
-	  glDeleteTextures(1, &egl_frame->texture);
-	  egl_frame->texture = 0;
-	  egl_frame->fd = -1;
-	  av_frame_free(&egl_frame->av_frame);
-	  egl_frame= nullptr;
-	}
-	// and create a new egl texture for this frame, such that it can be rendered
 	EGLDisplay egl_display=eglGetCurrentDisplay();
-	egl_frame= make_egl_texture(latest_new_frame->frame,&egl_display);
+	update_egl_texture(&egl_display,frame_texture,latest_new_frame->frame);
   }
   glClearColor(1.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
-  if(egl_frame!= nullptr){
+  if(frame_texture.texture!=0){
 	glUseProgram(shader_program);
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES, egl_frame->texture);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
