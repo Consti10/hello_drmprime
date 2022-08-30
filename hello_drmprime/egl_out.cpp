@@ -227,7 +227,7 @@ void EGLOut::render_once() {
 	}
 	// and create a new egl texture for this frame, such that it can be rendered
 	EGLDisplay egl_display=eglGetCurrentDisplay();
-	egl_frame= make_egl_texture(latest_new_frame->frame,egl_display);
+	egl_frame= make_egl_texture(latest_new_frame->frame,&egl_display);
   }
   glClearColor(1.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
