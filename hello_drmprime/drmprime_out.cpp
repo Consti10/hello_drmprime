@@ -655,7 +655,6 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
 					 1280,
 					 720)!=0){
 	fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
-	return -1;
   }
   std::cout<<"DRMPrimeOut::add_dummy_overlay_plane() end\n";
 }
