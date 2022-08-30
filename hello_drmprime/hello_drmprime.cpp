@@ -74,7 +74,7 @@ extern "C" {
 #include "extra_avcodec.h"
 
 static enum AVPixelFormat hw_pix_fmt;
-
+static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
 
 static AvgCalculator avgDecodeTime{"DecodeTime"};
 static Chronometer mmapBuffer{"mmapBuffer"};
