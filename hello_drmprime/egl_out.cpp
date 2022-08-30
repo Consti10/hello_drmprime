@@ -108,7 +108,7 @@ void EGLOut::initializeWindowRender() {
   glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+  //glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
   window = glfwCreateWindow(window_width, window_height, __FILE__,NULL, NULL);
 
