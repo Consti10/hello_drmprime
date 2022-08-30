@@ -78,7 +78,7 @@ class EGLOut {
    * This does not directly render the frame, but rather pushes it onto a queue
    * where it is then picked up by the render thread.
 	*/
-  int out_display(struct AVFrame * frame);
+  int queue_new_frame_for_display(struct AVFrame * frame);
  private:
   std::unique_ptr<std::thread> render_thread;
   const int window_width;

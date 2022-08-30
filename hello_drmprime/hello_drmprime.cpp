@@ -161,10 +161,10 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * 
             frame->pts=beforeUs;
             // display frame
 			if(drm_prime_out!= nullptr){
-			  drm_prime_out->drmprime_out_display(frame);
+			  drm_prime_out->queue_new_frame_for_display(frame);
 			}
 			if(egl_out!= nullptr){
-			  egl_out->out_display(frame);
+			  egl_out->queue_new_frame_for_display(frame);
 			}
         }else{
             //std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";

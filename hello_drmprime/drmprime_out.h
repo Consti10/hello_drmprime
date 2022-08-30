@@ -42,7 +42,7 @@ public:
      * to be picked up by the display thread.
      * @param frame the frame to display
      */
-    int drmprime_out_display(struct AVFrame * frame);
+    int queue_new_frame_for_display(struct AVFrame * frame);
 
     // --------
     struct drm_setup{
