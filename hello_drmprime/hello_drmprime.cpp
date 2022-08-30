@@ -362,7 +362,7 @@ int main(int argc, char *argv[]){
                     lastFrame=std::chrono::steady_clock::now();
                 }
             }
-            ret = decode_and_wait_for_frame(decoder_ctx, drm_prime_out, &packet, false);
+            ret = decode_and_wait_for_frame(decoder_ctx, drm_prime_out, &packet);
             nFeedFrames++;
             const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
             const double runTimeS=runTimeMs/1000.0f;
@@ -375,7 +375,7 @@ int main(int argc, char *argv[]){
     // flush the decoder
     packet.data = NULL;
     packet.size = 0;
-    ret = decode_and_wait_for_frame(decoder_ctx, drm_prime_out, &packet, false);
+    ret = decode_and_wait_for_frame(decoder_ctx, drm_prime_out, &packet);
     av_packet_unref(&packet);
 
     if (output_file){
