@@ -517,6 +517,10 @@ DRMPrimeOut::DRMPrimeOut(int renderMode1):renderMode(renderMode1)
         fprintf(stderr, "Failed to drmOpen %s: \n", drm_module);
         goto fail_free;
     }
+	//exp
+	if(drmSetMaster(drm_fd)<0){
+	  fprintf(stderr, "Cannot set master %s\n", ERRSTR);
+	}
 
     if (find_crtc(drm_fd, &setup, &con_id) != 0) {
         fprintf(stderr, "failed to find valid mode\n");
