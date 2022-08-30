@@ -630,7 +630,7 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
 	std::cout<<"Cannot create dummy fb\n";
 	return;
   }
-  std::cout<<"Created dummy fb\n";
+  std::cout<<"Created dummy fb"<<modeset_buff.width<<"x"<<modeset_buff.height<<" "<<modeset_buff.fb<<"\n";
   std::cout<<"stride:"<<modeset_buff.stride<<"\n";
 
   /*uint32_t connectors[1];
