@@ -230,7 +230,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 			return -1;
 		  }
 		}else{
-		  if(drmModePageFlip(drm_fd,setup.crtcId,da->fb_handle,0, nullptr)){
+		  if(drmModePageFlip(e->drm_fd,de->setup.crtcId,da->fb_handle,0, nullptr)){
 			fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
 		  }
 		}
