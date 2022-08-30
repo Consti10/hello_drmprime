@@ -81,7 +81,7 @@ GLint common_get_shader_program(const char *vertex_shader_source, const char *fr
   return shader_program;
 }
 
-void EGLOut::initializeWindowRender(int width, int height) {
+void EGLOut::initializeWindowRender() {
   GLuint shader_program, vbo;
   GLint pos;
   GLint uvs;
@@ -94,7 +94,7 @@ void EGLOut::initializeWindowRender(int width, int height) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  window = glfwCreateWindow(width, height, __FILE__,NULL, NULL);
+  window = glfwCreateWindow(window_width, window_height, __FILE__,NULL, NULL);
 
   glfwMakeContextCurrent(window);
 
@@ -112,7 +112,7 @@ void EGLOut::initializeWindowRender(int width, int height) {
   uvs = glGetAttribLocation(shader_program, "tx_coords");
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glViewport(0, 0, width, height);
+  glViewport(0, 0, window_width, window_height);
 
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);

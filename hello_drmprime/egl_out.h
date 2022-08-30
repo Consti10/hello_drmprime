@@ -35,11 +35,24 @@ extern "C" {
 #include "libavutil/hwcontext_drm.h"
 }
 
+#include <thread>
+#include <memory>
 
 class EGLOut {
  public:
-  void initializeWindowRender(int width,int height);
+  EGLOut(int width,int height):window_width(width),window_height(height){
+	render_thread=std::make_unique<std::thread>([this](){
+	  initializeWindowRender();
+	  while (true){
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	  }
+	});
+  }
+  void initializeWindowRender();
  private:
+  std::unique_ptr<std::thread> render_thread;
+  const int window_width;
+  const int window_height:
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
