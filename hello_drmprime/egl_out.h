@@ -30,7 +30,6 @@ extern "C" {
 #include <libavutil/hwcontext.h>
 #include <libavutil/opt.h>
 #include <libavutil/avassert.h>
-#include <libavutil/imgutils.h>
 //
 #include "libavutil/hwcontext_drm.h"
 }
