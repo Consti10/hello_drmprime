@@ -434,9 +434,14 @@ int main(int argc, char **argv)
 	fprintf(stderr, "using card '%s'\n", card);
 
 	/* open the DRM device */
-	ret = modeset_open(&fd, card);
+	/*ret = modeset_open(&fd, card);
 	if (ret)
-		goto out_return;
+		goto out_return;*/
+  // This is how hello_drmprime does things
+  if ((fd = drmOpen("vc4", NULL)) < 0) {
+	fprintf(stderr,"modeset drmOpen() failed\n");
+	goto out_return;
+  }
 
 	/* prepare all connectors and CRTCs */
 	ret = modeset_prepare(fd);

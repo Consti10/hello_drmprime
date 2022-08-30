@@ -452,7 +452,7 @@ int main(int argc, char **argv)
     }
 
 	/* open the DRM device */
-	ret = modeset_open(&fd,options.card);
+	/*ret = modeset_open(&fd,options.card);
 	if (ret){
 	  fprintf(stderr,"modeset_open failed\n");
 	  // This is how hello_drmprime does things
@@ -460,6 +460,11 @@ int main(int argc, char **argv)
 		fprintf(stderr,"modeset_open second approach failed\n");
 		goto out_return;
 	  }
+	}*/
+    // This is how hello_drmprime does things
+	if ((fd = drmOpen("vc4", NULL)) < 0) {
+	  fprintf(stderr,"modeset drmOpen() failed\n");
+	  goto out_return;
 	}
 
 	/* prepare all connectors and CRTCs */
