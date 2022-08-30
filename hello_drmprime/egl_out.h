@@ -59,6 +59,7 @@ class XAVFrameHolder{
   AVFrame* frame;
 };
 
+// Use " export DISPLAY=:0 " for ssh
 class EGLOut {
  public:
   EGLOut(int width,int height):window_width(width),window_height(height){
@@ -93,7 +94,7 @@ class EGLOut {
   GLFWwindow* window;
   //
   // allows frame drops (higher video fps than display refresh).
-  std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue;
+  std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue=std::make_unique<ThreadsafeQueue<XAVFrameHolder>>();
   //
   //
   std::unique_ptr<FrameTexture> egl_frame= nullptr;
