@@ -190,6 +190,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
     chronometer2.stop();
     chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
 
+	static bool xFirst= true;
     //countLol++;
     if(countLol>20){
         fprintf(stderr,"de->setup.crtcId: %d da->fb_handle: %d",de->setup.crtcId,da->fb_handle);
@@ -216,17 +217,24 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
         // https://github.com/raspberrypi/linux/blob/aeaa2460db088fb2c97ae56dec6d7d0058c68294/drivers/gpu/drm/drm_ioctl.c#L670
         // https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/gpu/drm/drm_plane.c#L800
         // https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/gpu/drm/drm_plane.c#L771
-        if(drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
-                           da->fb_handle, DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK,
-                           de->setup.compose.x, de->setup.compose.y,
-                           de->setup.compose.width,
-                           de->setup.compose.height,
-                           0, 0,
-                           av_frame_cropped_width(frame) << 16,
-                           av_frame_cropped_height(frame) << 16)!=0){
-            fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
-            return -1;
-        }
+		if(xFirst){
+		  if(drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
+							 da->fb_handle, DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK,
+							 de->setup.compose.x, de->setup.compose.y,
+							 de->setup.compose.width,
+							 de->setup.compose.height,
+							 0, 0,
+							 av_frame_cropped_width(frame) << 16,
+							 av_frame_cropped_height(frame) << 16)!=0){
+			fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
+			return -1;
+		  }
+		}else{
+		  if(drmModePageFlip(drm_fd,setup.crtcId,da->fb_handle,0, nullptr)){
+			fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
+		  }
+		}
+		xFirst= false;
     }
     chronometerDaInit.stop();
     chronometerDaInit.printInIntervals(CALCULATOR_LOG_INTERVAL);
