@@ -161,7 +161,7 @@ static inline void memset32_loop(uint32_t* dest,const uint32_t value,int num){
   }
 }
 
-// fill a RGBA frame buffer with a specific color, taking stride into account
+// fill a RGB(A) frame buffer with a specific color, taking stride into account
 static void fillFrame(uint8_t* dest,const int width,const int height,const int stride,const uint32_t rgb){
   if(stride==width*4){
 	memset32_loop((uint32_t*)dest,rgb,height*width);
