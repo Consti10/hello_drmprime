@@ -72,7 +72,7 @@ extern "C" {
 //
 
 #include "MMapFrame.h"
-#include "extra_avcodec.h"
+#include "SaveFramesToFile.hpp"
 
 static enum AVPixelFormat hw_pix_fmt;
 

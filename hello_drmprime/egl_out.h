@@ -43,16 +43,24 @@ class EGLOut {
   EGLOut(int width,int height):window_width(width),window_height(height){
 	render_thread=std::make_unique<std::thread>([this](){
 	  initializeWindowRender();
-	  while (true){
+	  while (!glfwWindowShouldClose(window)){
+		glfwPollEvents();  /// for mouse window closing
 		std::this_thread::sleep_for(std::chrono::seconds(1));
+		render_once();
 	  }
 	});
   }
   void initializeWindowRender();
+  void render_once();
  private:
   std::unique_ptr<std::thread> render_thread;
   const int window_width;
   const int window_height;
+  //
+  GLuint shader_program, vbo;
+  GLint pos;
+  GLint uvs;
+  GLFWwindow* window;
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_

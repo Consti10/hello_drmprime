@@ -82,11 +82,6 @@ GLint common_get_shader_program(const char *vertex_shader_source, const char *fr
 }
 
 void EGLOut::initializeWindowRender() {
-  GLuint shader_program, vbo;
-  GLint pos;
-  GLint uvs;
-  GLFWwindow* window;
-
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
   glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
@@ -124,4 +119,10 @@ void EGLOut::initializeWindowRender() {
   glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
   glVertexAttribPointer(uvs, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(vertices)); /// last is offset to loc in buf memory
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void EGLOut::render_once() {
+  glClearColor(1.0, 0.0, 0.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
+  glfwSwapBuffers(window);
 }
