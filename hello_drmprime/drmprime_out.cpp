@@ -263,62 +263,6 @@ static int updateCRTCFormatIfNeeded(DRMPrimeOut *const de,const uint32_t frameFo
     return 0;
 }
 
-// X
-/*static void XcreateProperFrameBuffer(drmprime_out_env_t *const de,AVFrame* frame){
-    const int width=1280;
-    const int height=720;
-    const int bpp=12;
-    struct drm_mode_create_dumb creq;
-    memset(&creq, 0, sizeof(creq));
-    creq.width = width;
-    creq.height = height;
-    creq.bpp = bpp;
-    ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATE_DUMB, &creq);
-    if (ret < 0) {
-        fprintf(stderr, "cannot create dumb buffer (%d): %m\n",
-                errno);
-        return;
-    }
-
-}*/
-
-// This was in the original code, but it won't have an effect anyways since swapping the fb aparently does VSYNC anyways nowadays
-static void waitForVSYNC(DRMPrimeOut *const de){
-    chronoVsync.start();
-    drmVBlank vbl = {
-            .request = {
-                    // Consti10: I think to get the next VBLANK, we need to set sequence to 1
-                    // https://docs.nvidia.com/jetson/l4t-graphics/group__direct__rendering__manager.html#gadc9d79f4d0195e60d0f8c9665da5d8b2
-                    .type = DRM_VBLANK_RELATIVE,
-                    //.sequence = 0
-                    .sequence = 1
-            }
-    };
-    /*while (drmWaitVBlank(de->drm_fd, &vbl)) {
-        if (errno != EINTR) {
-            // This always fails - don't know why
-            //fprintf(stderr, "drmWaitVBlank failed: %s\n", ERRSTR);
-            break;
-        }
-    }*/
-    const int ret=drmWaitVBlank(de->drm_fd,&vbl);
-    if(ret!=0){
-        fprintf(stderr, "drmWaitVBlank failed:%d  %s\n",ret, ERRSTR);
-    }
-    chronoVsync.stop();
-    chronoVsync.printInIntervals(CALCULATOR_LOG_INTERVAL);
-}
-
-//static void consti10_copy_into_curr_fb(drmprime_out_env_t *const de,AVFrame* frame,drm_aux_t *da){
-//}
-/*static void consti10_page_flip(drmprime_out_env_t *const de,drm_aux_t *da,AVFrame *frame){
-    if (drmPrimeFDToHandle(de->drm_fd, desc->objects[0].fd, da->bo_handles) != 0) {
-        fprintf(stderr, "drmPrimeFDToHandle[%d](%d) failed: %s\n", 0, desc->objects[0].fd, ERRSTR);
-        return -1;
-    }
-
-    drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC,de);
-}*/
 
 static AVFrame* xLast=nullptr;
 

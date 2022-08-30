@@ -125,42 +125,6 @@ static void map_frame_test(AVFrame* frame){
     mmapBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
 }
 
-static void x_push_into_filter_graph(DRMPrimeOut * const drm_prime_out,AVFrame *frame){
-    int size;
-    int ret=0;
-    // push the decoded frame into the filtergraph if it exists
-    if (filter_graph != NULL &&
-        (ret = av_buffersrc_add_frame_flags(buffersrc_ctx, frame, AV_BUFFERSRC_FLAG_KEEP_REF)) < 0) {
-        fprintf(stderr, "Error while feeding the filtergraph\n");
-        //goto fail;
-        return;
-    }
-    do {
-        if (filter_graph != NULL) {
-            av_frame_unref(frame);
-            ret = av_buffersink_get_frame(buffersink_ctx, frame);
-            if (ret == AVERROR(EAGAIN)) {
-                ret = 0;
-                break;
-            }
-            if (ret < 0) {
-                if (ret != AVERROR_EOF){
-                    // compile error fprintf(stderr, "Failed to get frame: %s", av_err2str(ret));
-                    fprintf(stderr, "Failed to get frame: ");
-                }
-                return;
-            }
-        }
-        //MLOGD<<"x_push_into_filter_graph:pts:"<<frame->pts<<"\n";
-        if(drm_prime_out!=NULL){
-            drm_prime_out->drmprime_out_display(frame);
-        }
-        //map_frame_test(frame);
-        save_frame_to_file_if_enabled(output_file,frame);
-
-    } while (buffersink_ctx != NULL);  // Loop if we have a filter to drain
-}
-
 //Sends one frame to the decoder, then waits for the output frame to become available
 static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * const drm_prime_out,AVPacket *packet,bool enable_filter_graph){
     AVFrame *frame = nullptr;
@@ -201,12 +165,8 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * 
             //frame->pts=now;
             frame->pts=beforeUs;
             // display frame
-			if(enable_filter_graph){
-			  x_push_into_filter_graph(drm_prime_out,frame);
-			}else{
-			  if(drm_prime_out!= nullptr){
-				drm_prime_out->drmprime_out_display(frame);
-			  }
+			if(drm_prime_out!= nullptr){
+			  drm_prime_out->drmprime_out_display(frame);
 			}
         }else{
             //std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";
@@ -298,106 +258,19 @@ static int decode_write(AVCodecContext * const avctx,DRMPrimeOut * const drm_pri
     return 0;
 }
 
-// Copied almost directly from ffmpeg filtering_video.c example
-static int init_filters(const AVStream * const stream,const AVCodecContext * const dec_ctx,const char * const filters_descr){
-    char args[512];
-    int ret = 0;
-    const AVFilter *buffersrc  = avfilter_get_by_name("buffer");
-    const AVFilter *buffersink = avfilter_get_by_name("buffersink");
-    AVFilterInOut *outputs = avfilter_inout_alloc();
-    AVFilterInOut *inputs  = avfilter_inout_alloc();
-    AVRational time_base = stream->time_base;
-    enum AVPixelFormat pix_fmts[] = { AV_PIX_FMT_DRM_PRIME, AV_PIX_FMT_NONE };
-
-    filter_graph = avfilter_graph_alloc();
-    if (!outputs || !inputs || !filter_graph) {
-        ret = AVERROR(ENOMEM);
-        goto end;
-    }
-
-    /* buffer video source: the decoded frames from the decoder will be inserted here. */
-    snprintf(args, sizeof(args),
-            "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
-            dec_ctx->width, dec_ctx->height, dec_ctx->pix_fmt,
-            time_base.num, time_base.den,
-            dec_ctx->sample_aspect_ratio.num, dec_ctx->sample_aspect_ratio.den);
-
-    ret = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, "in",
-                                       args, NULL, filter_graph);
-    if (ret < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Cannot create buffer source\n");
-        goto end;
-    }
-
-    /* buffer video sink: to terminate the filter chain. */
-    ret = avfilter_graph_create_filter(&buffersink_ctx, buffersink, "out",
-                                       NULL, NULL, filter_graph);
-    if (ret < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Cannot create buffer sink\n");
-        goto end;
-    }
-
-    ret = av_opt_set_int_list(buffersink_ctx, "pix_fmts", pix_fmts,
-                              AV_PIX_FMT_NONE, AV_OPT_SEARCH_CHILDREN);
-    if (ret < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Cannot set output pixel format\n");
-        goto end;
-    }
-
-    /*
-     * Set the endpoints for the filter graph. The filter_graph will
-     * be linked to the graph described by filters_descr.
-     */
-
-    /*
-     * The buffer source output must be connected to the input pad of
-     * the first filter described by filters_descr; since the first
-     * filter input label is not specified, it is set to "in" by
-     * default.
-     */
-    outputs->name       = av_strdup("in");
-    outputs->filter_ctx = buffersrc_ctx;
-    outputs->pad_idx    = 0;
-    outputs->next       = NULL;
-
-    /*
-     * The buffer sink input must be connected to the output pad of
-     * the last filter described by filters_descr; since the last
-     * filter output label is not specified, it is set to "out" by
-     * default.
-     */
-    inputs->name       = av_strdup("out");
-    inputs->filter_ctx = buffersink_ctx;
-    inputs->pad_idx    = 0;
-    inputs->next       = NULL;
-
-    if ((ret = avfilter_graph_parse_ptr(filter_graph, filters_descr,
-                                    &inputs, &outputs, NULL)) < 0)
-        goto end;
-
-    if ((ret = avfilter_graph_config(filter_graph, NULL)) < 0)
-        goto end;
-
-end:
-    avfilter_inout_free(&inputs);
-    avfilter_inout_free(&outputs);
-
-    return ret;
-}
-
 struct Options{
     const char* in_filename=NULL;
     const char* out_filename=NULL;
-    bool deinterlace=false;
+    // removed deinterlace for simplicity bool deinterlace=false;
     bool keyboard_led_toggle=false;
     int render_mode=1; //default to 1, whcih measn no CPU copy or similar, but dropping frames if encoder prodcues them faster than display
     int limitedFrameRate=-1;
 };
-static const char optstr[] = "?:i:o:ykr:f:";
+static const char optstr[] = "?:i:o:kr:f:";
 static const struct option long_options[] = {
         {"in_filename", required_argument, NULL, 'i'},
         {"out_filename", required_argument, NULL, 'o'},
-        {"deinterlace", no_argument, NULL, 'y'},
+        //{"deinterlace", no_argument, NULL, 'y'},
         {"keyboard_led_toggle", no_argument, NULL, 'k'},
         {"render_mode", required_argument, NULL, 'r'},
         {"framerate", no_argument, NULL, 'f'},
@@ -427,9 +300,9 @@ int main(int argc, char *argv[]){
                 case 'o':
                     mXOptions.out_filename=tmp_optarg;
                     break;
-                case 'y':
-                    mXOptions.deinterlace=true;
-                    break;
+                //case 'y':
+                //    mXOptions.deinterlace=true;
+                //    break;
                 case 'k':
                     mXOptions.keyboard_led_toggle=true;
                     break;
@@ -454,7 +327,7 @@ int main(int argc, char *argv[]){
         }
         MLOGD<<"in_filename: "<<mXOptions.in_filename<<"\n";
         MLOGD<<"out_filename: "<<(mXOptions.out_filename==NULL ? "NONE": mXOptions.out_filename)<<"\n";
-        MLOGD<<"deinterlace: "<<(mXOptions.deinterlace ? "Y":"N")<<"\n";
+        //MLOGD<<"deinterlace: "<<(mXOptions.deinterlace ? "Y":"N")<<"\n";
         MLOGD<<"keyboard_led_toggle: "<<(mXOptions.keyboard_led_toggle ? "Y":"N")<<"\n";
         MLOGD<<"render_mode: "<<mXOptions.render_mode<<"\n";
         MLOGD<<"limited framerate: "<<mXOptions.limitedFrameRate<<"\n";
@@ -545,22 +418,6 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Failed to open codec for stream #%u\n", video_stream);
         return -1;
     }
-
-    if (mXOptions.deinterlace) {
-        if (init_filters(video, decoder_ctx, "deinterlace_v4l2m2m") < 0) {
-            fprintf(stderr, "Failed to init deinterlace\n");
-            return -1;
-        }
-    }
-    /*if(true){
-        UDPReceiver::DATA_CALLBACK callback=[const uint8_t[] data,size_t data_len]{
-            ret = av_parser_parse2(m_pCodecPaser, m_codec_ctx, &pkt->data,&pkt->size,
-                                   m_packet.data,m_packet.size, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
-        };
-        UDPReceiver udpReceiver=new UDPReceiver(5600,"UDPRec",callback);
-        udpReceiver.startReceiving();
-        //
-    }*/
 
     /* actual decoding and dump the raw data */
     const auto decodingStart=std::chrono::steady_clock::now();
