@@ -210,6 +210,7 @@ bool update_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFr
   eglDestroyImageKHR(*egl_display, image);
   auto delta=std::chrono::steady_clock::now()-before;
   std::cout<<"Creating texture took:"<<std::chrono::duration_cast<std::chrono::milliseconds>(delta).count()<<"ms\n";
+  frame_texture.has_valid_image= true;
   return true;
 }
 
