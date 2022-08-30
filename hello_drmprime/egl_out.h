@@ -80,11 +80,11 @@ class EGLOut {
   const int window_width;
   const int window_height;
   //
-  GLuint shader_program;
-  GLuint vbo;
-  GLint pos;
-  GLint uvs;
-  GLFWwindow* window;
+  GLuint shader_program=0;
+  GLuint vbo=0;
+  GLint pos=-1;
+  GLint uvs=-1;
+  GLFWwindow* window= nullptr;
   //
   // allows frame drops (higher video fps than display refresh).
   std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue=std::make_unique<ThreadsafeQueue<XAVFrameHolder>>();
