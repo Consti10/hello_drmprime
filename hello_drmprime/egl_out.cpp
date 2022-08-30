@@ -201,6 +201,7 @@ std::unique_ptr<FrameTexture> make_egl_texture(AVFrame* frame,EGLDisplay *egl_di
   eglDestroyImageKHR(*egl_display, image);
   auto delta=std::chrono::steady_clock::now()-before;
   std::cout<<"Creating texture took:"<<std::chrono::duration_cast<std::chrono::milliseconds>(delta).count()<<"ms\n";
+  return ret;
 }
 
 void EGLOut::render_once() {

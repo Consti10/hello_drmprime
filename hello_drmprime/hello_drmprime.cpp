@@ -121,7 +121,7 @@ static void map_frame_test(AVFrame* frame){
 }
 
 //Sends one frame to the decoder, then waits for the output frame to become available
-static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * const drm_prime_out,AVPacket *packet){
+static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * const drm_prime_out,AVPacket *packet,EGLOut* const egl_out){
     AVFrame *frame = nullptr;
     // testing
     //check_single_nalu(packet->data,packet->size);
@@ -162,6 +162,9 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * 
             // display frame
 			if(drm_prime_out!= nullptr){
 			  drm_prime_out->drmprime_out_display(frame);
+			}
+			if(egl_out!= nullptr){
+			  egl_out->out_display(frame);
 			}
         }else{
             //std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";
@@ -364,7 +367,7 @@ int main(int argc, char *argv[]){
                     lastFrame=std::chrono::steady_clock::now();
                 }
             }
-            ret = decode_and_wait_for_frame(decoder_ctx, drm_prime_out, &packet);
+            ret = decode_and_wait_for_frame(decoder_ctx, nullptr, &packet,egl_out);
             nFeedFrames++;
             const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
             const double runTimeS=runTimeMs/1000.0f;
@@ -377,7 +380,7 @@ int main(int argc, char *argv[]){
     // flush the decoder
     packet.data = NULL;
     packet.size = 0;
-    ret = decode_and_wait_for_frame(decoder_ctx, drm_prime_out, &packet);
+    ret = decode_and_wait_for_frame(decoder_ctx, nullptr, &packet,egl_out);
     av_packet_unref(&packet);
 
     if (save_frames_to_file){
