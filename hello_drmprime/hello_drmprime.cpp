@@ -125,7 +125,7 @@ static void map_frame_test(AVFrame* frame){
     mmapBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
 }
 
-static void x_push_into_filter_graph(DRMPrimeOut * const dpo,AVFrame *frame){
+static void x_push_into_filter_graph(DRMPrimeOut * const drm_prime_out,AVFrame *frame){
     int size;
     int ret=0;
     // push the decoded frame into the filtergraph if it exists
@@ -152,8 +152,8 @@ static void x_push_into_filter_graph(DRMPrimeOut * const dpo,AVFrame *frame){
             }
         }
         //MLOGD<<"x_push_into_filter_graph:pts:"<<frame->pts<<"\n";
-        if(dpo!=NULL){
-            dpo->drmprime_out_display(frame);
+        if(drm_prime_out!=NULL){
+            drm_prime_out->drmprime_out_display(frame);
         }
         //map_frame_test(frame);
         save_frame_to_file_if_enabled(output_file,frame);
@@ -162,7 +162,7 @@ static void x_push_into_filter_graph(DRMPrimeOut * const dpo,AVFrame *frame){
 }
 
 //Sends one frame to the decoder, then waits for the output frame to become available
-static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * const dpo,AVPacket *packet,bool enable_filter_graph){
+static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * const drm_prime_out,AVPacket *packet,bool enable_filter_graph){
     AVFrame *frame = nullptr;
     // testing
     //check_single_nalu(packet->data,packet->size);
@@ -202,10 +202,10 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * 
             frame->pts=beforeUs;
             // display frame
 			if(enable_filter_graph){
-			  x_push_into_filter_graph(dpo,frame);
+			  x_push_into_filter_graph(drm_prime_out,frame);
 			}else{
-			  if(dpo!= nullptr){
-				dpo->drmprime_out_display(frame);
+			  if(drm_prime_out!= nullptr){
+				drm_prime_out->drmprime_out_display(frame);
 			  }
 			}
         }else{
@@ -223,7 +223,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * 
 std::vector<std::chrono::steady_clock::time_point> feedDecoderTimePoints;
 int nTotalPulledFrames=0;
 // testing, obsolete
-static int decode_write(AVCodecContext * const avctx,DRMPrimeOut * const dpo,AVPacket *packet){
+static int decode_write(AVCodecContext * const avctx,DRMPrimeOut * const drm_prime_out,AVPacket *packet){
     AVFrame *frame = nullptr;
     int size;
     int ret = 0;
@@ -286,7 +286,7 @@ static int decode_write(AVCodecContext * const avctx,DRMPrimeOut * const dpo,AVP
             }
         }
         // tmp test disable
-        x_push_into_filter_graph(dpo,frame);
+        x_push_into_filter_graph(drm_prime_out,frame);
 
         // we got a frame, return (it is 100% sequential this way)
         return 0;
@@ -413,7 +413,7 @@ int main(int argc, char *argv[]){
     AVPacket packet;
     enum AVHWDeviceType type;
     const char * hwdev = "drm";
-    DRMPrimeOut * dpo;
+    DRMPrimeOut* drm_prime_out;
 
     Options mXOptions{};
     {
@@ -469,13 +469,7 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "\n");
         return -1;
     }
-    dpo = new DRMPrimeOut(mXOptions.render_mode);
-    if (dpo == nullptr) {
-        fprintf(stderr, "Failed to open drmprime output\n");
-        // Display out optional
-        //return 1;
-        dpo= nullptr;
-    }
+    drm_prime_out = new DRMPrimeOut(mXOptions.render_mode);
 
     // open the file to dump raw data
     if (mXOptions.out_filename != nullptr) {
@@ -594,7 +588,7 @@ int main(int argc, char *argv[]){
                     lastFrame=std::chrono::steady_clock::now();
                 }
             }
-            ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet, false);
+            ret = decode_and_wait_for_frame(decoder_ctx, drm_prime_out, &packet, false);
             nFeedFrames++;
             const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
             const double runTimeS=runTimeMs/1000.0f;
@@ -607,7 +601,7 @@ int main(int argc, char *argv[]){
     // flush the decoder
     packet.data = NULL;
     packet.size = 0;
-    ret = decode_and_wait_for_frame(decoder_ctx, dpo, &packet, false);
+    ret = decode_and_wait_for_frame(decoder_ctx, drm_prime_out, &packet, false);
     av_packet_unref(&packet);
 
     if (output_file){
@@ -617,8 +611,8 @@ int main(int argc, char *argv[]){
     avcodec_free_context(&decoder_ctx);
     avformat_close_input(&input_ctx);
 
-    if(dpo!=NULL){
-        delete dpo;
+    if(drm_prime_out!=NULL){
+        delete drm_prime_out;
     }
 
     return 0;
