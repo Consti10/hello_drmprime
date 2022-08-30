@@ -30,6 +30,8 @@ public:
     AVFrame* frame;
 };
 
+// Uses DRM Prime, kms / drm to display HW video frames
+// requires to be run without XServer, otherwise we cannot become drm master
 class DRMPrimeOut{
 public:
     explicit DRMPrimeOut(int renderMode);

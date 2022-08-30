@@ -57,6 +57,7 @@ extern "C" {
 }
 
 #include "drmprime_out.h"
+#include "egl_out.h"
 
 #include <chrono>
 #include <iostream>
