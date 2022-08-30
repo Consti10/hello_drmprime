@@ -48,6 +48,8 @@ class EGLOut {
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		render_once();
 	  }
+	  glDeleteBuffers(1, &vbo);
+	  glfwTerminate();
 	});
   }
   void initializeWindowRender();
@@ -57,7 +59,8 @@ class EGLOut {
   const int window_width;
   const int window_height;
   //
-  GLuint shader_program, vbo;
+  GLuint shader_program;
+  GLuint vbo;
   GLint pos;
   GLint uvs;
   GLFWwindow* window;
