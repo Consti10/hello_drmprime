@@ -37,6 +37,7 @@ extern "C" {
 
 #include <thread>
 #include <memory>
+#include "../common_consti/ThreadsafeQueue.hpp"
 
 class XAVFrameHolder{
  public:
