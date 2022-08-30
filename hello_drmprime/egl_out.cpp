@@ -231,7 +231,7 @@ void EGLOut::render_once() {
   glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
   if(frame_texture.texture!=0){
 	glUseProgram(shader_program);
-	glBindTexture(GL_TEXTURE_EXTERNAL_OES, egl_frame->texture);
+	glBindTexture(GL_TEXTURE_EXTERNAL_OES, frame_texture.texture);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   }
   glfwSwapBuffers(window);
