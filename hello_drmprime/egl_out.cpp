@@ -200,7 +200,6 @@ bool update_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFr
   if(frame_texture.texture==0){
 	glGenTextures(1, &frame_texture.texture);
   }
-  /// his
   glEnable(GL_TEXTURE_EXTERNAL_OES);
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, frame_texture.texture);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
