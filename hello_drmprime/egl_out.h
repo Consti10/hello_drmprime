@@ -43,6 +43,7 @@ struct FrameTexture{
   // I think we need to keep the av frame reference around as long as we use the generated egl texture in opengl.
   AVFrame* av_frame= nullptr;
   GLuint texture=0;
+  // set to true if the texture currently has a egl image backing it.
   bool has_valid_image=false;
 };
 

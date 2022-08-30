@@ -144,15 +144,11 @@ void EGLOut::initializeWindowRender() {
 
 bool update_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame){
   auto before=std::chrono::steady_clock::now();
-  // cleanup old texture if given
-  /*if(frame_texture.texture!=0){
-	glDeleteTextures(1, &frame_texture.texture);
-	frame_texture.texture=0;
-  }*/
   // We can now also give the frame back to av, since we are updating to a new one.
   if(frame_texture.av_frame!= nullptr){
 	av_frame_free(&frame_texture.av_frame);
   }
+  frame_texture.av_frame=frame;
   const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor*)frame->data[0];
   EGLint attribs[50];
   EGLint * a = attribs;
@@ -197,6 +193,7 @@ bool update_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFr
 	frame_texture.has_valid_image= false;
 	return false;
   }
+  // Note that we do not have to delete and generate the texture (ID) every time we update the egl image backing.
   if(frame_texture.texture==0){
 	glGenTextures(1, &frame_texture.texture);
   }
@@ -205,7 +202,8 @@ bool update_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFr
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, image);
-
+  // I do not know exactly how that works, but we seem to be able to immediately delete the EGL image, as long as we don't give the frame
+  // back to the decoder I assume
   eglDestroyImageKHR(*egl_display, image);
   auto delta=std::chrono::steady_clock::now()-before;
   std::cout<<"Creating texture took:"<<std::chrono::duration_cast<std::chrono::milliseconds>(delta).count()<<"ms\n";
