@@ -143,6 +143,7 @@ void EGLOut::initializeWindowRender() {
 }
 
 bool update_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame){
+  assert(frame);
   auto before=std::chrono::steady_clock::now();
   // We can now also give the frame back to av, since we are updating to a new one.
   if(frame_texture.av_frame!= nullptr){
@@ -150,17 +151,16 @@ bool update_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFr
   }
   frame_texture.av_frame=frame;
   const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor*)frame->data[0];
+  // Writing all the EGL attribs - I just copied and pasted it, and it works.
   EGLint attribs[50];
   EGLint * a = attribs;
   const EGLint * b = texgen_attrs;
-
   *a++ = EGL_WIDTH;
   *a++ = av_frame_cropped_width(frame);
   *a++ = EGL_HEIGHT;
   *a++ = av_frame_cropped_height(frame);
   *a++ = EGL_LINUX_DRM_FOURCC_EXT;
   *a++ = desc->layers[0].format;
-
   int i, j;
   for (i = 0; i < desc->nb_layers; ++i) {
 	for (j = 0; j < desc->layers[i].nb_planes; ++j) {
