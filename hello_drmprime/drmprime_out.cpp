@@ -667,7 +667,7 @@ int DRMPrimeOut::modeset_create_fb(int fd,DRMPrimeOut::ModesetBuff *buf)
 	buf->handle = creq.handle;
 
 	// create framebuffer object for the dumb-buffer
-	ret = drmModeAddFB(fd, buf->width, buf->height, 24, 32, buf->stride,
+	ret = drmModeAddFB(fd, buf->width, buf->height, 32, 32, buf->stride,
 			   buf->handle, &buf->fb);
 	if (ret) {
 		fprintf(stderr, "cannot create framebuffer (%d): %m\n",
