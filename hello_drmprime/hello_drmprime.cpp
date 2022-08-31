@@ -121,7 +121,7 @@ static void map_frame_test(AVFrame* frame){
 }
 
 //Sends one frame to the decoder, then waits for the output frame to become available
-static int decode_and_wait_for_frame(AVCodecContext * const avctx,DRMPrimeOut * const drm_prime_out,AVPacket *packet,EGLOut* const egl_out){
+static int decode_and_wait_for_frame(AVCodecContext * const avctx,AVPacket *packet,DRMPrimeOut * const drm_prime_out,EGLOut* const egl_out){
     AVFrame *frame = nullptr;
     // testing
     //check_single_nalu(packet->data,packet->size);
@@ -209,7 +209,8 @@ int main(int argc, char *argv[]){
     AVPacket packet;
     enum AVHWDeviceType type;
     const char * hwdev = "drm";
-    DRMPrimeOut* drm_prime_out;
+    DRMPrimeOut* drm_prime_out=nullptr;
+	EGLOut* egl_out=nullptr;
 
     Options mXOptions{};
     {
@@ -265,9 +266,11 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "\n");
         return -1;
     }
-    drm_prime_out = new DRMPrimeOut(mXOptions.render_mode);
-
-	auto* egl_out=new EGLOut(1280,720);
+	if(mXOptions.render_mode=0 || mXOptions.render_mode==1 || mXOptions.render_mode==2){
+	  drm_prime_out = new DRMPrimeOut(mXOptions.render_mode);
+	}else {
+	  egl_out=new EGLOut(1280,720);
+	}
 
 	SaveFramesToFile* save_frames_to_file=nullptr;
     // open the file to dump raw data
@@ -367,7 +370,7 @@ int main(int argc, char *argv[]){
                     lastFrame=std::chrono::steady_clock::now();
                 }
             }
-            ret = decode_and_wait_for_frame(decoder_ctx, nullptr, &packet,egl_out);
+            ret = decode_and_wait_for_frame(decoder_ctx, &packet,drm_prime_out,egl_out);
             nFeedFrames++;
             const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
             const double runTimeS=runTimeMs/1000.0f;
@@ -380,7 +383,7 @@ int main(int argc, char *argv[]){
     // flush the decoder
     packet.data = NULL;
     packet.size = 0;
-    ret = decode_and_wait_for_frame(decoder_ctx, nullptr, &packet,egl_out);
+    ret = decode_and_wait_for_frame(decoder_ctx, &packet,drm_prime_out,egl_out);
     av_packet_unref(&packet);
 
     if (save_frames_to_file){
