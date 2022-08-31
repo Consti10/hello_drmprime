@@ -188,8 +188,9 @@ struct Options{
     bool keyboard_led_toggle=false;
     int render_mode=1; //default to 1, whcih measn no CPU copy or similar, but dropping frames if encoder prodcues them faster than display
     int limitedFrameRate=-1;
+	bool drm_add_dummy_overlay=false;
 };
-static const char optstr[] = "?:i:o:kr:f:";
+static const char optstr[] = "?:i:o:kr:f:z";
 static const struct option long_options[] = {
         {"in_filename", required_argument, NULL, 'i'},
         {"out_filename", required_argument, NULL, 'o'},
@@ -197,6 +198,7 @@ static const struct option long_options[] = {
         {"keyboard_led_toggle", no_argument, NULL, 'k'},
         {"render_mode", required_argument, NULL, 'r'},
         {"framerate", no_argument, NULL, 'f'},
+		{"drm_add_dummy_overlay", no_argument, NULL, 'z'},
         {NULL, 0, NULL, 0},
 };
 
@@ -236,6 +238,9 @@ int main(int argc, char *argv[]){
                 case 'f':
                     mXOptions.limitedFrameRate= atoi(tmp_optarg);
                     break;
+			  case 'z':
+					mXOptions.drm_add_dummy_overlay=true;
+					break;
                 case '?':
                 default:
                     MLOGD<<"Usage: -i --in_filename [in_filename] -o --out_filename [optional raw out filename] "<<
@@ -255,6 +260,7 @@ int main(int argc, char *argv[]){
         MLOGD<<"keyboard_led_toggle: "<<(mXOptions.keyboard_led_toggle ? "Y":"N")<<"\n";
         MLOGD<<"render_mode: "<<mXOptions.render_mode<<"\n";
         MLOGD<<"limited framerate: "<<mXOptions.limitedFrameRate<<"\n";
+	  	MLOGD<<"drm_add_dummy_overlay: "<<(mXOptions.drm_add_dummy_overlay ? "Y":"N")<<"\n";
     }
 
     type = av_hwdevice_find_type_by_name(hwdev);

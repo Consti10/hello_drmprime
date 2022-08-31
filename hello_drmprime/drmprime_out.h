@@ -34,7 +34,7 @@ public:
 // requires to be run without XServer, otherwise we cannot become drm master
 class DRMPrimeOut{
 public:
-    explicit DRMPrimeOut(int renderMode);
+    explicit DRMPrimeOut(int renderMode,bool drm_add_dummy_overlay);
     ~DRMPrimeOut();
     /**
      * Display this frame via drm prime. Depending on the rendering mode,
@@ -82,6 +82,7 @@ public:
     std::unique_ptr<ThreadsafeQueue<AVFrameHolder>> queue;
     // extra
     const int renderMode=0;
+	const bool m_drm_add_dummy_overlay;
 	// hacky testing begin, from drm-howto -----------------------------------------------------------
 	struct ModesetBuff {
 	  uint32_t width;

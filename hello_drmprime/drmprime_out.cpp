@@ -496,7 +496,7 @@ int DRMPrimeOut::queue_new_frame_for_display(struct AVFrame *src_frame)
   return 0;
 }
 
-DRMPrimeOut::DRMPrimeOut(int renderMode1):renderMode(renderMode1)
+DRMPrimeOut::DRMPrimeOut(int renderMode1,,bool drm_add_dummy_overlay):renderMode(renderMode1),m_drm_add_dummy_overlay(drm_add_dummy_overlay)
 {
    std::cout<<"DRMPrimeOut::DRMPrimeOut() begin\n";
     int rv;
@@ -536,7 +536,9 @@ DRMPrimeOut::DRMPrimeOut(int renderMode1):renderMode(renderMode1)
     }
     std::cout<<"DRMPrimeOut::DRMPrimeOut() end\n";
 	// disable the dummy overlay plane for now
-	//add_dummy_overlay_plane();
+	if(m_drm_add_dummy_overlay){
+	  add_dummy_overlay_plane();
+	}
     return;
 fail_close:
     close(drm_fd);
