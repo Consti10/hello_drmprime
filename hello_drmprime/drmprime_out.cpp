@@ -423,14 +423,14 @@ static int find_crtc(int drmfd, struct DRMPrimeOut::drm_setup *s, uint32_t *cons
         drmModeCrtc *crtc = drmModeGetCrtc(drmfd, s->crtcId);
 		std::cout<<"CRTC x,y,w,h"<<crtc->x<<","<<crtc->y<<" "<<crtc->width<<"x"<<crtc->height<<"\n";
 		const int xOffset=0;
-        /*s->compose.x = crtc->x+xOffset;
+        s->compose.x = crtc->x+xOffset;
         s->compose.y = crtc->y;
         s->compose.width = crtc->width-xOffset;
-        s->compose.height = crtc->height;*/
-		s->compose.x=0;
+        s->compose.height = crtc->height;
+		/*s->compose.x=0;
 		s->compose.y=0;
 		s->compose.width=1280;
-		s->compose.height=720;
+		s->compose.height=720;*/
         drmModeFreeCrtc(crtc);
     }
     if (pConId) *pConId = c->connector_id;
