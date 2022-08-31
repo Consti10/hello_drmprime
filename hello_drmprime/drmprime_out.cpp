@@ -213,6 +213,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 	  if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_id,DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC, nullptr)){
 		fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
 		xFirst= true;
+		return -1;
 	  }
 	}
 	// drmModePageFlip doesn't work, but I made it an user option anyways
