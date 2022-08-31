@@ -572,7 +572,6 @@ DRMPrimeOut::~DRMPrimeOut()
 void DRMPrimeOut::add_dummy_overlay_plane() {
   std::cout<<"DRMPrimeOut::add_dummy_overlay_plane() begin\n";
   //
-  uint32_t lol;
   uint32_t pplane_id=0;
   if(find_plane(drm_fd,setup.crtcIdx,DRM_FORMAT_XRGB8888,pplane_id,1)){
 	std::cout<<"Cannot find overlay plane \n";
@@ -580,7 +579,7 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
   }
   std::cout<<"Found overlay plane, pplane_id:"<<pplane_id<<"\n";
   // add dummy framebuffer to that plane
-  DRMPrimeOut::ModesetBuff modeset_buff;
+  DRMPrimeOut::ModesetBuff modeset_buff{};
   modeset_buff.width=1280;
   modeset_buff.height=720;
 
