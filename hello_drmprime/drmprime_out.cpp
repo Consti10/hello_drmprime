@@ -212,6 +212,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 	}else{
 	  if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_id,DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC, nullptr)){
 		fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
+		xFirst= true;
 	  }
 	}
 	// drmModePageFlip doesn't work, but I made it an user option anyways
@@ -259,7 +260,7 @@ static int do_display(DRMPrimeOut *const de, AVFrame *frame){
     }
     if(de->renderMode==0 || de->renderMode==1){
 	    //std::cout<<"X\n";
-        //da_uninit(de, da);
+        da_uninit(de, da);
 	    //std::cout<<"Y\n";
         //
         da_init(de,da,frame);
