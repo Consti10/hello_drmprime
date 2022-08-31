@@ -34,7 +34,7 @@ public:
 // requires to be run without XServer, otherwise we cannot become drm master
 class DRMPrimeOut{
 public:
-    explicit DRMPrimeOut(int renderMode,bool drm_add_dummy_overlay);
+    explicit DRMPrimeOut(int renderMode,bool drm_add_dummy_overlay,bool use_page_flip_on_second_frame);
     ~DRMPrimeOut();
     /**
      * Display this frame via drm prime. Depending on the rendering mode,
@@ -83,6 +83,7 @@ public:
     // extra
     const int renderMode=0;
 	const bool m_drm_add_dummy_overlay;
+	const bool m_use_page_flip_on_second_frame;
 	// hacky testing begin, from drm-howto -----------------------------------------------------------
 	struct ModesetBuff {
 	  uint32_t width;

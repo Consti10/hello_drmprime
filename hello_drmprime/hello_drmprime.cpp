@@ -189,8 +189,9 @@ struct Options{
     int render_mode=1; //default to 1, whcih measn no CPU copy or similar, but dropping frames if encoder prodcues them faster than display
     int limitedFrameRate=-1;
 	bool drm_add_dummy_overlay=false;
+	bool use_page_flip_on_second_frame=false;
 };
-static const char optstr[] = "?:i:o:kr:f:z";
+static const char optstr[] = "?:i:o:kr:f:zy";
 static const struct option long_options[] = {
         {"in_filename", required_argument, NULL, 'i'},
         {"out_filename", required_argument, NULL, 'o'},
@@ -199,6 +200,7 @@ static const struct option long_options[] = {
         {"render_mode", required_argument, NULL, 'r'},
         {"framerate", no_argument, NULL, 'f'},
 		{"drm_add_dummy_overlay", no_argument, NULL, 'z'},
+		{"use_page_flip_on_second_frame", no_argument, NULL, 'y'},
         {NULL, 0, NULL, 0},
 };
 
@@ -241,6 +243,9 @@ int main(int argc, char *argv[]){
 			  case 'z':
 					mXOptions.drm_add_dummy_overlay=true;
 					break;
+			  case 'y':
+				mXOptions.use_page_flip_on_second_frame=true;
+				break;
                 case '?':
                 default:
                     MLOGD<<"Usage: -i --in_filename [in_filename] -o --out_filename [optional raw out filename] "<<
@@ -273,7 +278,7 @@ int main(int argc, char *argv[]){
         return -1;
     }
 	if(mXOptions.render_mode==0 || mXOptions.render_mode==1 || mXOptions.render_mode==2){
-	  drm_prime_out = new DRMPrimeOut(mXOptions.render_mode,mXOptions.drm_add_dummy_overlay);
+	  drm_prime_out = new DRMPrimeOut(mXOptions.render_mode,mXOptions.drm_add_dummy_overlay,mXOptions.use_page_flip_on_second_frame);
 	}else {
 	  egl_out=new EGLOut(1280,720);
 	}

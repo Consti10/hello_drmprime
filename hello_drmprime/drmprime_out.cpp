@@ -234,8 +234,10 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 			fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
 		  }
 		}
-		// drmModePageFlip doesn't work
-		xFirst= false;
+		// drmModePageFlip doesn't work, but I made it an user option anyways
+		if(de->m_use_page_flip_on_second_frame){
+		  xFirst= false;
+		}
     }
     chronometerDaInit.stop();
     chronometerDaInit.printInIntervals(CALCULATOR_LOG_INTERVAL);
@@ -496,7 +498,8 @@ int DRMPrimeOut::queue_new_frame_for_display(struct AVFrame *src_frame)
   return 0;
 }
 
-DRMPrimeOut::DRMPrimeOut(int renderMode1,bool drm_add_dummy_overlay):renderMode(renderMode1),m_drm_add_dummy_overlay(drm_add_dummy_overlay)
+DRMPrimeOut::DRMPrimeOut(int renderMode1,bool drm_add_dummy_overlay,bool use_page_flip_on_second_frame):
+renderMode(renderMode1),m_drm_add_dummy_overlay(drm_add_dummy_overlay),m_use_page_flip_on_second_frame(use_page_flip_on_second_frame)
 {
    std::cout<<"DRMPrimeOut::DRMPrimeOut() begin\n";
     int rv;
