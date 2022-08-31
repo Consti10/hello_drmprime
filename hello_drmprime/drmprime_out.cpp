@@ -111,9 +111,9 @@ static void da_uninit(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da){
     //std::cout<<"da_uninit()begin\n";
     chronometerDaUninit.start();
     unsigned int i;
-    if (da->fb_handle != 0) {
-        drmModeRmFB(de->drm_fd, da->fb_handle);
-        da->fb_handle = 0;
+    if (da->fb_id != 0) {
+        drmModeRmFB(de->drm_fd, da->fb_id);
+        da->fb_id = 0;
     }
     for (i = 0; i != AV_DRM_MAX_PLANES; ++i) {
         if (da->bo_handles[i]) {
@@ -183,7 +183,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
                                    av_frame_cropped_height(frame),
                                    desc->layers[0].format, bo_handles,
                                    pitches, offsets, modifiers,
-                                   &da->fb_handle, DRM_MODE_FB_MODIFIERS /** 0 if no mods */) != 0) {
+                                   &da->fb_id, DRM_MODE_FB_MODIFIERS /** 0 if no mods */) != 0) {
         fprintf(stderr, "drmModeAddFB2WithModifiers failed: %s\n", ERRSTR);
         return -1;
     }
@@ -199,7 +199,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 	// https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/gpu/drm/drm_plane.c#L771
 	if(xFirst){
 	  if(drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
-						 da->fb_handle, DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK,
+						 da->fb_id, DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK,
 						 de->setup.compose.x, de->setup.compose.y,
 						 de->setup.compose.width,
 						 de->setup.compose.height,
@@ -210,7 +210,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 		return -1;
 	  }
 	}else{
-	  if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC, nullptr)){
+	  if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_id,DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC, nullptr)){
 		fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
 	  }
 	}

@@ -56,11 +56,12 @@ public:
         } compose;
     };
     struct drm_aux{
-        unsigned int fb_handle;
+        unsigned int fb_id=0;
         // buffer out handles - set to the drm prime handles of the frame
         uint32_t bo_handles[AV_DRM_MAX_PLANES];
         AVFrame *frame= nullptr;
-        std::unique_ptr<MMapFrame> mappedFrame;
+		// only used for CPU copy approach
+        std::unique_ptr<MMapFrame> mappedFrame= nullptr;
     };
     // --------
     int drm_fd;
