@@ -230,12 +230,12 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 			return -1;
 		  }
 		}else{
-		  if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_EVENT, nullptr)){
+		  if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_ASYNC, nullptr)){
 			fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
 		  }
 		}
 		// drmModePageFlip doesn't work
-		//xFirst= false;
+		xFirst= false;
     }
     chronometerDaInit.stop();
     chronometerDaInit.printInIntervals(CALCULATOR_LOG_INTERVAL);
