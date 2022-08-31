@@ -242,29 +242,29 @@ void EGLOut::render_once() {
 }
 
 
-int EGLOut::queue_new_frame_for_display(struct AVFrame *frame) {
-  assert(frame);
+int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
+  assert(src_frame);
   //std::cout<<"DRMPrimeOut::drmprime_out_display "<<src_frame->width<<"x"<<src_frame->height<<"\n";
   AVFrame *frame;
-  if ((frame->flags & AV_FRAME_FLAG_CORRUPT) != 0) {
-	fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", frame->format, frame->pts);
+  if ((src_frame->flags & AV_FRAME_FLAG_CORRUPT) != 0) {
+	fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", src_frame->format, src_frame->pts);
 	return 0;
   }
-  if (frame->format == AV_PIX_FMT_DRM_PRIME) {
+  if (src_frame->format == AV_PIX_FMT_DRM_PRIME) {
 	frame = av_frame_alloc();
-	av_frame_ref(frame, frame);
+	av_frame_ref(frame, src_frame);
 	//printf("format == AV_PIX_FMT_DRM_PRIME\n");
-  } else if (frame->format == AV_PIX_FMT_VAAPI) {
+  } else if (src_frame->format == AV_PIX_FMT_VAAPI) {
 	//printf("format == AV_PIX_FMT_VAAPI\n");
 	frame = av_frame_alloc();
 	frame->format = AV_PIX_FMT_DRM_PRIME;
-	if (av_hwframe_map(frame, frame, 0) != 0) {
-	  fprintf(stderr, "Failed to map frame (format=%d) to DRM_PRiME\n", frame->format);
+	if (av_hwframe_map(frame, src_frame, 0) != 0) {
+	  fprintf(stderr, "Failed to map frame (format=%d) to DRM_PRiME\n", src_frame->format);
 	  av_frame_free(&frame);
 	  return AVERROR(EINVAL);
 	}
   } else {
-	fprintf(stderr, "Frame (format=%d) not DRM_PRiME\n", frame->format);
+	fprintf(stderr, "Frame (format=%d) not DRM_PRiME\n", src_frame->format);
 	return AVERROR(EINVAL);
   }
   // Here the delay is still neglegible,aka ~0.15ms
