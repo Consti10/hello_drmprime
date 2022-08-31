@@ -273,7 +273,7 @@ int main(int argc, char *argv[]){
         return -1;
     }
 	if(mXOptions.render_mode==0 || mXOptions.render_mode==1 || mXOptions.render_mode==2){
-	  drm_prime_out = new DRMPrimeOut(mXOptions.render_mode);
+	  drm_prime_out = new DRMPrimeOut(mXOptions.render_mode,mXOptions.drm_add_dummy_overlay);
 	}else {
 	  egl_out=new EGLOut(1280,720);
 	}
