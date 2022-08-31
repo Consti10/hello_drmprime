@@ -209,7 +209,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 		return -1;
 	  }
 	}else{
-	  if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_ASYNC, nullptr)){
+	  if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC, nullptr)){
 		fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
 	  }
 	}

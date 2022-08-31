@@ -266,6 +266,7 @@ int main(int argc, char *argv[]){
         MLOGD<<"render_mode: "<<mXOptions.render_mode<<"\n";
         MLOGD<<"limited framerate: "<<mXOptions.limitedFrameRate<<"\n";
 	  	MLOGD<<"drm_add_dummy_overlay: "<<(mXOptions.drm_add_dummy_overlay ? "Y":"N")<<"\n";
+	  	MLOGD<<"use_page_flip_on_second_frame: "<<(mXOptions.use_page_flip_on_second_frame ? "Y":"N")<<"\n";
     }
 
     type = av_hwdevice_find_type_by_name(hwdev);
