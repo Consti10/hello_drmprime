@@ -62,23 +62,19 @@ class EGLOut {
  public:
   EGLOut(int width,int height):window_width(width),window_height(height){
 	render_thread=std::make_unique<std::thread>([this](){
-	  initializeWindowRender();
-	  while (!glfwWindowShouldClose(window)){
-		glfwPollEvents();  /// for mouse window closing
-		render_once();
-	  }
-	  glDeleteBuffers(1, &vbo);
-	  glfwTerminate();
+	  render_thread_run();
 	});
   }
-  void initializeWindowRender();
-  void render_once();
   /**
    * Display this frame via egl / OpenGL render.
    * This does not directly render the frame, but rather pushes it onto a queue
    * where it is then picked up by the render thread.
 	*/
   int queue_new_frame_for_display(struct AVFrame * src_frame);
+ private:
+  void initializeWindowRender();
+  void render_once();
+  void render_thread_run();
  private:
   std::unique_ptr<std::thread> render_thread;
   const int window_width;

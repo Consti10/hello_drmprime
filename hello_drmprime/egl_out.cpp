@@ -274,3 +274,13 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
   queue->push(std::make_shared<XAVFrameHolder>(frame));
   return 0;
 }
+
+void EGLOut::render_thread_run() {
+  initializeWindowRender();
+  while (!glfwWindowShouldClose(window)){
+	glfwPollEvents();  /// for mouse window closing
+	render_once();
+  }
+  glDeleteBuffers(1, &vbo);
+  glfwTerminate();
+}
