@@ -126,3 +126,25 @@ if (mXOptions.deinterlace) {
             return -1;
         }
     }
+
+if(countLol>20){
+        fprintf(stderr,"de->setup.crtcId: %d da->fb_handle: %d",de->setup.crtcId,da->fb_handle);
+        // https://github.com/raspberrypi/linux/blob/aeaa2460db088fb2c97ae56dec6d7d0058c68294/drivers/gpu/drm/drm_ioctl.c#L686
+        // https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/gpu/drm/drm_plane.c#L1044
+        //DRM_MODE_PAGE_FLIP_EVENT
+        /*if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,0,de)!=0){
+            fprintf(stderr, "drmModePageFlip failed: %s %d\n", ERRSTR, errno);
+            return -1;
+        }else{
+            fprintf(stderr, "drmModePageFlip success\n");
+        }*/
+        drmModeConnectorPtr xConnector=drmModeGetConnector(de->drm_fd,de->setup.conId);
+        MLOGD<<"de->con_id:"<<de->con_id<<" de->setup.conId"<<de->setup.conId<<" actual connector"<<xConnector<<"\n";
+        uint32_t connectors[1];
+        connectors[0]=(uint32_t)de->con_id;
+        if(drmModeSetCrtc(de->drm_fd,de->setup.crtcId,da->fb_handle,0,0,connectors,1,NULL)!=0){
+            fprintf(stderr, "drmModeSetCrtc failed: %s %d\n", ERRSTR, errno);
+        }else{
+            fprintf(stderr, "drmModeSetCrtc success\n");
+        }
+    }else{

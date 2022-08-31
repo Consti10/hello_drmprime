@@ -189,56 +189,34 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
     }
     chronometer2.stop();
     chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
-
+	// In theory, I think we should be able to do a page flip on the second frame and any following frame(s)
+	// as long as the format doesn't change. Doesn't work though.
 	static bool xFirst= true;
-    //countLol++;
-    if(countLol>20){
-        fprintf(stderr,"de->setup.crtcId: %d da->fb_handle: %d",de->setup.crtcId,da->fb_handle);
-        // https://github.com/raspberrypi/linux/blob/aeaa2460db088fb2c97ae56dec6d7d0058c68294/drivers/gpu/drm/drm_ioctl.c#L686
-        // https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/gpu/drm/drm_plane.c#L1044
-        //DRM_MODE_PAGE_FLIP_EVENT
-        /*if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,0,de)!=0){
-            fprintf(stderr, "drmModePageFlip failed: %s %d\n", ERRSTR, errno);
-            return -1;
-        }else{
-            fprintf(stderr, "drmModePageFlip success\n");
-        }*/
-        drmModeConnectorPtr xConnector=drmModeGetConnector(de->drm_fd,de->setup.conId);
-        MLOGD<<"de->con_id:"<<de->con_id<<" de->setup.conId"<<de->setup.conId<<" actual connector"<<xConnector<<"\n";
-        uint32_t connectors[1];
-        connectors[0]=(uint32_t)de->con_id;
-        if(drmModeSetCrtc(de->drm_fd,de->setup.crtcId,da->fb_handle,0,0,connectors,1,NULL)!=0){
-            fprintf(stderr, "drmModeSetCrtc failed: %s %d\n", ERRSTR, errno);
-        }else{
-            fprintf(stderr, "drmModeSetCrtc success\n");
-        }
-    }else{
-        // https://github.com/grate-driver/libdrm/blob/master/xf86drmMode.c#L988
-        // https://github.com/raspberrypi/linux/blob/aeaa2460db088fb2c97ae56dec6d7d0058c68294/drivers/gpu/drm/drm_ioctl.c#L670
-        // https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/gpu/drm/drm_plane.c#L800
-        // https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/gpu/drm/drm_plane.c#L771
-		if(xFirst){
-		  if(drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
-							 da->fb_handle, DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK,
-							 de->setup.compose.x, de->setup.compose.y,
-							 de->setup.compose.width,
-							 de->setup.compose.height,
-							 0, 0,
-							 av_frame_cropped_width(frame) << 16,
-							 av_frame_cropped_height(frame) << 16)!=0){
-			fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
-			return -1;
-		  }
-		}else{
-		  if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_ASYNC, nullptr)){
-			fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
-		  }
-		}
-		// drmModePageFlip doesn't work, but I made it an user option anyways
-		if(de->m_use_page_flip_on_second_frame){
-		  xFirst= false;
-		}
-    }
+	// https://github.com/grate-driver/libdrm/blob/master/xf86drmMode.c#L988
+	// https://github.com/raspberrypi/linux/blob/aeaa2460db088fb2c97ae56dec6d7d0058c68294/drivers/gpu/drm/drm_ioctl.c#L670
+	// https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/gpu/drm/drm_plane.c#L800
+	// https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/gpu/drm/drm_plane.c#L771
+	if(xFirst){
+	  if(drmModeSetPlane(de->drm_fd, de->setup.planeId, de->setup.crtcId,
+						 da->fb_handle, DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK,
+						 de->setup.compose.x, de->setup.compose.y,
+						 de->setup.compose.width,
+						 de->setup.compose.height,
+						 0, 0,
+						 av_frame_cropped_width(frame) << 16,
+						 av_frame_cropped_height(frame) << 16)!=0){
+		fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
+		return -1;
+	  }
+	}else{
+	  if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_handle,DRM_MODE_PAGE_FLIP_ASYNC, nullptr)){
+		fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
+	  }
+	}
+	// drmModePageFlip doesn't work, but I made it an user option anyways
+	if(de->m_use_page_flip_on_second_frame){
+	  xFirst= false;
+	}
     chronometerDaInit.stop();
     chronometerDaInit.printInIntervals(CALCULATOR_LOG_INTERVAL);
     return 0;
