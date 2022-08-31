@@ -603,11 +603,9 @@ void DRMPrimeOut::add_dummy_overlay_plane() {
 					 modeset_buff.height)!=0){
 	fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
   }
-  if(drmModePageFlip(drm_fd,setup.crtcId,modeset_buff.fb,0, nullptr)){
-	fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
-  }
-
-
+  //if(drmModePageFlip(drm_fd,setup.crtcId,modeset_buff.fb,0, nullptr)){
+  //	fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
+  //}
   std::cout<<"DRMPrimeOut::add_dummy_overlay_plane() end\n";
 }
 
