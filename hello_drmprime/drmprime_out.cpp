@@ -496,7 +496,7 @@ int DRMPrimeOut::queue_new_frame_for_display(struct AVFrame *src_frame)
   return 0;
 }
 
-DRMPrimeOut::DRMPrimeOut(int renderMode1,,bool drm_add_dummy_overlay):renderMode(renderMode1),m_drm_add_dummy_overlay(drm_add_dummy_overlay)
+DRMPrimeOut::DRMPrimeOut(int renderMode1,bool drm_add_dummy_overlay):renderMode(renderMode1),m_drm_add_dummy_overlay(drm_add_dummy_overlay)
 {
    std::cout<<"DRMPrimeOut::DRMPrimeOut() begin\n";
     int rv;
