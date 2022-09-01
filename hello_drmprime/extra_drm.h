@@ -67,7 +67,7 @@ static uint32_t createColor(const int idx){
   rgba[0]=r;
   rgba[1]=g;
   rgba[2]=b;
-  rgba[3]=10;
+  rgba[3]=50;
   uint32_t ret;
   memcpy(&ret,rgba,4);
   return ret;
