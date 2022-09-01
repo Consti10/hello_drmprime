@@ -52,8 +52,6 @@ Chronometer chronometerDaInitAddFb{"DA_INIT_ADD_FB"};
 Chronometer chronometerDaInitSetPlane{"DA_INIT_SET_PLANE"};
 Chronometer chronoCopyFrameMMap{"CopyFrameMMap"};
 
-#define DRM_MODULE "vc4"
-
 #define ERRSTR strerror(errno)
 
 // on success, writes into pplane_id the id of a plane that supports
@@ -503,7 +501,7 @@ renderMode(renderMode1),m_drm_add_dummy_overlay(drm_add_dummy_overlay),m_use_pag
     sbQueue=std::make_unique<ThreadsafeSingleBuffer<AVFrame*>>();
     queue=std::make_unique<ThreadsafeQueue<AVFrameHolder>>();
 
-    const char *drm_module = DRM_MODULE;
+    const char *drm_module = "vc4";
 
     drm_fd = -1;
     con_id = 0;

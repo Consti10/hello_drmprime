@@ -95,10 +95,10 @@ public:
 	  uint8_t *map;
 	  uint32_t fb;
 	};
+	// Adds a dummy RGBA plane that overlays the video - this so far serves to emulate the Qt OSD
+	// I need to add later over the video
 	void add_dummy_overlay_plane();
 	static int modeset_create_fb(int fd, ModesetBuff *buf);
-	//
-	drmModeModeInfo m_mode;
 };
 
 static int CALCULATOR_LOG_INTERVAL=10;
