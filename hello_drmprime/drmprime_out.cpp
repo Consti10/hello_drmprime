@@ -164,11 +164,13 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
     }
     //}
     int n = 0;
+	// we always get frames with 1 layer
+	assert(desc->nb_layers==0);
     //for (int i = 0; i < desc->nb_layers; ++i) {
     for (int j = 0; j < desc->layers[0].nb_planes; ++j) {
         const AVDRMPlaneDescriptor *const p = desc->layers[0].planes + j;
         const AVDRMObjectDescriptor *const obj = desc->objects + p->object_index;
-        //MLOGD<<"Plane "<<j<<" has pitch:"<<p->pitch<<" offset:"<<p->offset<<" object_index:"<<p->object_index<<"modifiers:"<<obj->format_modifier<<"\n";
+        MLOGD<<"Plane "<<j<<" has pitch:"<<p->pitch<<" offset:"<<p->offset<<" object_index:"<<p->object_index<<"modifiers:"<<obj->format_modifier<<"\n";
         pitches[n] = p->pitch;
         offsets[n] = p->offset;
         //DRM_FORMAT_MOD_INVALID
