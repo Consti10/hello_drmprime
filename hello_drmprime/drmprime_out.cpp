@@ -523,6 +523,7 @@ renderMode(renderMode1),m_drm_add_dummy_overlay(drm_add_dummy_overlay),m_use_pag
         fprintf(stderr, "Failed to create display thread:\n");
         goto fail_close;
     }
+  	printDrmModes(drm_fd);
     std::cout<<"DRMPrimeOut::DRMPrimeOut() end\n";
 	// disable the dummy overlay plane for now
 	if(m_drm_add_dummy_overlay){
