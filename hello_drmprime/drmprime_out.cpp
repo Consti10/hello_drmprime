@@ -46,9 +46,10 @@ AvgCalculator avgDisplayThreadQueueLatency{"DisplayThreadQueue"};
 AvgCalculator avgTotalDecodeAndDisplayLatency{"TotalDecodeDisplayLatency"};
 Chronometer chronoVsync{"VSYNC"};
 Chronometer chronometerDaUninit{"DA_UNINIT"};
-Chronometer chronometer2{"X2"};
-Chronometer chronometer3{"X3"};
+//
 Chronometer chronometerDaInit{"DA_INIT"};
+Chronometer chronometerDaInitAddFb{"DA_INIT_ADD_FB"};
+Chronometer chronometerDaInitSetPlane{"DA_INIT_SET_PLANE"};
 Chronometer chronoCopyFrameMMap{"CopyFrameMMap"};
 
 #define DRM_MODULE "vc4"
@@ -148,7 +149,7 @@ static int countLol=0;
 // unfortunately blocks until the ? VSYNC or some VSYNC related time point ?
 static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* frame){
     chronometerDaInit.start();
-    chronometer2.start();
+    chronometerDaInitAddFb.start();
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
     uint32_t pitches[4] = { 0 };
     uint32_t offsets[4] = { 0 };
@@ -187,8 +188,9 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
         fprintf(stderr, "drmModeAddFB2WithModifiers failed: %s\n", ERRSTR);
         return -1;
     }
-    chronometer2.stop();
-    chronometer2.printInIntervals(CALCULATOR_LOG_INTERVAL);
+    chronometerDaInitAddFb.stop();
+    chronometerDaInitAddFb.printInIntervals(CALCULATOR_LOG_INTERVAL);
+    chronometerDaInitSetPlane.start();
 	// In theory, I think we should be able to do a page flip on the second frame and any following frame(s)
 	// as long as the format doesn't change. Doesn't work though.
 	static bool xFirst= true;
@@ -216,6 +218,8 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 		return -1;
 	  }
 	}
+  	chronometerDaInitSetPlane.stop();
+  	chronometerDaInitSetPlane.printInIntervals(CALCULATOR_LOG_INTERVAL);
 	// drmModePageFlip doesn't work, but I made it an user option anyways
 	if(de->m_use_page_flip_on_second_frame){
 	  xFirst= false;
