@@ -182,7 +182,7 @@ static void fillFrame(uint8_t* dest,const int width,const int height,const int s
 }
 
 // frm librepi
-/*std::string connectorTypeToStr(uint32_t type) {
+std::string connectorTypeToStr(uint32_t type) {
   switch (type) {
 	case DRM_MODE_CONNECTOR_HDMIA: // 11
 	  return "HDMIA";
@@ -251,6 +251,6 @@ void printDrmModes(int fd) {
   printf("min size: %dx%d\n", modes->min_width, modes->min_height);
   printf("max size: %dx%d\n", modes->max_width, modes->max_height);
   drmModeFreeResources(modes);
-}*/
+}
 
 #endif //HELLO_DRMPRIME_EXTRA_DRM_H
