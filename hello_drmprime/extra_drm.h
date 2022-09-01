@@ -61,8 +61,16 @@ static uint32_t createColor(const int idx){
 	g=0;
 	b=255;
   }
-  const uint32_t rgb=(r << 16) | (g << 8) | b;
-  return rgb;
+  //const uint32_t rgb=(r << 16) | (g << 8) | b;
+  //return rgb;
+  uint8_t rgba[4];
+  rgba[0]=r;
+  rgba[1]=g;
+  rgba[2]=b;
+  rgba[3]=255;
+  uint32_t ret;
+  memcpy(&ret,rgba,4);
+  return ret;
 }
 
 static inline void memset32_loop(uint32_t* dest,const uint32_t value,int num){
