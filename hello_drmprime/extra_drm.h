@@ -7,7 +7,9 @@
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <cstdio>
 #include <string>
+#include <sys/mman.h>
 
 #define Xmemclear(s) memset(&s, 0, sizeof(s))
 
