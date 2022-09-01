@@ -7,6 +7,7 @@
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <string>
 
 #define Xmemclear(s) memset(&s, 0, sizeof(s))
 
@@ -176,6 +177,16 @@ static void fillFrame(uint8_t* dest,const int width,const int height,const int s
 }
 
 // frm librepi
+std::string connectorTypeToStr(uint32_t type) {
+  switch (type) {
+	case DRM_MODE_CONNECTOR_HDMIA: // 11
+	  return "HDMIA";
+	case DRM_MODE_CONNECTOR_DSI: // 16
+	  return "DSI";
+  }
+  return "unknown";
+}
+
 void printDrmModes(int fd) {
   drmVersionPtr version = drmGetVersion(fd);
   printf("version %d.%d.%d\nname: %s\ndate: %s\ndescription: %s\n", version->version_major, version->version_minor, version->version_patchlevel, version->name, version->date, version->desc);
@@ -206,7 +217,7 @@ void printDrmModes(int fd) {
 	printf("Connector#%d: %d\n", i, modes->connectors[i]);
 	drmModeConnectorPtr connector = drmModeGetConnector(fd, modes->connectors[i]);
 	if (connector->connection == DRM_MODE_CONNECTED) puts("  connected!");
-	string typeStr = connectorTypeToStr(connector->connector_type);
+	std::string typeStr = connectorTypeToStr(connector->connector_type);
 	printf("  ID: %d\n  Encoder: %d\n  Type: %d %s\n  type_id: %d\n  physical size: %dx%d\n", connector->connector_id, connector->encoder_id, connector->connector_type, typeStr.c_str(), connector->connector_type_id, connector->mmWidth, connector->mmHeight);
 	for (int j=0; j < connector->count_encoders; j++) {
 	  printf("  Encoder#%d:\n", j);
