@@ -213,6 +213,12 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 		return -1;
 	  }
 	}else{
+	  //Argh
+	  /*drm_mode_update_plane_fb drm_mode_update_plane_fb_x;
+	  if(XDRM_IOCTL(fd, DRM_IOCTL_MODE_UPDATE_PLANE_FB, &s)){
+		fprintf(stderr, "DRM_IOCTL_MODE_UPDATE_PLANE_FB failed: %s\n", ERRSTR);
+	  }*/
+
 	  if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_id,DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC, nullptr)){
 		fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
 		return -1;
