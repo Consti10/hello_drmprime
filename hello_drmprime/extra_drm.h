@@ -26,7 +26,7 @@ static int XdrmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
                             uint32_t src_x, uint32_t src_y,
                             uint32_t src_w, uint32_t src_h)
 {
-    struct drm_mode_set_plane s;
+    struct drm_mode_set_plane s{};
     Xmemclear(s);
     s.plane_id = plane_id;
     s.crtc_id = crtc_id;
@@ -44,30 +44,6 @@ static int XdrmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
 }
 
 // --------------------------------------------------- from drm-howto ---------------------------------------------------
-static int modeset_open(int *out, const char *node)
-{
-    int fd, ret;
-    uint64_t has_dumb;
-
-    fd = open(node, O_RDWR | O_CLOEXEC);
-    if (fd < 0) {
-        ret = -errno;
-        fprintf(stderr, "cannot open '%s': %m\n", node);
-        return ret;
-    }
-
-    if (drmGetCap(fd, DRM_CAP_DUMB_BUFFER, &has_dumb) < 0 ||
-        !has_dumb) {
-        fprintf(stderr, "drm device '%s' does not support dumb buffers\n",
-                node);
-        close(fd);
-        return -EOPNOTSUPP;
-    }
-
-    *out = fd;
-    return 0;
-}
-
 // returns fully red,green,blue color alternating and wrapping around
 static uint32_t createColor(const int idx){
   uint8_t r,g,b;
