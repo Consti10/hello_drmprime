@@ -43,10 +43,6 @@ static int XdrmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
     return XDRM_IOCTL(fd, DRM_IOCTL_MODE_SETPLANE, &s);
 }
 
-static int X
-
-
-
 struct DumpBuffer{
     uint32_t width=1920;
     uint32_t height=1080;
