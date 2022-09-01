@@ -163,7 +163,6 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
         return -1;
     }
     //}
-    int n = 0;
 	// we always get frames with 1 layer
 	assert(desc->nb_layers==1);
     //for (int i = 0; i < desc->nb_layers; ++i) {
@@ -172,13 +171,12 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
         const AVDRMObjectDescriptor *const obj = desc->objects + p->object_index;
         MLOGD<<"Plane "<<j<<" has pitch:"<<p->pitch<<" offset:"<<p->offset<<" object_index:"<<p->object_index<<" modifier:"<<obj->format_modifier
 			<<" bo_handle:"<<da->bo_handles[p->object_index]<<"\n";
-        pitches[n] = p->pitch;
-        offsets[n] = p->offset;
+        pitches[j] = p->pitch;
+        offsets[j] = p->offset;
         //DRM_FORMAT_MOD_INVALID
         //MLOGD<<"X:"<<DRM_FORMAT_MOD_BROADCOM_SAND32<<"Y:"<<DRM_FORMAT_MOD_BROADCOM_SAND128<<"Z:"<<DRM_FORMAT_MOD_BROADCOM_SAND256<<"\n";
-        modifiers[n] = obj->format_modifier;
-        bo_handles[n] = da->bo_handles[p->object_index];
-        ++n;
+        modifiers[j] = obj->format_modifier;
+        bo_handles[j] = da->bo_handles[p->object_index];
     }
     //}
     //MLOGD<<"desc->nb_objects:"<<desc->nb_objects<<"desc->nb_layers"<<desc->nb_layers<<"\n";
