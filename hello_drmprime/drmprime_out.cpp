@@ -453,6 +453,8 @@ fail_res:
     return ret;
 }
 
+// We assume the caller frees the given src-frame once this function call returns,
+// so we just create a new frame that references the fiven frame to keep it around.
 int DRMPrimeOut::queue_new_frame_for_display(struct AVFrame *src_frame)
 {
   assert(src_frame);
@@ -483,7 +485,7 @@ int DRMPrimeOut::queue_new_frame_for_display(struct AVFrame *src_frame)
   const auto delayBeforeDisplayQueueUs=getTimeUs()-frame->pts;
   MLOGD<<"delayBeforeDisplayQueue:"<<frame->pts<<" delay:"<<(delayBeforeDisplayQueueUs/1000.0)<<" ms\n";
   if(renderMode==0){
-	// wait for the last buffer to be processed, then update
+	// wait for the last buffer to be processed, then update. (Might) block
 	sbQueue->setBuffer(frame);
   }else{
 	// push it immediately, even though frame(s) might already be inside the queue
