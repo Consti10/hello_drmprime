@@ -4,6 +4,7 @@
 
 #include "egl_out.h"
 #include "../common_consti/TimeHelper.hpp"
+#include "ffmpeg_workaround_api_version.h"
 
 #include <cassert>
 

@@ -77,6 +77,6 @@ add_executable(hello_drmprime hello_drmprime.cpp drmprime_out.cpp egl_out.cpp)
 	
 target_link_libraries(hello_drmprime ${FFMPEG_LIBRARIES} -ldrm -lpthread
 		# for egl out only
-		-lGLESv2 -lglfw -lEGL
+		-lavcodec -lavfilter -lavutil -lavformat -ldrm -lpthread -lGLESv2 -lglfw -lEGL
 		)
 

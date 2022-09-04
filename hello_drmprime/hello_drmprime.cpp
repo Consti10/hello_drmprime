@@ -73,6 +73,7 @@ extern "C" {
 
 #include "MMapFrame.h"
 #include "SaveFramesToFile.hpp"
+#include "ffmpeg_workaround_api_version.h"
 
 static enum AVPixelFormat hw_pix_fmt;
 
@@ -205,11 +206,11 @@ static const struct option long_options[] = {
 };
 
 int main(int argc, char *argv[]){
-    AVFormatContext *input_ctx = NULL;
+    AVFormatContext *input_ctx = nullptr;
     int video_stream, ret;
-    AVStream *video = NULL;
-    AVCodecContext *decoder_ctx = NULL;
-    const AVCodec *decoder = NULL;
+    AVStream *video = nullptr;
+    AVCodecContext *decoder_ctx = nullptr;
+    const AVCodec *decoder = nullptr;
     AVPacket packet;
     enum AVHWDeviceType type;
     const char * hwdev = "drm";
@@ -304,7 +305,7 @@ int main(int argc, char *argv[]){
     }
 
     // find the video stream information
-    ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1,(AVCodec**) &decoder, 0);
+    ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1,(const AVCodec**) &decoder, 0);
     if (ret < 0) {
         fprintf(stderr, "Cannot find a video stream in the input file\n");
         return -1;
