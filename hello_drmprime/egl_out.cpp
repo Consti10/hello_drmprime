@@ -277,8 +277,17 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	  av_frame_free(&frame);
 	  return AVERROR(EINVAL);
 	}
-  } else {
-	fprintf(stderr, "Frame (format=%d) not DRM_PRiME\n", src_frame->format);
+  }/* else if(src_frame->format==AV_PIX_FMT_CUDA){
+	frame = av_frame_alloc();
+	frame->format = AV_PIX_FMT_DRM_PRIME;
+	if (av_hwframe_transfer_data(frame, src_frame, 0) != 0) {
+	  fprintf(stderr, "Failed to transfer frame (format=%d) to DRM_PRiME\n", src_frame->format);
+	  av_frame_free(&frame);
+	  return AVERROR(EINVAL);
+	}
+  }*/
+  else {
+	fprintf(stderr, "Frame (format=%d) not DRM_PRiME / cannot be converted to DRM_PRIME\n", src_frame->format);
 	return AVERROR(EINVAL);
   }
   // Here the delay is still neglegible,aka ~0.15ms

@@ -291,10 +291,10 @@ int main(int argc, char *argv[]){
     }
 
   	print_av_hwdevice_types();
-    //AVHWDeviceType type = av_hwdevice_find_type_by_name(hwdev);
-  	//AVHWDeviceType type = AV_HWDEVICE_TYPE_DRM;
-	//const AVHWDeviceType type = AV_HWDEVICE_TYPE_VAAPI;
-  const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
+    //const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
+  	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
+	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
+    const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
   	fprintf(stdout, " Found hw device type name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
     /*if (type == AV_HWDEVICE_TYPE_NONE) {
         fprintf(stderr, "Device type %s is not supported.\n", hwdev);
@@ -332,8 +332,8 @@ int main(int argc, char *argv[]){
     }
 
     // find the video stream information
-    //ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1,(const AVCodec**) &decoder, 0);
-	ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1,(AVCodec**) &decoder, 0);
+    ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1,(const AVCodec**) &decoder, 0);
+	//ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1,(AVCodec**) &decoder, 0);
     if (ret < 0) {
         fprintf(stderr, "Cannot find a video stream in the input file\n");
         return -1;
