@@ -467,11 +467,13 @@ int DRMPrimeOut::queue_new_frame_for_display(struct AVFrame *src_frame)
   }
   if (src_frame->format == AV_PIX_FMT_DRM_PRIME) {
 	frame = av_frame_alloc();
+	assert(frame);
 	av_frame_ref(frame, src_frame);
 	//printf("format == AV_PIX_FMT_DRM_PRIME\n");
   } else if (src_frame->format == AV_PIX_FMT_VAAPI) {
 	//printf("format == AV_PIX_FMT_VAAPI\n");
 	frame = av_frame_alloc();
+	assert(frame);
 	frame->format = AV_PIX_FMT_DRM_PRIME;
 	if (av_hwframe_map(frame, src_frame, 0) != 0) {
 	  fprintf(stderr, "Failed to map frame (format=%d) to DRM_PRiME\n", src_frame->format);
