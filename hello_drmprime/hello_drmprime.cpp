@@ -25,7 +25,7 @@
 
 /**
  * @file
- * HW-Accelerated decoding example.
+ * HW-Accelerated decoding and display example.
  *
  * @example hw_decode.c
  * This example shows how to do HW-accelerated decoding with output
