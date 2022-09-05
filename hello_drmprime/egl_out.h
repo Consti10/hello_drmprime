@@ -60,11 +60,8 @@ class XAVFrameHolder{
 // Needs to be run with X server running (at least for now), otherwise glfw cannot create a OpenGL window.
 class EGLOut {
  public:
-  EGLOut(int width,int height):window_width(width),window_height(height){
-	render_thread=std::make_unique<std::thread>([this](){
-	  render_thread_run();
-	});
-  }
+  EGLOut(int width,int height);
+  ~EGLOut();
   /**
    * Display this frame via egl / OpenGL render.
    * This does not directly render the frame, but rather pushes it onto a queue
@@ -77,6 +74,7 @@ class EGLOut {
   void render_thread_run();
  private:
   std::unique_ptr<std::thread> render_thread;
+  bool terminate=false;
   const int window_width;
   const int window_height;
   //

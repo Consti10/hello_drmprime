@@ -527,13 +527,9 @@ renderMode(renderMode1),m_drm_add_dummy_overlay(drm_add_dummy_overlay),m_use_pag
         rv = AVERROR(EINVAL);
         goto fail_close;
     }
-
-    if (pthread_create(&q_thread, NULL, display_thread,this)) {
-        rv = AVERROR(errno);
-        //comp error fprintf(stderr, "Failed to create display thread: %s\n", av_err2str(rv));
-        fprintf(stderr, "Failed to create display thread:\n");
-        goto fail_close;
-    }
+	q_thread=std::make_unique<std::thread>([this](){
+	  display_thread(this);
+	});
   	printDrmModes(drm_fd);
     std::cout<<"DRMPrimeOut::DRMPrimeOut() end\n";
 	// disable the dummy overlay plane for now
@@ -552,7 +548,10 @@ DRMPrimeOut::~DRMPrimeOut()
 {
     terminate=true;
     sbQueue->terminate();
-    pthread_join(q_thread, NULL);
+	// q_thread can be null if something went wrong during construction (initialization)
+	if(q_thread && q_thread->joinable()){
+	  q_thread->join();
+	}
     // free any frames that might be inside some queues - since the queue thread
     // is now stopped, we don't have to worry about any synchronization
     if(sbQueue->unsafeGetFrame()!=NULL){

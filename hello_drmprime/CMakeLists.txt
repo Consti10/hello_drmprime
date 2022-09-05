@@ -27,7 +27,7 @@ find_package(PkgConfig REQUIRED)
 ## Find ffmpeg
 ##
 # The Order (see 'Requires:' in /usr/local/lib/pkgconfig)
-# /usr/local/lib/libavutil.a /usr/local/lib/libswscale.a  /usr/local/lib/libswresample.a /usr/local/lib/libavcodec.a /usr/local/lib/libavformat.a /usr/local/lib/libavfilter.a /usr/local/lib/libavdevice.a 
+# /usr/local/lib/libavutil.a /usr/local/lib/libswscale.a  /usr/local/lib/libswresample.a /usr/local/lib/libavcodec.a /usr/local/lib/libavformat.a /usr/local/lib/libavfilter.a /usr/local/lib/libavdevice.a
 
 pkg_check_modules(PC_FFMPEG avcodec avutil avformat)
 
@@ -66,17 +66,13 @@ endif()
 #message("${AVCODEC_LDFLAGS}")
 
 include_directories(
-	include
-	/usr/include/libdrm
-	${FFMPEG_INCLUDE_DIRS}
-	/home/pi/dev/rpi-ffmpeg
-	/home/pi/dev/rpi-ffmpeg/out/armv7-buster-shared-rel )
+	/usr/include/libdrm)
 
 
 add_executable(hello_drmprime hello_drmprime.cpp drmprime_out.cpp egl_out.cpp)
 	
-target_link_libraries(hello_drmprime ${FFMPEG_LIBRARIES} -ldrm -lpthread
-		# for egl out only
-		-lavcodec -lavfilter -lavutil -lavformat -ldrm -lpthread -lGLESv2 -lglfw -lEGL
+target_link_libraries(hello_drmprime
+		#
+		-lavcodec -lavutil -lavformat -ldrm -lpthread -lGLESv2 -lglfw -lEGL
 		)
 

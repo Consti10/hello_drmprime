@@ -59,6 +59,19 @@ static const GLfloat uv_coords[][4][2] =
 		{ {1.0, 1.0}, {0.0, 1.0}, {1.0, 0.0}, {0.0, 0.0} }
 	};
 
+EGLOut::EGLOut(int width, int height) :window_width(width),window_height(height){
+  render_thread=std::make_unique<std::thread>([this](){
+	render_thread_run();
+  });
+}
+
+EGLOut::~EGLOut() {
+  terminate=true;
+  if(render_thread->joinable()){
+	render_thread->join();
+  }
+}
+
 GLint common_get_shader_program(const char *vertex_shader_source, const char *fragment_shader_source) {
   enum Consts {INFOLOG_LEN = 512};
   GLchar infoLog[INFOLOG_LEN];
@@ -278,7 +291,7 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 
 void EGLOut::render_thread_run() {
   initializeWindowRender();
-  while (!glfwWindowShouldClose(window)){
+  while (!glfwWindowShouldClose(window) && !terminate){
 	glfwPollEvents();  /// for mouse window closing
 	render_once();
   }

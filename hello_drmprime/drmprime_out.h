@@ -20,6 +20,7 @@ extern "C" {
 #include "../common_consti/ThreadsafeQueue.hpp"
 #include "MMapFrame.h"
 #include <memory>
+#include <thread>
 
 class AVFrameHolder{
 public:
@@ -75,7 +76,7 @@ public:
     static constexpr auto AUX_SIZE=5;
     drm_aux aux[AUX_SIZE];
     // the thread hat handles the drm display update, decoupled from decoder thread
-    pthread_t q_thread;
+	std::unique_ptr<std::thread> q_thread=nullptr;
     bool terminate=false;
     // used when frame drops are not wanted, aka how the original implementation was done
     std::unique_ptr<ThreadsafeSingleBuffer<AVFrame*>> sbQueue;

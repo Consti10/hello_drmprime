@@ -3,7 +3,7 @@ FFINSTALL=/usr
 endif
 _CFLAGS=-I$(FFINSTALL)/include/arm-linux-gnueabihf -I/usr/include/libdrm
 _LDFLAGS=-L$(FFINSTALL)/lib/arm-linux-gnueabihf
-_LDLIBS=-lavcodec -lavfilter -lavutil -lavformat -ldrm -lpthread -lGLESv2 -lglfw -lEGL
+_LDLIBS=-lavcodec -lavutil -lavformat -ldrm -lpthread -lGLESv2 -lglfw -lEGL
 
 _CFLAGS+=-O3
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')

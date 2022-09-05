@@ -45,8 +45,6 @@ extern "C" {
 #include <libavutil/opt.h>
 #include <libavutil/avassert.h>
 #include <libavutil/imgutils.h>
-#include <libavfilter/buffersink.h>
-#include <libavfilter/buffersrc.h>
 #include <libavutil/buffer.h>
 #include <libavutil/frame.h>
     //
@@ -75,11 +73,22 @@ extern "C" {
 #include "SaveFramesToFile.hpp"
 #include "ffmpeg_workaround_api_version.h"
 
-static enum AVPixelFormat hw_pix_fmt;
+static enum AVPixelFormat wanted_hw_pix_fmt;
 
 static AvgCalculator avgDecodeTime{"DecodeTime"};
 static Chronometer mmapBuffer{"mmapBuffer"};
 static Chronometer copyMmappedBuffer{"copyMmappedBuffer"};
+
+static void print_av_hwdevice_types(){
+  std::stringstream ss;
+  AVHWDeviceType tmp_type=AV_HWDEVICE_TYPE_NONE;
+  ss<< "Available HW device types:";
+  while((tmp_type = av_hwdevice_iterate_types(tmp_type)) != AV_HWDEVICE_TYPE_NONE){
+	ss<<" "<<av_hwdevice_get_type_name(tmp_type);
+  }
+  ss<<"\n";
+  fprintf(stdout, "%s",ss.str().c_str());
+}
 
 static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type){
     int err = 0;
@@ -95,12 +104,21 @@ static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type){
 
 static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,const enum AVPixelFormat *pix_fmts){
     const enum AVPixelFormat *p;
+	AVPixelFormat ret=AV_PIX_FMT_NONE;
+	std::stringstream supported_formats;
     for (p = pix_fmts; *p != -1; p++) {
-        if (*p == hw_pix_fmt)
-            return *p;
+	    const int tmp=(int)*p;
+	  	supported_formats<<av_get_pix_fmt_name(*p)<<"("<<tmp<<"),";
+        if (*p == wanted_hw_pix_fmt){
+		  // matches what we want
+		  ret=*p;
+		}
     }
-    fprintf(stderr, "Failed to get HW surface format.\n");
-    return AV_PIX_FMT_NONE;
+	std::cout<<"Supported (HW) pixel formats: "<<supported_formats.str()<<"\n";
+	if(ret==AV_PIX_FMT_NONE){
+	  fprintf(stderr, "Failed to get HW surface format. Wanted: %s\n", av_get_pix_fmt_name(wanted_hw_pix_fmt));
+	}
+    return ret;
 }
 
 static void map_frame_test(AVFrame* frame){
@@ -206,13 +224,13 @@ static const struct option long_options[] = {
 };
 
 int main(int argc, char *argv[]){
-    AVFormatContext *input_ctx = nullptr;
-    int video_stream, ret;
-    AVStream *video = nullptr;
+    //AVFormatContext *input_ctx = nullptr;
+    int ret;
+    //AVStream *video = nullptr;
     AVCodecContext *decoder_ctx = nullptr;
     const AVCodec *decoder = nullptr;
     AVPacket packet;
-    enum AVHWDeviceType type;
+    //enum AVHWDeviceType type;
     const char * hwdev = "drm";
     DRMPrimeOut* drm_prime_out=nullptr;
 	EGLOut* egl_out=nullptr;
@@ -268,31 +286,40 @@ int main(int argc, char *argv[]){
         MLOGD<<"limited framerate: "<<mXOptions.limitedFrameRate<<"\n";
 	  	MLOGD<<"drm_add_dummy_overlay: "<<(mXOptions.drm_add_dummy_overlay ? "Y":"N")<<"\n";
 	  	MLOGD<<"use_page_flip_on_second_frame: "<<(mXOptions.use_page_flip_on_second_frame ? "Y":"N")<<"\n";
+
+		MLOGD<<"FFMPEG Version:"<<av_version_info()<<"\n";
     }
 
-    type = av_hwdevice_find_type_by_name(hwdev);
-    if (type == AV_HWDEVICE_TYPE_NONE) {
+  	print_av_hwdevice_types();
+    //AVHWDeviceType type = av_hwdevice_find_type_by_name(hwdev);
+  	//AVHWDeviceType type = AV_HWDEVICE_TYPE_DRM;
+	//const AVHWDeviceType type = AV_HWDEVICE_TYPE_VAAPI;
+  const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
+  	fprintf(stdout, " Found hw device type name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
+    /*if (type == AV_HWDEVICE_TYPE_NONE) {
         fprintf(stderr, "Device type %s is not supported.\n", hwdev);
         fprintf(stderr, "Available device types:");
         while((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE)
             fprintf(stderr, " %s", av_hwdevice_get_type_name(type));
         fprintf(stderr, "\n");
         return -1;
-    }
+    }*/
 	if(mXOptions.render_mode==0 || mXOptions.render_mode==1 || mXOptions.render_mode==2){
 	  drm_prime_out = new DRMPrimeOut(mXOptions.render_mode,mXOptions.drm_add_dummy_overlay,mXOptions.use_page_flip_on_second_frame);
 	}else {
 	  egl_out=new EGLOut(1280,720);
+	  std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 
-	SaveFramesToFile* save_frames_to_file=nullptr;
+	std::unique_ptr<SaveFramesToFile> save_frames_to_file=nullptr;
     // open the file to dump raw data
     if (mXOptions.out_filename != nullptr) {
-	  save_frames_to_file=new SaveFramesToFile(mXOptions.out_filename);
+	  save_frames_to_file=std::make_unique<SaveFramesToFile>(mXOptions.out_filename);
     }
 
     const char * in_file=mXOptions.in_filename;
 
+  	AVFormatContext *input_ctx = nullptr;
     // open the input file
     if (avformat_open_input(&input_ctx, in_file, NULL, NULL) != 0) {
         fprintf(stderr, "Cannot open input file '%s'\n", in_file);
@@ -305,59 +332,77 @@ int main(int argc, char *argv[]){
     }
 
     // find the video stream information
-    ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1,(const AVCodec**) &decoder, 0);
+    //ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1,(const AVCodec**) &decoder, 0);
+	ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1,(AVCodec**) &decoder, 0);
     if (ret < 0) {
         fprintf(stderr, "Cannot find a video stream in the input file\n");
         return -1;
     }
-    video_stream = ret;
+    const int video_stream = ret;
 
     if (decoder->id == AV_CODEC_ID_H264) {
+	    std::cout<<"H264 decode\n";
         if ((decoder = avcodec_find_decoder_by_name("h264_v4l2m2m")) == NULL) {
             fprintf(stderr, "Cannot find the h264 v4l2m2m decoder\n");
             return -1;
         }
-        hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
+	  	wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
     }
     else {
+	  	assert(decoder->id==AV_CODEC_ID_H265);
+	  	std::cout<<"H265 decode\n";
         for (int i = 0;; i++) {
             const AVCodecHWConfig *config = avcodec_get_hw_config(decoder, i);
             if (!config) {
                 fprintf(stderr, "Decoder %s does not support device type %s.\n",
-                        decoder->name, av_hwdevice_get_type_name(type));
+                        decoder->name, av_hwdevice_get_type_name(kAvhwDeviceType));
                 return -1;
             }
+			std::stringstream ss;
+			ss<<"HW config "<<i<<" ";
+			ss<<"PIX fmt: "<<av_get_pix_fmt_name(config->pix_fmt);
+			ss<<" XX :"<<av_hwdevice_get_type_name(config->device_type)<<"\n";
+			std::cout<<ss.str();
+
             if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX &&
-                config->device_type == type) {
-                hw_pix_fmt = config->pix_fmt;
+                config->device_type == kAvhwDeviceType) {
+			  	wanted_hw_pix_fmt = config->pix_fmt;
                 break;
             }
         }
+		//hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
+	  	wanted_hw_pix_fmt = AV_PIX_FMT_CUDA;
+		//wanted_hw_pix_fmt = (AVPixelFormat)119;
+		//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
+		//const int argh=(int)wanted_hw_pix_fmt;
+		//std::cout<<"ARGH:"<<av_get_pix_fmt_name(AV_PIX_FMT_CUDA)<<"("<<argh<<")\n";
     }
 
     if (!(decoder_ctx = avcodec_alloc_context3(decoder))){
         return AVERROR(ENOMEM);
     }
 
-    video = input_ctx->streams[video_stream];
+    AVStream *video = input_ctx->streams[video_stream];
     if (avcodec_parameters_to_context(decoder_ctx, video->codecpar) < 0)
         return -1;
 
     decoder_ctx->get_format  = get_hw_format;
 
-    if (hw_decoder_init(decoder_ctx, type) < 0)
-        return -1;
+    if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
+	  std::cout<<"HW decoder init failed\n";
+	  return -1;
+	}
 
     // Consti10
     //decoder_ctx->thread_count = 3;
     decoder_ctx->thread_count = 1;
 
-    if ((ret = avcodec_open2(decoder_ctx, decoder, NULL)) < 0) {
+    if ((ret = avcodec_open2(decoder_ctx, decoder, nullptr)) < 0) {
         fprintf(stderr, "Failed to open codec for stream #%u\n", video_stream);
         return -1;
     }
 
-    /* actual decoding and dump the raw data */
+    // actual decoding and dump the raw data
     const auto decodingStart=std::chrono::steady_clock::now();
     int nFeedFrames=0;
     auto lastFrame=std::chrono::steady_clock::now();
@@ -387,7 +432,7 @@ int main(int argc, char *argv[]){
             nFeedFrames++;
             const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
             const double runTimeS=runTimeMs/1000.0f;
-            const double fps=nFeedFrames/runTimeS;
+            const double fps=runTimeS==0 ? 0 : nFeedFrames/runTimeS;
             MLOGD<<"Fake fps:"<<fps<<"\n";
         }
         av_packet_unref(&packet);
@@ -400,14 +445,17 @@ int main(int argc, char *argv[]){
     av_packet_unref(&packet);
 
     if (save_frames_to_file){
-        delete save_frames_to_file;
+        save_frames_to_file=nullptr;
     }
     avcodec_free_context(&decoder_ctx);
     avformat_close_input(&input_ctx);
 
-    if(drm_prime_out!=NULL){
+    if(drm_prime_out!=nullptr){
         delete drm_prime_out;
     }
+	if(egl_out!= nullptr){
+	  delete egl_out;
+	}
 
     return 0;
 }

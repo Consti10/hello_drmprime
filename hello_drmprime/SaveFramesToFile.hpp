@@ -12,8 +12,6 @@ extern "C" {
 #include <libavutil/opt.h>
 #include <libavutil/avassert.h>
 #include <libavutil/imgutils.h>
-#include <libavfilter/buffersink.h>
-#include <libavfilter/buffersrc.h>
 #include <libavutil/buffer.h>
 #include <libavutil/frame.h>
 //
