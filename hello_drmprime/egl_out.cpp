@@ -42,6 +42,23 @@ static void checkGlError(const std::string& caller) {
   }
 }
 
+static void print_hwframe_transfer_formats(AVBufferRef *hwframe_ctx){
+  enum AVPixelFormat *formats;
+  const auto err = av_hwframe_transfer_get_formats(hwframe_ctx, AV_HWFRAME_TRANSFER_DIRECTION_FROM, &formats, 0);
+  if (err < 0) {
+	std::cout<<"av_hwframe_transfer_get_formats error\n";
+	return;
+  }
+  std::stringstream ss;
+  ss<<"Supported transfers:";
+  for (int i = 0; formats[i] != AV_PIX_FMT_NONE; i++) {
+	ss<<i<<":"<<av_get_pix_fmt_name(formats[i])<<",";
+  }
+  ss<<"\n";
+  std::cout<<ss.str();
+  av_freep(&formats);
+}
+
 static EGLint texgen_attrs[] = {
 	EGL_DMA_BUF_PLANE0_FD_EXT,
 	EGL_DMA_BUF_PLANE0_OFFSET_EXT,
@@ -228,9 +245,11 @@ void EGLOut::initializeWindowRender() {
   }
 }
 
+
 void EGLOut::update_texture_rgb(AVFrame* frame) {
   assert(frame);
   assert(frame->format==AV_PIX_FMT_RGB8);
+  MLOGD<<"update_texture_rgb\n";
   glBindTexture(GL_TEXTURE_2D,texture_extra);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -239,26 +258,46 @@ void EGLOut::update_texture_rgb(AVFrame* frame) {
   av_frame_free(&frame);
 }
 
-void EGLOut::update_texture_cuda(EGLDisplay *egl_display,AVFrame *frame) {
+void EGLOut::update_texture_cuda(AVFrame *frame) {
   assert(frame);
   assert(frame->format==AV_PIX_FMT_CUDA);
   MLOGD<<"update_egl_texture_cuda\n";
   // We can now also give the frame back to av, since we are updating to a new one.
-  if(egl_frame_texture.av_frame!= nullptr){
-	av_frame_free(&egl_frame_texture.av_frame);
+  if(cuda_frametexture.av_frame!= nullptr){
+	av_frame_free(&cuda_frametexture.av_frame);
   }
-  if(texture_extra==0){
-	glGenTextures(1, &texture_extra);
-  }
+  cuda_frametexture.av_frame=frame;
   if(m_cuda_gl_interop_helper== nullptr){
 	AVHWDeviceContext* tmp=((AVHWFramesContext*)frame->hw_frames_ctx->data)->device_ctx;
 	AVCUDADeviceContext* avcuda_device_context=(AVCUDADeviceContext*)tmp->hwctx;
 	assert(avcuda_device_context);
 	m_cuda_gl_interop_helper = std::make_unique<CUDAGLInteropHelper>(avcuda_device_context);
   }
-  glBindTexture(GL_TEXTURE_2D, texture_extra);
-  m_cuda_gl_interop_helper->registerTextures(texture_extra,texture_extra);
+  bool fresh=false;
+  if(cuda_frametexture.textures[0]==0){
+	std::cout<<"Creating cuda textures\n";
+	glGenTextures(2, cuda_frametexture.textures);
+	fresh= true;
+  }
+  if(fresh){
+	for(int i=0;i<2;i++){
+	  glBindTexture(GL_TEXTURE_2D,cuda_frametexture.textures[i]);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame->width,frame->height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	  glBindTexture(GL_TEXTURE_2D,0);
+	}
+  }
+  if(fresh){
+	m_cuda_gl_interop_helper->registerTextures(cuda_frametexture.textures[0],cuda_frametexture.textures[1]);
+  }
+  glBindTexture(GL_TEXTURE_2D, cuda_frametexture.textures[0]);
+  Chronometer cuda_memcpy_time{"CUDA memcpy"};
+  cuda_memcpy_time.start();
   m_cuda_gl_interop_helper->copyCudaFrameToTextures(frame);
+  cuda_memcpy_time.stop();
+  // I don't think we can measure CUDA memcpy time
+  //MLOGD<<"CUDA memcpy:"<<cuda_memcpy_time.getAvgReadable()<<"\n";
 }
 
 
@@ -332,6 +371,34 @@ bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& e
   return true;
 }
 
+// "Consumes" the given hw_frame
+void EGLOut::update_texture(AVFrame *hw_frame) {
+  if(hw_frame->format == AV_PIX_FMT_DRM_PRIME){
+	EGLDisplay egl_display=eglGetCurrentDisplay();
+	update_drm_prime_to_egl_texture(&egl_display, egl_frame_texture,hw_frame);
+  }else if(hw_frame->format==AV_PIX_FMT_CUDA){
+	update_texture_cuda(hw_frame);
+	/*AVFrame* sw_frame = av_frame_alloc();
+	assert(sw_frame);
+	print_hwframe_transfer_formats(hw_frame->hw_frames_ctx);
+	Chronometer tmp{"AV hwframe transfer"};
+	tmp.start();
+	sw_frame->format = AV_PIX_FMT_NV12;
+	if (av_hwframe_transfer_data(sw_frame, hw_frame,0) != 0) {
+	  fprintf(stderr, "Failed to transfer frame (format=%d) to DRM_PRiME %s\n", hw_frame->format,strerror(errno));
+	  av_frame_free(&sw_frame);
+	  return;
+	}
+	tmp.stop();
+	MLOGD<<"Transfer:"<<tmp.getAvgReadable()<<"\n";
+	//update_texture_rgb(sw_frame);
+	av_frame_free(&hw_frame);*/
+  }else{
+	std::cerr<<"Unimplemented to texture\n";
+	av_frame_free(&hw_frame);
+  }
+}
+
 void EGLOut::render_once() {
   // update the video frame to the most recent one
   // A bit overkill, but it was quicker to just copy paste the logic from hello_drmprime.
@@ -347,17 +414,8 @@ void EGLOut::render_once() {
 	}
 	// The latest frame is the last one we did not drop
 	const auto latest_new_frame = allBuffers[nDroppedFrames]->frame;
-	EGLDisplay egl_display=eglGetCurrentDisplay();
 	// This will free the last (rendered) av frame if given.
-	if(latest_new_frame->format==AV_PIX_FMT_CUDA){
-	  update_texture_cuda(&egl_display,latest_new_frame);
-	}else if(latest_new_frame->format==AV_PIX_FMT_DRM_PRIME){
-	  update_drm_prime_to_egl_texture(&egl_display, egl_frame_texture, latest_new_frame);
-	}else if(latest_new_frame->format==AV_PIX_FMT_RGB8) {
-	  update_texture_rgb(latest_new_frame);
-	}else{
-	  std::cerr<<"Unimplemented to texture\n";
-	}
+	update_texture(latest_new_frame);
   }
   glClearColor(1.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
@@ -371,8 +429,9 @@ void EGLOut::render_once() {
 	checkGlError("Draw EGL texture");
   }else{
 	//std::cout<<"Draw RGBA texture\n";
+	GLuint used_tex=cuda_frametexture.textures[0]!=0 ? cuda_frametexture.textures[0] : texture_extra;
 	glUseProgram(shader_program_rgb);
-	glBindTexture(GL_TEXTURE_2D, texture_extra);
+	glBindTexture(GL_TEXTURE_2D, used_tex);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	checkGlError("Draw RGBA texture");
@@ -384,17 +443,19 @@ void EGLOut::render_once() {
 int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
   assert(src_frame);
   //std::cout<<"DRMPrimeOut::drmprime_out_display "<<src_frame->width<<"x"<<src_frame->height<<"\n";
-  AVFrame *frame;
   if ((src_frame->flags & AV_FRAME_FLAG_CORRUPT) != 0) {
 	fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", src_frame->format, src_frame->pts);
 	return 0;
   }
+  AVFrame *frame;
   if (src_frame->format == AV_PIX_FMT_DRM_PRIME) {
 	frame = av_frame_alloc();
 	assert(frame);
 	av_frame_ref(frame, src_frame);
 	//printf("format == AV_PIX_FMT_DRM_PRIME\n");
   } else if (src_frame->format == AV_PIX_FMT_VAAPI) {
+	// Apparently we can directly convert VAAPI to DRM PRIME and use it with egl
+	// (At least on Pi 4 & h264! decode ?!)
 	//printf("format == AV_PIX_FMT_VAAPI\n");
 	frame = av_frame_alloc();
 	assert(frame);
@@ -404,28 +465,16 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	  av_frame_free(&frame);
 	  return AVERROR(EINVAL);
 	}
-  }else if(src_frame->format==AV_PIX_FMT_CUDA){
-	// We have a special logic for CUDA
-	/*frame = av_frame_alloc();
-	assert(frame);
-	av_frame_ref(frame, src_frame);
-	MLOGD<<"Warning stored CUDA frame, needs special conversion to OpenGL\n";*/
+  }else{
+	// We cannot DMABUF Map this frame to an egl image(at least not yet).
+	// Any conversion has to be done later.
 	frame = av_frame_alloc();
 	assert(frame);
-	frame->format = AV_PIX_FMT_RGB8;
-	Chronometer tmp{"AV hwframe transfer"};
-	tmp.start();
-	if (av_hwframe_transfer_data(frame, src_frame,0) != 0) {
-	  fprintf(stderr, "Failed to transfer frame (format=%d) to DRM_PRiME %s\n", src_frame->format,strerror(errno));
+	if(av_frame_ref(frame, src_frame)!=0){
+	  fprintf(stderr, "av_frame_ref error\n");
 	  av_frame_free(&frame);
 	  return AVERROR(EINVAL);
 	}
-	tmp.stop();
-	MLOGD<<"Transfer:"<<tmp.getAvgReadable()<<"\n";
-  }
-  else {
-	fprintf(stderr, "Frame (format=%d) not DRM_PRiME / cannot be converted to DRM_PRIME\n", src_frame->format);
-	return AVERROR(EINVAL);
   }
   // Here the delay is still neglegible,aka ~0.15ms
   const auto delayBeforeDisplayQueueUs=getTimeUs()-frame->pts;
@@ -444,3 +493,4 @@ void EGLOut::render_thread_run() {
   glDeleteBuffers(1, &vbo);
   glfwTerminate();
 }
+

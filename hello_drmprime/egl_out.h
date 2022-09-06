@@ -46,10 +46,18 @@ struct EGLFrameTexture{
   // I think we need to keep the av frame reference around as long as we use the generated egl texture in opengl.
   AVFrame* av_frame= nullptr;
   // In contrast to "hwdectogl", created once, then re-used with each new egl image.
+  // needs to be bound to the "EGL external image" target
   GLuint texture=0;
   // set to true if the texture currently has a egl image backing it.
   bool has_valid_image=false;
 };
+
+struct CUDAFrameTexture{
+  AVFrame* av_frame=nullptr;
+  GLuint textures[2]={0,0};
+  bool has_valid_image=false;
+};
+
 
 class XAVFrameHolder{
  public:
@@ -93,17 +101,19 @@ class EGLOut {
   //
   GLuint vbo=0;
   GLFWwindow* window= nullptr;
-  //
+  // always called with the OpenGL context bound.
+  void update_texture(AVFrame* frame);
   // allows frame drops (higher video fps than display refresh).
   std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue=std::make_unique<ThreadsafeQueue<XAVFrameHolder>>();
   EGLFrameTexture egl_frame_texture{};
   //
   std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
-  void update_texture_cuda(EGLDisplay *egl_display,AVFrame* frame);
+  void update_texture_cuda(AVFrame* frame);
   void update_texture_rgb(AVFrame* frame);
   AVFrame* last_rgba_frame= nullptr;
-
   GLuint texture_extra=0;
+  //
+  CUDAFrameTexture cuda_frametexture{};
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_

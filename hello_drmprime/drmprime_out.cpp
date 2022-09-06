@@ -481,7 +481,7 @@ int DRMPrimeOut::queue_new_frame_for_display(struct AVFrame *src_frame)
 	  return AVERROR(EINVAL);
 	}
   } else {
-	fprintf(stderr, "Frame (format=%d) not DRM_PRiME\n", src_frame->format);
+	fprintf(stderr, "Frame (format=%d) not DRM_PRIME\n", src_frame->format);
 	return AVERROR(EINVAL);
   }
   // Here the delay is still neglegible,aka ~0.15ms

@@ -50,7 +50,7 @@ bool CUDAGLInteropHelper::registerTextures(int tex1,int tex2)
     // Push FFmpeg's CUDA context to use for our CUDA operations
     err = m_Funcs->cuCtxPushCurrent(m_Context->cuda_ctx);
     if (err != CUDA_SUCCESS) {
-        fprintf(stderr, "cuCtxPushCurrent() failed: %d", err);
+        fprintf(stderr, "cuCtxPushCurrent() failed: %d\n", err);
         return false;
     }
 
@@ -65,7 +65,7 @@ bool CUDAGLInteropHelper::registerTextures(int tex1,int tex2)
         // Register it with CUDA
         err = m_Funcs->cuGraphicsGLRegisterImage(&m_Resources[i], tex, GL_TEXTURE_2D, CU_GRAPHICS_REGISTER_FLAGS_WRITE_DISCARD);
         if (err != CUDA_SUCCESS) {
-		    fprintf(stderr,"cuGraphicsGLRegisterImage() failed: %d %d",i, err);
+		    fprintf(stderr,"cuGraphicsGLRegisterImage() failed: %d %d\n",i, err);
             m_Resources[i] = 0;
             unregisterTextures();
             goto Exit;
@@ -128,7 +128,7 @@ bool CUDAGLInteropHelper::copyCudaFrameToTextures(AVFrame* frame)
     // Map our resources
     err = m_Funcs->cuGraphicsMapResources(NV12_PLANES, m_Resources, m_Context->stream);
     if (err != CUDA_SUCCESS) {
-	    fprintf(stderr,"cuGraphicsMapResources() failed: %d", err);
+	    fprintf(stderr,"cuGraphicsMapResources() failed: %d\n", err);
         goto PopCtxExit;
     }
 
