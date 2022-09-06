@@ -36,7 +36,7 @@ static const GLchar* vertex_shader_source =
 	"	v_texCoord = tx_coords;\n"
 	"}\n";
 
-static const GLchar* fragment_shader_source =
+static const GLchar* fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL =
 	"#version 300 es\n"
 	"#extension GL_OES_EGL_image_external : require\n"
 	"precision mediump float;\n"
@@ -137,7 +137,7 @@ void EGLOut::initializeWindowRender() {
   printf("GL_VERSION  : %s\n", glGetString(GL_VERSION) );
   printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER) );
 
-  shader_program = common_get_shader_program(vertex_shader_source, fragment_shader_source);
+  shader_program = common_get_shader_program(vertex_shader_source, fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL);
   pos = glGetAttribLocation(shader_program, "position");
   uvs = glGetAttribLocation(shader_program, "tx_coords");
 
