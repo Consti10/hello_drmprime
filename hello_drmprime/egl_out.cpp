@@ -89,7 +89,7 @@ static const GLchar* fragment_shader_source_RGB =
 	"out vec4 out_color;\n"
 	"void main() {	\n"
 	//"	out_color = texture2D( s_texture, v_texCoord );\n"
-	"	out_color = vec4(0.0,1.0,0.0,1.0);\n"
+	"	out_color = vec4(v_texCoord.x,1.0,0.0,1.0);\n"
 	"}\n";
 
 /// negative x,y is bottom left and first vertex
@@ -354,7 +354,8 @@ void EGLOut::render_once() {
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES,0);
 	checkGlError("Draw EGL texture");
   }else{
-	glUseProgram(shader_program_egl_external);
+	std::cout<<"Draw RGBA texture\n";
+	glUseProgram(shader_program_rgb);
 	glBindTexture(GL_TEXTURE_2D, texture_extra);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, 0);
