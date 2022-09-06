@@ -382,7 +382,8 @@ int main(int argc, char *argv[]){
     if (!(decoder_ctx = avcodec_alloc_context3(decoder))){
         return AVERROR(ENOMEM);
     }
-	// From moonlight-qt
+	// From moonlight-qt. However, on PI, this doesn't seem to make any difference, at least for H265 decode.
+	// (I never measured h264, but don't think there it is different).
 	// Always request low delay decoding
   	decoder_ctx->flags |= AV_CODEC_FLAG_LOW_DELAY;
 	// Allow display of corrupt frames and frames missing references
