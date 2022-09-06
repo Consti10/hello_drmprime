@@ -297,11 +297,15 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	frame = av_frame_alloc();
 	assert(frame);
 	frame->format = AV_PIX_FMT_NV12;
+	Chronometer tmp{"AV hwframe transfer"};
+	tmp.start();
 	if (av_hwframe_transfer_data(frame, src_frame,0) != 0) {
 	  fprintf(stderr, "Failed to transfer frame (format=%d) to DRM_PRiME %s\n", src_frame->format,strerror(errno));
 	  av_frame_free(&frame);
 	  return AVERROR(EINVAL);
 	}
+	tmp.stop();
+	MLOGD<<""<<tmp.getAvgReadable()<<"\n";
   }
   else {
 	fprintf(stderr, "Frame (format=%d) not DRM_PRiME / cannot be converted to DRM_PRIME\n", src_frame->format);
