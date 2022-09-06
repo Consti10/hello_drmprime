@@ -100,6 +100,9 @@ class EGLOut {
   //
   std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
   void update_texture_cuda(EGLDisplay *egl_display,AVFrame* frame);
+  void update_texture_rgb(AVFrame* frame);
+  AVFrame* last_rgba_frame= nullptr;
+
   GLuint texture_extra=0;
 };
 

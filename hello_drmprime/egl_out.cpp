@@ -228,6 +228,17 @@ void EGLOut::initializeWindowRender() {
   }
 }
 
+void EGLOut::update_texture_rgb(AVFrame* frame) {
+  assert(frame);
+  assert(frame->format==AV_PIX_FMT_RGB8);
+  glBindTexture(GL_TEXTURE_2D,texture_extra);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame->width, frame->height, 0, GL_RGB, GL_UNSIGNED_BYTE, frame->data[0]);
+  glBindTexture(GL_TEXTURE_2D,0);
+  av_frame_free(&frame);
+}
+
 void EGLOut::update_texture_cuda(EGLDisplay *egl_display,AVFrame *frame) {
   assert(frame);
   assert(frame->format==AV_PIX_FMT_CUDA);
@@ -342,6 +353,8 @@ void EGLOut::render_once() {
 	  update_texture_cuda(&egl_display,latest_new_frame);
 	}else if(latest_new_frame->format==AV_PIX_FMT_DRM_PRIME){
 	  update_drm_prime_to_egl_texture(&egl_display, egl_frame_texture, latest_new_frame);
+	}else if(latest_new_frame->format==AV_PIX_FMT_RGB8) {
+	  update_texture_rgb(latest_new_frame);
 	}else{
 	  std::cerr<<"Unimplemented to texture\n";
 	}
@@ -369,9 +382,6 @@ void EGLOut::render_once() {
 
 
 int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
-  if(true){
-	return 0;
-  }
   assert(src_frame);
   //std::cout<<"DRMPrimeOut::drmprime_out_display "<<src_frame->width<<"x"<<src_frame->height<<"\n";
   AVFrame *frame;
@@ -396,13 +406,13 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	}
   }else if(src_frame->format==AV_PIX_FMT_CUDA){
 	// We have a special logic for CUDA
-	frame = av_frame_alloc();
-	assert(frame);
-	av_frame_ref(frame, src_frame);
-	MLOGD<<"Warning stored CUDA frame, needs special conversion to OpenGL\n";
 	/*frame = av_frame_alloc();
 	assert(frame);
-	frame->format = AV_PIX_FMT_NV12;
+	av_frame_ref(frame, src_frame);
+	MLOGD<<"Warning stored CUDA frame, needs special conversion to OpenGL\n";*/
+	frame = av_frame_alloc();
+	assert(frame);
+	frame->format = AV_PIX_FMT_RGB8;
 	Chronometer tmp{"AV hwframe transfer"};
 	tmp.start();
 	if (av_hwframe_transfer_data(frame, src_frame,0) != 0) {
@@ -411,7 +421,7 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	  return AVERROR(EINVAL);
 	}
 	tmp.stop();
-	MLOGD<<""<<tmp.getAvgReadable()<<"\n";*/
+	MLOGD<<"Transfer:"<<tmp.getAvgReadable()<<"\n";
   }
   else {
 	fprintf(stderr, "Frame (format=%d) not DRM_PRiME / cannot be converted to DRM_PRIME\n", src_frame->format);
