@@ -156,8 +156,17 @@ void EGLOut::initializeWindowRender() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+bool update_egl_texture_cuda(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame){
+  assert(frame);
+  MLOGD<<"update_egl_texture_cuda\n";
+  return true;
+}
+
 bool update_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame){
   assert(frame);
+  if(frame->format==AV_PIX_FMT_CUDA || frame->format==AV_PIX_FMT_NV12){
+	return update_egl_texture_cuda(egl_display,frame_texture,frame);
+  }
   auto before=std::chrono::steady_clock::now();
   // We can now also give the frame back to av, since we are updating to a new one.
   if(frame_texture.av_frame!= nullptr){
@@ -279,15 +288,21 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	  av_frame_free(&frame);
 	  return AVERROR(EINVAL);
 	}
-  }/* else if(src_frame->format==AV_PIX_FMT_CUDA){
+  }else if(src_frame->format==AV_PIX_FMT_CUDA){
+	// We have a special logic for CUDA
+	/*frame = av_frame_alloc();
+	assert(frame);
+	av_frame_ref(frame, src_frame);
+	MLOGD<<"Warning stored CUDA frame, needs special conversion to OpenGL\n";*/
 	frame = av_frame_alloc();
-	frame->format = AV_PIX_FMT_DRM_PRIME;
-	if (av_hwframe_transfer_data(frame, src_frame, 0) != 0) {
-	  fprintf(stderr, "Failed to transfer frame (format=%d) to DRM_PRiME\n", src_frame->format);
+	assert(frame);
+	frame->format = AV_PIX_FMT_NV12;
+	if (av_hwframe_transfer_data(frame, src_frame,0) != 0) {
+	  fprintf(stderr, "Failed to transfer frame (format=%d) to DRM_PRiME %s\n", src_frame->format,strerror(errno));
 	  av_frame_free(&frame);
 	  return AVERROR(EINVAL);
 	}
-  }*/
+  }
   else {
 	fprintf(stderr, "Frame (format=%d) not DRM_PRiME / cannot be converted to DRM_PRIME\n", src_frame->format);
 	return AVERROR(EINVAL);

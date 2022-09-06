@@ -190,7 +190,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,AVPacket *pack
 			// for some video files, the decoder does not output a frame every time a h264 frame has been fed
 			// In this case, I unblock after 5 seconds, but we cannot measure the decode delay by using the before-after
 			// approach. We can still measure it using the pts timestamp from av, but this one cannot necessarily be trusted 100%
-			if(std::chrono::steady_clock::now()-loopUntilFrameBegin > std::chrono::seconds(5)){
+			if(std::chrono::steady_clock::now()-loopUntilFrameBegin > std::chrono::seconds(3)){
 			  std::cout<<"Go no frame after X seconds. Break, but decode delay will be reported wrong\n";
 			  break;
 			}
@@ -370,6 +370,7 @@ int main(int argc, char *argv[]){
                 break;
             }
         }
+
 		//hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
 	  	wanted_hw_pix_fmt = AV_PIX_FMT_CUDA;
 		//wanted_hw_pix_fmt = (AVPixelFormat)119;
@@ -381,6 +382,12 @@ int main(int argc, char *argv[]){
     if (!(decoder_ctx = avcodec_alloc_context3(decoder))){
         return AVERROR(ENOMEM);
     }
+	// From moonlight-qt
+	// Always request low delay decoding
+  	decoder_ctx->flags |= AV_CODEC_FLAG_LOW_DELAY;
+	// Allow display of corrupt frames and frames missing references
+  	decoder_ctx->flags |= AV_CODEC_FLAG_OUTPUT_CORRUPT;
+  	decoder_ctx->flags2 |= AV_CODEC_FLAG2_SHOW_ALL;
 
     AVStream *video = input_ctx->streams[video_stream];
     if (avcodec_parameters_to_context(decoder_ctx, video->codecpar) < 0)
