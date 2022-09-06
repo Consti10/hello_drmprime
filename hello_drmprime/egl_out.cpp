@@ -159,6 +159,9 @@ void EGLOut::initializeWindowRender() {
 bool update_egl_texture_cuda(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame){
   assert(frame);
   MLOGD<<"update_egl_texture_cuda\n";
+  if(frame_texture.texture==0){
+	glGenTextures(1, &frame_texture.texture);
+  }
   return true;
 }
 

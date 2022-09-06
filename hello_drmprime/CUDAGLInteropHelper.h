@@ -1,0 +1,34 @@
+//
+// Created by consti10 on 06.09.22.
+//
+
+#ifndef HELLO_DRMPRIME__CUDAGLINTEROPHELPER_H_
+#define HELLO_DRMPRIME__CUDAGLINTEROPHELPER_H_
+
+#include <ffnvcodec/dynlink_loader.h>
+
+extern "C" {
+#include <libavutil/hwcontext_cuda.h>
+#include "libavutil/frame.h"
+}
+
+#define NV12_PLANES 2
+
+// Helper class used by SDLRenderer to read our CUDA frame
+class CUDAGLInteropHelper {
+ public:
+  CUDAGLInteropHelper(AVCUDADeviceContext* context);
+  ~CUDAGLInteropHelper();
+
+  bool registerBoundTextures();
+  void unregisterTextures();
+
+  bool copyCudaFrameToTextures(AVFrame* frame);
+
+ private:
+  CudaFunctions* m_Funcs;
+  AVCUDADeviceContext* m_Context;
+  CUgraphicsResource m_Resources[NV12_PLANES];
+};
+
+#endif //HELLO_DRMPRIME__CUDAGLINTEROPHELPER_H_

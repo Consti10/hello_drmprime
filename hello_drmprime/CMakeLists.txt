@@ -6,7 +6,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR};/usr/local")
 project(hello_drmprime)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -W -Wall -Wextra -g -O2")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -Wextra -g -O2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall  -g -O2")
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-mfpu=neon" COMPILER_SUPPORTS_NEON)
@@ -69,10 +69,11 @@ include_directories(
 	/usr/include/libdrm)
 
 
-add_executable(hello_drmprime hello_drmprime.cpp drmprime_out.cpp egl_out.cpp)
+add_executable(hello_drmprime hello_drmprime.cpp drmprime_out.cpp egl_out.cpp #CUDAGLInteropHelper.cpp CUDAGLInteropHelper.h
+		)
 	
 target_link_libraries(hello_drmprime
 		#
-		-lavcodec -lavutil -lavformat -ldrm -lpthread -lGLESv2 -lglfw -lEGL
+		-lavcodec -lavutil -lavformat -ldrm -lpthread -lGLESv2 -lglfw -lEGL #-lcuda
 		)
 
