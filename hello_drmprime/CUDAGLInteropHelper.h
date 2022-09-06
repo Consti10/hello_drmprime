@@ -24,7 +24,6 @@ class CUDAGLInteropHelper {
   void unregisterTextures();
 
   bool copyCudaFrameToTextures(AVFrame* frame);
-
  private:
   CudaFunctions* m_Funcs;
   AVCUDADeviceContext* m_Context;

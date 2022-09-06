@@ -163,6 +163,12 @@ void EGLOut::update_egl_texture_cuda(EGLDisplay *egl_display, FrameTexture &fram
   if(frame_texture.texture==0){
 	glGenTextures(1, &frame_texture.texture);
   }
+  if(m_cuda_gl_interop_helper== nullptr){
+	AVHWDeviceContext* tmp=((AVHWFramesContext*)frame->hw_frames_ctx->data)->device_ctx;
+	AVCUDADeviceContext* avcuda_device_context=(AVCUDADeviceContext*)tmp->hwctx;
+	assert(avcuda_device_context);
+	m_cuda_gl_interop_helper = std::make_unique<CUDAGLInteropHelper>(avcuda_device_context);
+  }
 }
 
 

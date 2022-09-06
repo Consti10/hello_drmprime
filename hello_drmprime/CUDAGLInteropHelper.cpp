@@ -23,6 +23,7 @@ CUDAGLInteropHelper::CUDAGLInteropHelper(AVCUDADeviceContext* context)
         std::cerr<<"Failed to initialize CUDA library\n";
         return;
     }
+	std::cout<<"Successfully initialized CUDAGLInteropHelper\n";
 }
 
 CUDAGLInteropHelper::~CUDAGLInteropHelper()
