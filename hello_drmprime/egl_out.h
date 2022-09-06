@@ -82,10 +82,15 @@ class EGLOut {
   const int window_width;
   const int window_height;
   //
-  GLuint shader_program=0;
-  GLuint vbo=0;
+  GLuint shader_program_egl_external=0;
   GLint pos=-1;
   GLint uvs=-1;
+  //
+  GLuint shader_program_rgb=0;
+  GLint pos_rgb=-1;
+  GLint uvs_rgb=-1;
+  //
+  GLuint vbo=0;
   GLFWwindow* window= nullptr;
   //
   // allows frame drops (higher video fps than display refresh).

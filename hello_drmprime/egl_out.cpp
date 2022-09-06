@@ -47,6 +47,16 @@ static const GLchar* fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL =
 	"	out_color = texture2D( texture, v_texCoord );\n"
 	"}\n";
 
+static const GLchar* fragment_shader_source_RGB =
+	"#version 300 es\n"
+	"precision mediump float;\n"
+	"uniform sampler2D texture;\n"
+	"in vec2 v_texCoord;\n"
+	"out vec4 out_color;\n"
+	"void main() {	\n"
+	"	out_color = texture2D( texture, v_texCoord );\n"
+	"}\n";
+
 /// negative x,y is bottom left and first vertex
 //Consti10: Video was flipped horizontally (at least big buck bunny)
 static const GLfloat vertices[][4][3] =
@@ -137,9 +147,13 @@ void EGLOut::initializeWindowRender() {
   printf("GL_VERSION  : %s\n", glGetString(GL_VERSION) );
   printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER) );
 
-  shader_program = common_get_shader_program(vertex_shader_source, fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL);
-  pos = glGetAttribLocation(shader_program, "position");
-  uvs = glGetAttribLocation(shader_program, "tx_coords");
+  shader_program_egl_external = common_get_shader_program(vertex_shader_source, fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL);
+  pos = glGetAttribLocation(shader_program_egl_external, "position");
+  uvs = glGetAttribLocation(shader_program_egl_external, "tx_coords");
+
+  shader_program_rgb = common_get_shader_program(vertex_shader_source,fragment_shader_source_RGB);
+  pos_rgb = glGetAttribLocation(shader_program_rgb, "position");
+  uvs_rgb = glGetAttribLocation(shader_program_rgb, "tx_coords");
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glViewport(0, 0, window_width, window_height);
@@ -153,6 +167,13 @@ void EGLOut::initializeWindowRender() {
   glEnableVertexAttribArray(uvs);
   glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
   glVertexAttribPointer(uvs, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(vertices)); /// last is offset to loc in buf memory
+  //
+  {
+	glEnableVertexAttribArray(pos_rgb);
+	glEnableVertexAttribArray(uvs_rgb);
+	glVertexAttribPointer(pos_rgb, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+	glVertexAttribPointer(uvs_rgb, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(vertices)); /// last is offset to loc in buf memory
+  }
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -278,15 +299,21 @@ void EGLOut::render_once() {
   // Only render the texture if we have one (aka we have gotten at least one frame from the decoder)
   // Note that otherwise, if we render via OpenGL but the texture has no backing, nothing really happens ;)
   if(frame_texture.has_valid_image){
-	glUseProgram(shader_program);
+	glUseProgram(shader_program_egl_external);
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES, frame_texture.texture);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  }else{
+	glUseProgram(shader_program_rgb);
+
   }
   glfwSwapBuffers(window);
 }
 
 
 int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
+  if(true){
+	return 0;
+  }
   assert(src_frame);
   //std::cout<<"DRMPrimeOut::drmprime_out_display "<<src_frame->width<<"x"<<src_frame->height<<"\n";
   AVFrame *frame;
