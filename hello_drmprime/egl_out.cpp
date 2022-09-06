@@ -431,7 +431,7 @@ void EGLOut::render_once() {
 	checkGlError("Draw EGL texture");
   }else{
 	//std::cout<<"Draw RGBA texture\n";
-	GLuint used_tex=cuda_frametexture.textures[0]!=0 ? cuda_frametexture.textures[0] : texture_extra;
+	GLuint used_tex=cuda_frametexture.has_valid_image ? cuda_frametexture.textures[0] : texture_extra;
 	glUseProgram(shader_program_rgb);
 	glBindTexture(GL_TEXTURE_2D, used_tex);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
