@@ -37,7 +37,8 @@ CUDAGLInteropHelper::~CUDAGLInteropHelper()
     }
 }
 
-bool CUDAGLInteropHelper::registerBoundTextures()
+//bool CUDAGLInteropHelper::registerBoundTextures()
+bool CUDAGLInteropHelper::registerTextures(int tex1,int tex2)
 {
     int err;
 
@@ -55,16 +56,16 @@ bool CUDAGLInteropHelper::registerBoundTextures()
 
     // Register each plane as a separate resource
     for (int i = 0; i < NV12_PLANES; i++) {
-        GLint tex;
+        GLint tex=i==0 ? tex1:tex2;
 
         // Get the ID of this plane's texture
-        glActiveTexture(GL_TEXTURE0 + i);
-        glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex);
+        //glActiveTexture(GL_TEXTURE0 + i);
+	    //glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex);
 
         // Register it with CUDA
         err = m_Funcs->cuGraphicsGLRegisterImage(&m_Resources[i], tex, GL_TEXTURE_2D, CU_GRAPHICS_REGISTER_FLAGS_WRITE_DISCARD);
         if (err != CUDA_SUCCESS) {
-		    fprintf(stderr,"cuGraphicsGLRegisterImage() failed: %d", err);
+		    fprintf(stderr,"cuGraphicsGLRegisterImage() failed: %d %d",i, err);
             m_Resources[i] = 0;
             unregisterTextures();
             goto Exit;

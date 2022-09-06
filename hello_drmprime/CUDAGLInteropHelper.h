@@ -20,7 +20,7 @@ class CUDAGLInteropHelper {
   explicit CUDAGLInteropHelper(AVCUDADeviceContext* context);
   ~CUDAGLInteropHelper();
 
-  bool registerBoundTextures();
+  bool registerTextures(int tex1,int tex2);
   void unregisterTextures();
 
   bool copyCudaFrameToTextures(AVFrame* frame);

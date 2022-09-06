@@ -45,7 +45,7 @@ static int XdrmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
 
 // --------------------------------------------------- from drm-howto ---------------------------------------------------
 // returns fully red,green,blue color alternating and wrapping around
-static uint32_t createColor(const int idx){
+static uint32_t createColor(const int idx,const uint8_t alpha=50){
   uint8_t r,g,b;
   int colorIdx= idx % 3;
   if(colorIdx==0){
@@ -67,7 +67,7 @@ static uint32_t createColor(const int idx){
   rgba[0]=r;
   rgba[1]=g;
   rgba[2]=b;
-  rgba[3]=50;
+  rgba[3]=alpha;
   uint32_t ret;
   memcpy(&ret,rgba,4);
   return ret;

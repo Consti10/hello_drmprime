@@ -100,7 +100,7 @@ class EGLOut {
   FrameTexture frame_texture{};
   //
   std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
-  void update_egl_texture_cuda(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame);
+  void update_egl_texture_cuda(EGLDisplay *egl_display,AVFrame* frame);
   GLuint texture_extra=0;
 };
 

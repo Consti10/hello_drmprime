@@ -9,6 +9,39 @@
 #include <cassert>
 #include "extra_drm.h"
 
+static const char *GlErrorString(GLenum error ){
+  switch ( error ){
+	case GL_NO_ERROR:						return "GL_NO_ERROR";
+	case GL_INVALID_ENUM:					return "GL_INVALID_ENUM";
+	case GL_INVALID_VALUE:					return "GL_INVALID_VALUE";
+	case GL_INVALID_OPERATION:				return "GL_INVALID_OPERATION";
+	case GL_INVALID_FRAMEBUFFER_OPERATION:	return "GL_INVALID_FRAMEBUFFER_OPERATION";
+	case GL_OUT_OF_MEMORY:					return "GL_OUT_OF_MEMORY";
+	  //
+	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+	default: return "unknown";
+  }
+}
+static void checkGlError(const std::string& caller) {
+  GLenum error;
+  std::stringstream ss;
+  ss<<"GLError:"<<caller.c_str();
+  ss<<__FILE__<<__LINE__;
+  bool anyError=false;
+  while ((error = glGetError()) != GL_NO_ERROR) {
+	ss<<" |"<<GlErrorString(error);
+	anyError=true;
+  }
+  if(anyError){
+	std::cout<<ss.str()<<"\n";
+	// CRASH_APPLICATION_ON_GL_ERROR
+	if(false){
+	  std::exit(-1);
+	}
+  }
+}
+
 static EGLint texgen_attrs[] = {
 	EGL_DMA_BUF_PLANE0_FD_EXT,
 	EGL_DMA_BUF_PLANE0_OFFSET_EXT,
@@ -185,13 +218,13 @@ void EGLOut::initializeWindowRender() {
 	glGenTextures(1,&texture_extra);
 	glBindTexture(GL_TEXTURE_2D,texture_extra);
 	uint8_t pixels[4*100*100];
-	fillFrame(pixels,100,100,100*4, createColor(0));
+	fillFrame(pixels,100,100,100*4, createColor(0,255));
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 100, 100, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 	glBindTexture(GL_TEXTURE_2D,0);
   }
 }
 
-void EGLOut::update_egl_texture_cuda(EGLDisplay *egl_display, FrameTexture &frame_texture, AVFrame *frame) {
+void EGLOut::update_egl_texture_cuda(EGLDisplay *egl_display,AVFrame *frame) {
   assert(frame);
   assert(frame->format==AV_PIX_FMT_CUDA);
   MLOGD<<"update_egl_texture_cuda\n";
@@ -199,8 +232,8 @@ void EGLOut::update_egl_texture_cuda(EGLDisplay *egl_display, FrameTexture &fram
   if(frame_texture.av_frame!= nullptr){
 	av_frame_free(&frame_texture.av_frame);
   }
-  if(frame_texture.texture==0){
-	glGenTextures(1, &frame_texture.texture);
+  if(texture_extra==0){
+	glGenTextures(1, &texture_extra);
   }
   if(m_cuda_gl_interop_helper== nullptr){
 	AVHWDeviceContext* tmp=((AVHWFramesContext*)frame->hw_frames_ctx->data)->device_ctx;
@@ -208,8 +241,8 @@ void EGLOut::update_egl_texture_cuda(EGLDisplay *egl_display, FrameTexture &fram
 	assert(avcuda_device_context);
 	m_cuda_gl_interop_helper = std::make_unique<CUDAGLInteropHelper>(avcuda_device_context);
   }
-  glBindTexture(GL_TEXTURE_2D, frame_texture.texture);
-  m_cuda_gl_interop_helper->registerBoundTextures();
+  glBindTexture(GL_TEXTURE_2D, texture_extra);
+  m_cuda_gl_interop_helper->registerTextures(texture_extra,texture_extra);
   m_cuda_gl_interop_helper->copyCudaFrameToTextures(frame);
 }
 
@@ -302,7 +335,7 @@ void EGLOut::render_once() {
 	EGLDisplay egl_display=eglGetCurrentDisplay();
 	// This will free the last (rendered) av frame if given.
 	if(latest_new_frame->format==AV_PIX_FMT_CUDA){
-	  update_egl_texture_cuda(&egl_display,frame_texture,latest_new_frame);
+	  update_egl_texture_cuda(&egl_display,latest_new_frame);
 	}else if(latest_new_frame->format==AV_PIX_FMT_DRM_PRIME){
 	  update_drm_prime_to_egl_texture(&egl_display,frame_texture,latest_new_frame);
 	}else{
@@ -319,10 +352,11 @@ void EGLOut::render_once() {
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES,0);
   }else{
-	glUseProgram(shader_program_rgb);
+	glUseProgram(shader_program_egl_external);
 	glBindTexture(GL_TEXTURE_2D, texture_extra);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	checkGlError("X");
   }
   glfwSwapBuffers(window);
 }
