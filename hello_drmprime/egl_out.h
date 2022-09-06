@@ -42,7 +42,7 @@ extern "C" {
 #include "CUDAGLInteropHelper.h"
 #include <SDL.h>
 
-struct FrameTexture{
+struct EGLFrameTexture{
   // I think we need to keep the av frame reference around as long as we use the generated egl texture in opengl.
   AVFrame* av_frame= nullptr;
   // In contrast to "hwdectogl", created once, then re-used with each new egl image.
@@ -96,8 +96,7 @@ class EGLOut {
   //
   // allows frame drops (higher video fps than display refresh).
   std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue=std::make_unique<ThreadsafeQueue<XAVFrameHolder>>();
-  //
-  FrameTexture frame_texture{};
+  EGLFrameTexture frame_texture{};
   //
   std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
   void update_egl_texture_cuda(EGLDisplay *egl_display,AVFrame* frame);

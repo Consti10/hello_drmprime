@@ -247,7 +247,7 @@ void EGLOut::update_egl_texture_cuda(EGLDisplay *egl_display,AVFrame *frame) {
 }
 
 
-bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame){
+bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& frame_texture, AVFrame* frame){
   assert(frame);
   assert(frame->format==AV_PIX_FMT_DRM_PRIME);
   auto before=std::chrono::steady_clock::now();
