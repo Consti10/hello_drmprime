@@ -88,8 +88,8 @@ static const GLchar* fragment_shader_source_RGB =
 	"in vec2 v_texCoord;\n"
 	"out vec4 out_color;\n"
 	"void main() {	\n"
-	//"	out_color = texture2D( s_texture, v_texCoord );\n"
-	"	out_color = vec4(v_texCoord.x,1.0,0.0,1.0);\n"
+	"	out_color = texture2D( s_texture, v_texCoord );\n"
+	//"	out_color = vec4(v_texCoord.x,1.0,0.0,1.0);\n"
 	"}\n";
 
 /// negative x,y is bottom left and first vertex
@@ -216,9 +216,12 @@ void EGLOut::initializeWindowRender() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   if(true){
 	glGenTextures(1,&texture_extra);
+	assert(texture_extra>=0);
 	glBindTexture(GL_TEXTURE_2D,texture_extra);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	uint8_t pixels[4*100*100];
-	fillFrame(pixels,100,100,100*4, createColor(0,255));
+	fillFrame(pixels,100,100,100*4, createColor(2,255));
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 100, 100, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 	glBindTexture(GL_TEXTURE_2D,0);
 	checkGlError("Create texture extra");
@@ -354,7 +357,7 @@ void EGLOut::render_once() {
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES,0);
 	checkGlError("Draw EGL texture");
   }else{
-	std::cout<<"Draw RGBA texture\n";
+	//std::cout<<"Draw RGBA texture\n";
 	glUseProgram(shader_program_rgb);
 	glBindTexture(GL_TEXTURE_2D, texture_extra);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
