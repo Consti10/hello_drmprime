@@ -38,6 +38,10 @@ extern "C" {
 #include <memory>
 #include "../common_consti/ThreadsafeQueue.hpp"
 
+// XXX
+#include "CUDAGLInteropHelper.h"
+
+
 struct FrameTexture{
   // I think we need to keep the av frame reference around as long as we use the generated egl texture in opengl.
   AVFrame* av_frame= nullptr;
@@ -88,6 +92,9 @@ class EGLOut {
   std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue=std::make_unique<ThreadsafeQueue<XAVFrameHolder>>();
   //
   FrameTexture frame_texture{};
+  //
+  std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
+  void update_egl_texture_cuda(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame);
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_

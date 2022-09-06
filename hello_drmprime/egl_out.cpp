@@ -156,20 +156,19 @@ void EGLOut::initializeWindowRender() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-bool update_egl_texture_cuda(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame){
+void EGLOut::update_egl_texture_cuda(EGLDisplay *egl_display, FrameTexture &frame_texture, AVFrame *frame) {
   assert(frame);
+  assert(frame->format==AV_PIX_FMT_CUDA);
   MLOGD<<"update_egl_texture_cuda\n";
   if(frame_texture.texture==0){
 	glGenTextures(1, &frame_texture.texture);
   }
-  return true;
 }
 
-bool update_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame){
+
+bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame){
   assert(frame);
-  if(frame->format==AV_PIX_FMT_CUDA || frame->format==AV_PIX_FMT_NV12){
-	return update_egl_texture_cuda(egl_display,frame_texture,frame);
-  }
+  assert(frame->format==AV_PIX_FMT_DRM_PRIME);
   auto before=std::chrono::steady_clock::now();
   // We can now also give the frame back to av, since we are updating to a new one.
   if(frame_texture.av_frame!= nullptr){
@@ -253,7 +252,13 @@ void EGLOut::render_once() {
 	const auto latest_new_frame = allBuffers[nDroppedFrames];
 	EGLDisplay egl_display=eglGetCurrentDisplay();
 	// This will free the last av frame if given.
-	update_egl_texture(&egl_display,frame_texture,latest_new_frame->frame);
+	if(latest_new_frame->frame->format==AV_PIX_FMT_CUDA){
+	  update_egl_texture_cuda(&egl_display,frame_texture,latest_new_frame->frame);
+	}else if(latest_new_frame->frame->format==AV_PIX_FMT_DRM_PRIME){
+	  update_drm_prime_to_egl_texture(&egl_display,frame_texture,latest_new_frame->frame);
+	}else{
+	  std::cerr<<"Unimplemented to texture\n";
+	}
   }
   glClearColor(1.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
@@ -293,11 +298,11 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	}
   }else if(src_frame->format==AV_PIX_FMT_CUDA){
 	// We have a special logic for CUDA
-	/*frame = av_frame_alloc();
+	frame = av_frame_alloc();
 	assert(frame);
 	av_frame_ref(frame, src_frame);
-	MLOGD<<"Warning stored CUDA frame, needs special conversion to OpenGL\n";*/
-	frame = av_frame_alloc();
+	MLOGD<<"Warning stored CUDA frame, needs special conversion to OpenGL\n";
+	/*frame = av_frame_alloc();
 	assert(frame);
 	frame->format = AV_PIX_FMT_NV12;
 	Chronometer tmp{"AV hwframe transfer"};
@@ -308,7 +313,7 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	  return AVERROR(EINVAL);
 	}
 	tmp.stop();
-	MLOGD<<""<<tmp.getAvgReadable()<<"\n";
+	MLOGD<<""<<tmp.getAvgReadable()<<"\n";*/
   }
   else {
 	fprintf(stderr, "Frame (format=%d) not DRM_PRiME / cannot be converted to DRM_PRIME\n", src_frame->format);
