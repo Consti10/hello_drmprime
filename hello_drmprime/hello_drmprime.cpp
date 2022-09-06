@@ -290,25 +290,10 @@ int main(int argc, char *argv[]){
 		MLOGD<<"FFMPEG Version:"<<av_version_info()<<"\n";
     }
 
-  	print_av_hwdevice_types();
-    //const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
-  	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
-	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
-    const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
-  	fprintf(stdout, " Found hw device type name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
-    /*if (type == AV_HWDEVICE_TYPE_NONE) {
-        fprintf(stderr, "Device type %s is not supported.\n", hwdev);
-        fprintf(stderr, "Available device types:");
-        while((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE)
-            fprintf(stderr, " %s", av_hwdevice_get_type_name(type));
-        fprintf(stderr, "\n");
-        return -1;
-    }*/
 	if(mXOptions.render_mode==0 || mXOptions.render_mode==1 || mXOptions.render_mode==2){
 	  drm_prime_out = new DRMPrimeOut(mXOptions.render_mode,mXOptions.drm_add_dummy_overlay,mXOptions.use_page_flip_on_second_frame);
 	}else {
 	  egl_out=new EGLOut(1280,720);
-	  std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 
 	std::unique_ptr<SaveFramesToFile> save_frames_to_file=nullptr;
@@ -316,6 +301,20 @@ int main(int argc, char *argv[]){
     if (mXOptions.out_filename != nullptr) {
 	  save_frames_to_file=std::make_unique<SaveFramesToFile>(mXOptions.out_filename);
     }
+	print_av_hwdevice_types();
+	//const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
+	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
+	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
+	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
+	fprintf(stdout, "Found hw device type name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
+	/*if (type == AV_HWDEVICE_TYPE_NONE) {
+		fprintf(stderr, "Device type %s is not supported.\n", hwdev);
+		fprintf(stderr, "Available device types:");
+		while((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE)
+			fprintf(stderr, " %s", av_hwdevice_get_type_name(type));
+		fprintf(stderr, "\n");
+		return -1;
+	}*/
 
     const char * in_file=mXOptions.in_filename;
 
