@@ -88,8 +88,8 @@ static const GLchar* fragment_shader_source_RGB =
 	"in vec2 v_texCoord;\n"
 	"out vec4 out_color;\n"
 	"void main() {	\n"
-	"	out_color = texture2D( s_texture, v_texCoord );\n"
-	//"	out_color = vec4(0.0,1.0,0.0,1.0);\n"
+	//"	out_color = texture2D( s_texture, v_texCoord );\n"
+	"	out_color = vec4(0.0,1.0,0.0,1.0);\n"
 	"}\n";
 
 /// negative x,y is bottom left and first vertex
@@ -190,9 +190,9 @@ void EGLOut::initializeWindowRender() {
   pos_rgb = glGetAttribLocation(shader_program_rgb, "position");
   assert(pos_rgb>=0);
   uvs_rgb = glGetAttribLocation(shader_program_rgb, "tx_coords");
-  assert(uvs_rgb>=0);
+  //assert(uvs_rgb>=0);
   sampler_rgb = glGetUniformLocation(shader_program_rgb, "s_texture" );
-  assert(sampler_rgb>=0);
+  //assert(sampler_rgb>=0);
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glViewport(0, 0, window_width, window_height);
@@ -221,6 +221,7 @@ void EGLOut::initializeWindowRender() {
 	fillFrame(pixels,100,100,100*4, createColor(0,255));
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 100, 100, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 	glBindTexture(GL_TEXTURE_2D,0);
+	checkGlError("Create texture extra");
   }
 }
 
@@ -351,12 +352,13 @@ void EGLOut::render_once() {
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES, egl_frame_texture.texture);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES,0);
+	checkGlError("Draw EGL texture");
   }else{
 	glUseProgram(shader_program_egl_external);
 	glBindTexture(GL_TEXTURE_2D, texture_extra);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	checkGlError("X");
+	checkGlError("Draw RGBA texture");
   }
   glfwSwapBuffers(window);
 }
