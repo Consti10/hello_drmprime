@@ -96,10 +96,10 @@ class EGLOut {
   //
   // allows frame drops (higher video fps than display refresh).
   std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue=std::make_unique<ThreadsafeQueue<XAVFrameHolder>>();
-  EGLFrameTexture frame_texture{};
+  EGLFrameTexture egl_frame_texture{};
   //
   std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
-  void update_egl_texture_cuda(EGLDisplay *egl_display,AVFrame* frame);
+  void update_texture_cuda(EGLDisplay *egl_display,AVFrame* frame);
   GLuint texture_extra=0;
 };
 

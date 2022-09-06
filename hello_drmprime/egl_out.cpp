@@ -224,13 +224,13 @@ void EGLOut::initializeWindowRender() {
   }
 }
 
-void EGLOut::update_egl_texture_cuda(EGLDisplay *egl_display,AVFrame *frame) {
+void EGLOut::update_texture_cuda(EGLDisplay *egl_display,AVFrame *frame) {
   assert(frame);
   assert(frame->format==AV_PIX_FMT_CUDA);
   MLOGD<<"update_egl_texture_cuda\n";
   // We can now also give the frame back to av, since we are updating to a new one.
-  if(frame_texture.av_frame!= nullptr){
-	av_frame_free(&frame_texture.av_frame);
+  if(egl_frame_texture.av_frame!= nullptr){
+	av_frame_free(&egl_frame_texture.av_frame);
   }
   if(texture_extra==0){
 	glGenTextures(1, &texture_extra);
@@ -247,15 +247,15 @@ void EGLOut::update_egl_texture_cuda(EGLDisplay *egl_display,AVFrame *frame) {
 }
 
 
-bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& frame_texture, AVFrame* frame){
+bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& egl_frame_texture, AVFrame* frame){
   assert(frame);
   assert(frame->format==AV_PIX_FMT_DRM_PRIME);
   auto before=std::chrono::steady_clock::now();
   // We can now also give the frame back to av, since we are updating to a new one.
-  if(frame_texture.av_frame!= nullptr){
-	av_frame_free(&frame_texture.av_frame);
+  if(egl_frame_texture.av_frame!= nullptr){
+	av_frame_free(&egl_frame_texture.av_frame);
   }
-  frame_texture.av_frame=frame;
+  egl_frame_texture.av_frame=frame;
   const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor*)frame->data[0];
   // Writing all the EGL attribs - I just copied and pasted it, and it works.
   EGLint attribs[50];
@@ -296,15 +296,15 @@ bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& f
 										   NULL, attribs);
   if (!image) {
 	printf("Failed to create EGLImage\n");
-	frame_texture.has_valid_image= false;
+	egl_frame_texture.has_valid_image= false;
 	return false;
   }
   // Note that we do not have to delete and generate the texture (ID) every time we update the egl image backing.
-  if(frame_texture.texture==0){
-	glGenTextures(1, &frame_texture.texture);
+  if(egl_frame_texture.texture==0){
+	glGenTextures(1, &egl_frame_texture.texture);
   }
   glEnable(GL_TEXTURE_EXTERNAL_OES);
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, frame_texture.texture);
+  glBindTexture(GL_TEXTURE_EXTERNAL_OES, egl_frame_texture.texture);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, image);
@@ -313,7 +313,7 @@ bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& f
   eglDestroyImageKHR(*egl_display, image);
   auto delta=std::chrono::steady_clock::now()-before;
   std::cout<<"Creating texture took:"<<std::chrono::duration_cast<std::chrono::milliseconds>(delta).count()<<"ms\n";
-  frame_texture.has_valid_image= true;
+  egl_frame_texture.has_valid_image= true;
   return true;
 }
 
@@ -335,9 +335,9 @@ void EGLOut::render_once() {
 	EGLDisplay egl_display=eglGetCurrentDisplay();
 	// This will free the last (rendered) av frame if given.
 	if(latest_new_frame->format==AV_PIX_FMT_CUDA){
-	  update_egl_texture_cuda(&egl_display,latest_new_frame);
+	  update_texture_cuda(&egl_display,latest_new_frame);
 	}else if(latest_new_frame->format==AV_PIX_FMT_DRM_PRIME){
-	  update_drm_prime_to_egl_texture(&egl_display,frame_texture,latest_new_frame);
+	  update_drm_prime_to_egl_texture(&egl_display, egl_frame_texture, latest_new_frame);
 	}else{
 	  std::cerr<<"Unimplemented to texture\n";
 	}
@@ -346,15 +346,15 @@ void EGLOut::render_once() {
   glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
   // Only render the texture if we have one (aka we have gotten at least one frame from the decoder)
   // Note that otherwise, if we render via OpenGL but the texture has no backing, nothing really happens ;)
-  if(frame_texture.has_valid_image){
+  if(egl_frame_texture.has_valid_image){
 	glUseProgram(shader_program_egl_external);
-	glBindTexture(GL_TEXTURE_EXTERNAL_OES, frame_texture.texture);
+	glBindTexture(GL_TEXTURE_EXTERNAL_OES, egl_frame_texture.texture);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES,0);
   }else{
 	glUseProgram(shader_program_egl_external);
 	glBindTexture(GL_TEXTURE_2D, texture_extra);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	checkGlError("X");
   }
