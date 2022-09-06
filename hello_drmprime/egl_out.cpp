@@ -395,8 +395,12 @@ void EGLOut::update_texture(AVFrame *hw_frame) {
 	MLOGD<<"Transfer:"<<tmp.getAvgReadable()<<"\n";
 	//update_texture_rgb(sw_frame);
 	av_frame_free(&hw_frame);*/
-  }else{
-	std::cerr<<"Unimplemented to texture\n";
+  }/*else if(hw_frame->format==AV_PIX_FMT_YUV420P){
+	AVFrame* rgb_frame=av_frame_alloc();
+	rgb_frame->format=AV_PIX_FMT_RGB8;
+  }*/
+  else{
+	std::cerr<<"Unimplemented to texture"<<av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"\n";
 	av_frame_free(&hw_frame);
   }
 }
