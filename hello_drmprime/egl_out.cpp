@@ -294,7 +294,9 @@ void EGLOut::update_texture_cuda(AVFrame *frame) {
   glBindTexture(GL_TEXTURE_2D, cuda_frametexture.textures[0]);
   Chronometer cuda_memcpy_time{"CUDA memcpy"};
   cuda_memcpy_time.start();
-  m_cuda_gl_interop_helper->copyCudaFrameToTextures(frame);
+  if(m_cuda_gl_interop_helper->copyCudaFrameToTextures(frame)){
+	cuda_frametexture.has_valid_image= true;
+  }
   cuda_memcpy_time.stop();
   // I don't think we can measure CUDA memcpy time
   //MLOGD<<"CUDA memcpy:"<<cuda_memcpy_time.getAvgReadable()<<"\n";
