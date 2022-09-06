@@ -94,7 +94,7 @@ static void fillFrame(uint8_t* dest,const int width,const int height,const int s
 }
 
 // frm librepi
-std::string connectorTypeToStr(uint32_t type) {
+static std::string connectorTypeToStr(uint32_t type) {
   switch (type) {
 	case DRM_MODE_CONNECTOR_HDMIA: // 11
 	  return "HDMIA";
@@ -104,7 +104,7 @@ std::string connectorTypeToStr(uint32_t type) {
   return "unknown";
 }
 
-void printDrmModes(int fd) {
+static void printDrmModes(int fd) {
   drmVersionPtr version = drmGetVersion(fd);
   printf("version %d.%d.%d\nname: %s\ndate: %s\ndescription: %s\n", version->version_major, version->version_minor, version->version_patchlevel, version->name, version->date, version->desc);
   drmFreeVersion(version);

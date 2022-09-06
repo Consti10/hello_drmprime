@@ -7,6 +7,7 @@
 #include "ffmpeg_workaround_api_version.h"
 
 #include <cassert>
+#include "extra_drm.h"
 
 static EGLint texgen_attrs[] = {
 	EGL_DMA_BUF_PLANE0_FD_EXT,
@@ -54,7 +55,8 @@ static const GLchar* fragment_shader_source_RGB =
 	"in vec2 v_texCoord;\n"
 	"out vec4 out_color;\n"
 	"void main() {	\n"
-	"	out_color = texture2D( texture, v_texCoord );\n"
+	//"	out_color = texture2D( texture, v_texCoord );\n"
+	"	out_color = vec4(0.0,1.0,0.0,1.0);\n"
 	"}\n";
 
 /// negative x,y is bottom left and first vertex
@@ -175,6 +177,14 @@ void EGLOut::initializeWindowRender() {
 	glVertexAttribPointer(uvs_rgb, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(vertices)); /// last is offset to loc in buf memory
   }
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+  if(true){
+	glGenTextures(1,&frame_texture.texture);
+	glBindTexture(GL_TEXTURE_2D,frame_texture.texture);
+	uint8_t pixels[4*100*100];
+	fillFrame(pixels,100,100,100*4, createColor(0));
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 100, 100, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	glBindTexture(GL_TEXTURE_2D,0);
+  }
 }
 
 void EGLOut::update_egl_texture_cuda(EGLDisplay *egl_display, FrameTexture &frame_texture, AVFrame *frame) {
@@ -271,11 +281,11 @@ bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display,FrameTexture& frame
 }
 
 void EGLOut::render_once() {
-  // update the frame to the most recent one
+  // update the video frame to the most recent one
   // A bit overkill, but it was quicker to just copy paste the logic from hello_drmprime.
   const auto allBuffers=queue->getAllAndClear();
-  if(allBuffers.size()>0) {
-	const int nDroppedFrames = allBuffers.size() - 1;
+  if(!allBuffers.empty()) {
+	const int nDroppedFrames = (int)allBuffers.size() - 1;
 	if (nDroppedFrames != 0) {
 	  MLOGD << "N dropped:" << nDroppedFrames << "\n";
 	}
@@ -283,13 +293,14 @@ void EGLOut::render_once() {
 	for (int i = 0; i < nDroppedFrames; i++) {
 	  av_frame_free(&allBuffers[i]->frame);
 	}
-	const auto latest_new_frame = allBuffers[nDroppedFrames];
+	// The latest frame is the last one we did not drop
+	const auto latest_new_frame = allBuffers[nDroppedFrames]->frame;
 	EGLDisplay egl_display=eglGetCurrentDisplay();
-	// This will free the last av frame if given.
-	if(latest_new_frame->frame->format==AV_PIX_FMT_CUDA){
-	  update_egl_texture_cuda(&egl_display,frame_texture,latest_new_frame->frame);
-	}else if(latest_new_frame->frame->format==AV_PIX_FMT_DRM_PRIME){
-	  update_drm_prime_to_egl_texture(&egl_display,frame_texture,latest_new_frame->frame);
+	// This will free the last (rendered) av frame if given.
+	if(latest_new_frame->format==AV_PIX_FMT_CUDA){
+	  update_egl_texture_cuda(&egl_display,frame_texture,latest_new_frame);
+	}else if(latest_new_frame->format==AV_PIX_FMT_DRM_PRIME){
+	  update_drm_prime_to_egl_texture(&egl_display,frame_texture,latest_new_frame);
 	}else{
 	  std::cerr<<"Unimplemented to texture\n";
 	}
@@ -302,9 +313,12 @@ void EGLOut::render_once() {
 	glUseProgram(shader_program_egl_external);
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES, frame_texture.texture);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindTexture(GL_TEXTURE_EXTERNAL_OES,0);
   }else{
 	glUseProgram(shader_program_rgb);
-
+	glBindTexture(GL_TEXTURE_2D, frame_texture.texture);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindTexture(GL_TEXTURE_2D, 0);
   }
   glfwSwapBuffers(window);
 }
