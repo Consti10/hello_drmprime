@@ -89,6 +89,7 @@ class EGLOut {
   GLuint shader_program_rgb=0;
   GLint pos_rgb=-1;
   GLint uvs_rgb=-1;
+  GLint sampler_rgb=-1;
   //
   GLuint vbo=0;
   GLFWwindow* window= nullptr;
@@ -100,6 +101,7 @@ class EGLOut {
   //
   std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
   void update_egl_texture_cuda(EGLDisplay *egl_display,FrameTexture& frame_texture,AVFrame* frame);
+  GLuint texture_extra=0;
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
