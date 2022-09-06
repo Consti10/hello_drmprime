@@ -17,7 +17,7 @@ extern "C" {
 // Helper class used by SDLRenderer to read our CUDA frame
 class CUDAGLInteropHelper {
  public:
-  CUDAGLInteropHelper(AVCUDADeviceContext* context);
+  explicit CUDAGLInteropHelper(AVCUDADeviceContext* context);
   ~CUDAGLInteropHelper();
 
   bool registerBoundTextures();

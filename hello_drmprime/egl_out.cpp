@@ -160,6 +160,10 @@ void EGLOut::update_egl_texture_cuda(EGLDisplay *egl_display, FrameTexture &fram
   assert(frame);
   assert(frame->format==AV_PIX_FMT_CUDA);
   MLOGD<<"update_egl_texture_cuda\n";
+  // We can now also give the frame back to av, since we are updating to a new one.
+  if(frame_texture.av_frame!= nullptr){
+	av_frame_free(&frame_texture.av_frame);
+  }
   if(frame_texture.texture==0){
 	glGenTextures(1, &frame_texture.texture);
   }
@@ -169,6 +173,9 @@ void EGLOut::update_egl_texture_cuda(EGLDisplay *egl_display, FrameTexture &fram
 	assert(avcuda_device_context);
 	m_cuda_gl_interop_helper = std::make_unique<CUDAGLInteropHelper>(avcuda_device_context);
   }
+  glBindTexture(GL_TEXTURE_2D, frame_texture.texture);
+  m_cuda_gl_interop_helper->registerBoundTextures();
+  m_cuda_gl_interop_helper->copyCudaFrameToTextures(frame);
 }
 
 

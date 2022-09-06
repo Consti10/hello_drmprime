@@ -3,12 +3,14 @@
 //
 
 #include "CUDAGLInteropHelper.h"
-#include <cstring>
-#include <iostream>
+#include <SDL.h>
 
 extern "C" {
 #include <GLFW/glfw3.h>
 }
+
+#include <cstring>
+#include <iostream>
 
 CUDAGLInteropHelper::CUDAGLInteropHelper(AVCUDADeviceContext* context)
     : m_Funcs(nullptr),

@@ -40,7 +40,7 @@ extern "C" {
 
 // XXX
 #include "CUDAGLInteropHelper.h"
-
+#include <SDL.h>
 
 struct FrameTexture{
   // I think we need to keep the av frame reference around as long as we use the generated egl texture in opengl.
