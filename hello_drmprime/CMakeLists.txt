@@ -69,7 +69,7 @@ include_directories(
 	/usr/include/libdrm)
 
 
-add_executable(hello_drmprime hello_drmprime.cpp drmprime_out.cpp egl_out.cpp #CUDAGLInteropHelper.cpp CUDAGLInteropHelper.h
+add_executable(hello_drmprime hello_drmprime.cpp drmprime_out.cpp egl_out.cpp CUDAGLInteropHelper.cpp CUDAGLInteropHelper.h
 		)
 	
 target_link_libraries(hello_drmprime
@@ -77,3 +77,5 @@ target_link_libraries(hello_drmprime
 		-lavcodec -lavutil -lavformat -ldrm -lpthread -lGLESv2 -lglfw -lEGL #-lcuda
 		)
 
+find_package(CUDA 9.0 REQUIRED)
+target_link_libraries(hello_drmprime ${CUDA_LIBRARIES})
