@@ -284,9 +284,9 @@ void EGLOut::initializeWindowRender() {
   }
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   if(true){
-	glGenTextures(1,&texture_extra);
-	assert(texture_extra>=0);
-	glBindTexture(GL_TEXTURE_2D,texture_extra);
+	glGenTextures(1,&texture_rgb);
+	assert(texture_rgb>=0);
+	glBindTexture(GL_TEXTURE_2D, texture_rgb);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	uint8_t pixels[4*100*100];
@@ -304,7 +304,7 @@ void EGLOut::update_texture_rgb(AVFrame* frame) {
   // https://stackoverflow.com/questions/9413845/ffmpeg-avframe-to-opengl-texture-without-yuv-to-rgb-soft-conversion
   // https://bugfreeblog.duckdns.org/2022/01/yuv420p-opengl-shader-conversion.html
   MLOGD<<"update_texture_rgb\n";
-  glBindTexture(GL_TEXTURE_2D,texture_extra);
+  glBindTexture(GL_TEXTURE_2D, texture_rgb);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame->width, frame->height, 0, GL_RGB, GL_UNSIGNED_BYTE, frame->data[0]);
@@ -487,7 +487,7 @@ void EGLOut::render_once() {
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES,0);
 	checkGlError("Draw EGL texture");
-  }else if(cuda_frametexture.has_valid_image) {
+  }else if(cuda_frametexture.has_valid_image && false) {
 	glUseProgram(nv_12_shader.program);
 	for(int i=0;i<2;i++){
 	  glActiveTexture(GL_TEXTURE0 + i);
@@ -499,7 +499,8 @@ void EGLOut::render_once() {
   }else{
 	//std::cout<<"Draw RGBA texture\n";
 	glUseProgram(rgba_shader.program);
-	glBindTexture(GL_TEXTURE_2D, texture_extra);
+	glBindTexture(GL_TEXTURE_2D, texture_rgb);
+	//glBindTexture(GL_TEXTURE_2D, cuda_frametexture.textures[0]);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	checkGlError("Draw RGBA texture");

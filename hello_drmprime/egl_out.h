@@ -129,7 +129,7 @@ class EGLOut {
   void update_texture_cuda(AVFrame* frame);
   void update_texture_rgb(AVFrame* frame);
   AVFrame* last_rgba_frame= nullptr;
-  GLuint texture_extra=0;
+  GLuint texture_rgb=0;
   //
   CUDAFrameTexture cuda_frametexture{};
 };
