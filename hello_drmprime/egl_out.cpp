@@ -135,10 +135,11 @@ static const GLchar* fragment_shader_source_NV12 =
 	"		texture2D(s_texture_uv,v_texCoord).xy\n"
 	"	);"
 	"	mat3 colorMatrix = mat3(\n"
-	"		1,   0,       1.402,\n"
-	"		1,  -0.344,  -0.714,\n"
-	"		1,   1.772,   0);\n"
-	"	gl_FragColor = vec4(YCbCr*colorMatrix, 1.0);\n"
+	"		1.1644f, 1.1644f, 1.1644f,\n"
+	"        0.0f, -0.3917f, 2.0172f,\n"
+	"        1.5960f, -0.8129f, 0.0f"
+	"		);\n"
+	"	gl_FragColor = vec4(clamp(YCbCr*colorMatrix,0.0,1.0), 1.0);\n"
 	"}\n";
 
 /// negative x,y is bottom left and first vertex
