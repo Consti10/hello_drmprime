@@ -105,7 +105,7 @@ static const GLchar* fragment_shader_source_RGB =
 	"	gl_FragColor = texture2D( s_texture, v_texCoord );\n"
 	//"	out_color = vec4(v_texCoord.x,1.0,0.0,1.0);\n"
 	"}\n";
-static const GLchar* fragment_shader_source_YUV =
+/*static const GLchar* fragment_shader_source_YUV =
 	"#version 300 es\n"
 	"precision highp float;\n"
 	"uniform sampler2D s_texture_y;\n"
@@ -122,6 +122,23 @@ static const GLchar* fragment_shader_source_YUV =
 	"		1,  -0.344,  -0.714,\n"
 	"		1,   1.772,   0);\n"
 	"	gl_FragColor = vec4(color*colorMatrix, 1.0);\n"
+	"}\n";*/
+static const GLchar* fragment_shader_source_NV12 =
+	"#version 300 es\n"
+	"precision mediump float;\n"
+	"uniform sampler2D s_texture_y;\n"
+	"uniform sampler2D s_texture_uv;\n"
+	"in vec2 v_texCoord;\n"
+	"void main() {	\n"
+	"	vec3 YCbCr = vec3(\n"
+	"		texture2D(s_texture_y, v_texCoord)[0],\n"
+	"		texture2D(s_texture_uv,v_texCoord).xy\n"
+	"	);"
+	"	mat3 colorMatrix = mat3(\n"
+	"		1,   0,       1.402,\n"
+	"		1,  -0.344,  -0.714,\n"
+	"		1,   1.772,   0);\n"
+	"	gl_FragColor = vec4(YCbCr*colorMatrix, 1.0);\n"
 	"}\n";
 
 /// negative x,y is bottom left and first vertex
@@ -226,17 +243,17 @@ void EGLOut::initializeWindowRender() {
   rgba_shader.sampler = glGetUniformLocation(rgba_shader.program, "s_texture" );
   assert(rgba_shader.sampler>=0);
   // Shader 3
-  nv_12_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_YUV);
+  nv_12_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_NV12);
   nv_12_shader.pos = glGetAttribLocation(nv_12_shader.program, "position");
   assert(nv_12_shader.pos>=0);
   nv_12_shader.uvs = glGetAttribLocation(nv_12_shader.program, "tx_coords");
   assert(nv_12_shader.uvs>=0);
   nv_12_shader.s_texture_y=glGetUniformLocation(nv_12_shader.program, "s_texture_y");
-  nv_12_shader.s_texture_u=glGetUniformLocation(nv_12_shader.program, "s_texture_u");
-  nv_12_shader.s_texture_v=glGetUniformLocation(nv_12_shader.program, "s_texture_v");
+  nv_12_shader.s_texture_uv=glGetUniformLocation(nv_12_shader.program, "s_texture_uv");
+  //nv_12_shader.s_texture_v=glGetUniformLocation(nv_12_shader.program, "s_texture_v");
   assert(nv_12_shader.s_texture_y>=0);
-  assert(nv_12_shader.s_texture_u>=0);
-  assert(nv_12_shader.s_texture_v>=0);
+  assert(nv_12_shader.s_texture_uv>=0);
+  //assert(nv_12_shader.s_texture_v>=0);
   checkGlError("NV12");
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -469,11 +486,19 @@ void EGLOut::render_once() {
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES,0);
 	checkGlError("Draw EGL texture");
+  }else if(cuda_frametexture.has_valid_image) {
+	glUseProgram(nv_12_shader.program);
+	for(int i=0;i<2;i++){
+	  glActiveTexture(GL_TEXTURE0 + i);
+	  glBindTexture(GL_TEXTURE_2D,cuda_frametexture.textures[i]);
+	}
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	checkGlError("Draw NV12 texture");
   }else{
 	//std::cout<<"Draw RGBA texture\n";
-	GLuint used_tex=cuda_frametexture.has_valid_image ? cuda_frametexture.textures[0] : texture_extra;
 	glUseProgram(rgba_shader.program);
-	glBindTexture(GL_TEXTURE_2D, used_tex);
+	glBindTexture(GL_TEXTURE_2D, texture_extra);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	checkGlError("Draw RGBA texture");

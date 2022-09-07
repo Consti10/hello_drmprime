@@ -77,8 +77,8 @@ struct NV12Shader{
   GLint pos=-1;
   GLint uvs=-1;
   GLint s_texture_y=-1;
-  GLint s_texture_u=-1;
-  GLint s_texture_v=-1;
+  GLint s_texture_uv=-1;
+  //GLint s_texture_v=-1;
 };
 
 
