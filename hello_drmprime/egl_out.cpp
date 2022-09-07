@@ -93,19 +93,16 @@ static const GLchar* fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL =
 	"precision mediump float;\n"
 	"uniform samplerExternalOES texture;\n"
 	"in vec2 v_texCoord;\n"
-	"out vec4 out_color;\n"
 	"void main() {	\n"
-	"	out_color = texture2D( texture, v_texCoord );\n"
+	"	gl_FragColor = texture2D( texture, v_texCoord );\n"
 	"}\n";
-
 static const GLchar* fragment_shader_source_RGB =
 	"#version 300 es\n"
 	"precision mediump float;\n"
 	"uniform sampler2D s_texture;\n"
 	"in vec2 v_texCoord;\n"
-	"out vec4 out_color;\n"
 	"void main() {	\n"
-	"	out_color = texture2D( s_texture, v_texCoord );\n"
+	"	gl_FragColor = texture2D( s_texture, v_texCoord );\n"
 	//"	out_color = vec4(v_texCoord.x,1.0,0.0,1.0);\n"
 	"}\n";
 static const GLchar* fragment_shader_source_YUV =
