@@ -487,7 +487,7 @@ void EGLOut::render_once() {
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_EXTERNAL_OES,0);
 	checkGlError("Draw EGL texture");
-  }else if(cuda_frametexture.has_valid_image && false) {
+  }else if(cuda_frametexture.has_valid_image) {
 	glUseProgram(nv_12_shader.program);
 	for(int i=0;i<2;i++){
 	  glActiveTexture(GL_TEXTURE0 + i);
