@@ -249,6 +249,8 @@ void EGLOut::initializeWindowRender() {
 void EGLOut::update_texture_rgb(AVFrame* frame) {
   assert(frame);
   assert(frame->format==AV_PIX_FMT_RGB8);
+  // https://stackoverflow.com/questions/9413845/ffmpeg-avframe-to-opengl-texture-without-yuv-to-rgb-soft-conversion
+  // https://bugfreeblog.duckdns.org/2022/01/yuv420p-opengl-shader-conversion.html
   MLOGD<<"update_texture_rgb\n";
   glBindTexture(GL_TEXTURE_2D,texture_extra);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
