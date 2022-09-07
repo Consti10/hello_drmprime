@@ -58,6 +58,28 @@ struct CUDAFrameTexture{
   bool has_valid_image=false;
 };
 
+struct EGLShader{
+  GLuint program=0;
+  GLint pos=-1;
+  GLint uvs=-1;
+};
+
+struct RGBAShader{
+  GLuint program=0;
+  GLint pos=-1;
+  GLint uvs=-1;
+  GLint sampler=-1;
+};
+
+struct NV12ShaderProgram{
+  GLuint shader_program=0;
+  GLint pos=-1;
+  GLint uvs=-1;
+  GLint s_texture_y=-1;
+  GLint s_texture_u=-1;
+  GLint s_texture_v=-1;
+};
+
 
 class XAVFrameHolder{
  public:
@@ -90,14 +112,8 @@ class EGLOut {
   const int window_width;
   const int window_height;
   //
-  GLuint shader_program_egl_external=0;
-  GLint pos=-1;
-  GLint uvs=-1;
-  //
-  GLuint shader_program_rgb=0;
-  GLint pos_rgb=-1;
-  GLint uvs_rgb=-1;
-  GLint sampler_rgb=-1;
+  EGLShader egl_shader;
+  RGBAShader rgba_shader;
   //
   GLuint vbo=0;
   GLFWwindow* window= nullptr;
@@ -114,6 +130,8 @@ class EGLOut {
   GLuint texture_extra=0;
   //
   CUDAFrameTexture cuda_frametexture{};
+  //
+  NV12ShaderProgram nv_12_shader_program;
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
