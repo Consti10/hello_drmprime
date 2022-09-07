@@ -58,19 +58,20 @@ struct CUDAFrameTexture{
   bool has_valid_image=false;
 };
 
+// Single EGL external texture (We do not have to write our own YUV conversion(s), egl does it for us.
 struct EGLShader{
   GLuint program=0;
   GLint pos=-1;
   GLint uvs=-1;
 };
-
+// Single RGB(A) texture
 struct RGBAShader{
   GLuint program=0;
   GLint pos=-1;
   GLint uvs=-1;
   GLint sampler=-1;
 };
-
+// YUV / NV12
 struct NV12ShaderProgram{
   GLuint shader_program=0;
   GLint pos=-1;
