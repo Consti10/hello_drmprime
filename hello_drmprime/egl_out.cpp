@@ -107,15 +107,15 @@ static const GLchar* fragment_shader_source_RGB =
 	"}\n";
 static const GLchar* fragment_shader_source_YUV =
 	"#version 300 es\n"
-	"precision mediump float;\n"
-	"uniform sampler2DRect s_texture_y;\n"
-	"uniform sampler2DRect s_texture_u;\n"
-	"uniform sampler2DRect s_texture_v;\n"
+	"precision highp float;\n"
+	"uniform sampler2D s_texture_y;\n"
+	"uniform sampler2D s_texture_u;\n"
+	"uniform sampler2D s_texture_v;\n"
 	"in vec2 v_texCoord;\n"
 	"void main() {	\n"
-	"	float Y = texture2DRect(s_texture_y, v_texCoord).r;\n"
-	"	float U = texture2DRect(s_texture_u, vec2(v_texCoord.x/2., v_texCoord.y/2.)).r - 0.5;\n"
-	"	float V = texture2DRect(s_texture_v, vec2(v_texCoord.x/2., v_texCoord.y/2.)).r - 0.5;\n"
+	"	float Y = texture2D(s_texture_y, v_texCoord).r;\n"
+	"	float U = texture2D(s_texture_u, v_texCoord).r;\n"
+	"	float V = texture2D(s_texture_v, v_texCoord).r;\n"
 	"	vec3 color = vec3(Y, U, V);"
 	"	mat3 colorMatrix = mat3(\n"
 	"		1,   0,       1.402,\n"
@@ -213,11 +213,11 @@ void EGLOut::initializeWindowRender() {
 
   printf("GL_VERSION  : %s\n", glGetString(GL_VERSION) );
   printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER) );
-
+  // Shader 1
   egl_shader.program = common_get_shader_program(vertex_shader_source, fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL);
   egl_shader.pos = glGetAttribLocation(egl_shader.program, "position");
   egl_shader.uvs = glGetAttribLocation(egl_shader.program, "tx_coords");
-
+  // Shader 2
   rgba_shader.program = common_get_shader_program(vertex_shader_source,fragment_shader_source_RGB);
   rgba_shader.pos = glGetAttribLocation(rgba_shader.program, "position");
   assert(rgba_shader.pos>=0);
@@ -225,20 +225,19 @@ void EGLOut::initializeWindowRender() {
   assert(rgba_shader.uvs>=0);
   rgba_shader.sampler = glGetUniformLocation(rgba_shader.program, "s_texture" );
   assert(rgba_shader.sampler>=0);
-  {
-	nv_12_shader_program.shader_program= common_get_shader_program(vertex_shader_source,fragment_shader_source_YUV);
-	/*nv_12_shader_program.pos = glGetAttribLocation(nv_12_shader_program.shader_program, "position");
-	assert(nv_12_shader_program.pos>=0);
-	nv_12_shader_program.uvs = glGetAttribLocation(nv_12_shader_program.shader_program, "tx_coords");
-	assert(nv_12_shader_program.uvs>=0);
-	nv_12_shader_program.s_texture_y=glGetUniformLocation(nv_12_shader_program.shader_program, "s_texture_y");
-	nv_12_shader_program.s_texture_u=glGetUniformLocation(nv_12_shader_program.shader_program, "s_texture_u");
-	nv_12_shader_program.s_texture_v=glGetUniformLocation(nv_12_shader_program.shader_program, "s_texture_v");
-	assert(nv_12_shader_program.s_texture_y>=0);
-	assert(nv_12_shader_program.s_texture_u>=0);
-	assert(nv_12_shader_program.s_texture_v>=0);
-	checkGlError("NV12");*/
-  }
+  // Shader 3
+  nv_12_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_YUV);
+  nv_12_shader.pos = glGetAttribLocation(nv_12_shader.program, "position");
+  assert(nv_12_shader.pos>=0);
+  nv_12_shader.uvs = glGetAttribLocation(nv_12_shader.program, "tx_coords");
+  assert(nv_12_shader.uvs>=0);
+  nv_12_shader.s_texture_y=glGetUniformLocation(nv_12_shader.program, "s_texture_y");
+  nv_12_shader.s_texture_u=glGetUniformLocation(nv_12_shader.program, "s_texture_u");
+  nv_12_shader.s_texture_v=glGetUniformLocation(nv_12_shader.program, "s_texture_v");
+  assert(nv_12_shader.s_texture_y>=0);
+  assert(nv_12_shader.s_texture_u>=0);
+  assert(nv_12_shader.s_texture_v>=0);
+  checkGlError("NV12");
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glViewport(0, 0, window_width, window_height);
@@ -258,6 +257,12 @@ void EGLOut::initializeWindowRender() {
 	glEnableVertexAttribArray(rgba_shader.uvs);
 	glVertexAttribPointer(rgba_shader.pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 	glVertexAttribPointer(rgba_shader.uvs, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(vertices)); /// last is offset to loc in buf memory
+  }
+  {
+	glEnableVertexAttribArray(nv_12_shader.pos);
+	glEnableVertexAttribArray(nv_12_shader.uvs);
+	glVertexAttribPointer(nv_12_shader.pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+	glVertexAttribPointer(nv_12_shader.uvs, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(vertices)); /// last is offset to loc in buf memory
   }
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   if(true){
