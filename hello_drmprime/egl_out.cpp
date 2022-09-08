@@ -485,6 +485,7 @@ void EGLOut::update_texture(AVFrame *hw_frame) {
 }
 
 void EGLOut::render_once() {
+  cpu_frame_time.start();
   if(frame_delta_chrono== nullptr){
 	frame_delta_chrono=std::make_unique<Chronometer>("FrameDelta");
 	frame_delta_chrono->start();
@@ -549,6 +550,8 @@ void EGLOut::render_once() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	checkGlError("Draw RGBA texture");
   }
+  cpu_frame_time.stop();
+  cpu_frame_time.printInIntervalls(std::chrono::seconds(3), false);
   glfwSwapBuffers(window);
 }
 

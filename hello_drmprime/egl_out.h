@@ -151,6 +151,10 @@ class EGLOut {
   CUDAFrameTexture cuda_frametexture{};
   YUV420PSwFrameTexture yuv_420_p_sw_frame_texture{};
   std::unique_ptr<Chronometer> frame_delta_chrono=nullptr;
+  // Here we measure the time the CPU spends to build the command buffer
+  // (including any conversions when they are done in the GL loop).
+  // Does NOT include GL rendering time !
+  Chronometer cpu_frame_time{"CPU frame time"};
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
