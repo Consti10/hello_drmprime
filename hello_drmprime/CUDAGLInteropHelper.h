@@ -1,5 +1,5 @@
 //
-// Created by consti10 on 06.09.22.
+// Copied from moonlight-qt.
 //
 
 #ifndef HELLO_DRMPRIME__CUDAGLINTEROPHELPER_H_
@@ -16,6 +16,9 @@ extern "C" {
 
 // Helper class to CUDA memcpy a ffmpeg CUDA (decoded) image into a NV12 OpenGL Texture
 // ( Actually, 2 textures with 1xY and 1xU,V interleaved, the NV12 to RGB conversion is then done in a custom OpenGL shader)
+// For some reason, I cannot find an example in the internet that maps toe CUDA image directly to an EGL external image
+// (Such that we can render it using the egl external image approach).
+// A cuda memcpy is not ideal, but still faster than going via CPU ;)
 // NOTE: Has nothing to do with RPI ;)
 class CUDAGLInteropHelper {
  public:
