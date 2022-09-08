@@ -116,12 +116,12 @@ static const GLchar* fragment_shader_source_YUV420P =
 	"	float Y = texture2D(s_texture_y, v_texCoord).x;\n"
 	"	float U = texture2D(s_texture_u, v_texCoord).x;\n"
 	"	float V = texture2D(s_texture_v, v_texCoord).x;\n"
-	"	vec3 color = vec3(Y, U, V);"
+	"	vec3 YUV = vec3(Y, U, V);"
 	"	mat3 colorMatrix = mat3(\n"
 	"		1,   0,       1.402,\n"
 	"		1,  -0.344,  -0.714,\n"
 	"		1,   1.772,   0);\n"
-	"	gl_FragColor = vec4(color*colorMatrix, 1.0);\n"
+	"	gl_FragColor = vec4(YUV*colorMatrix, 1.0);\n"
 	"}\n";
 static const GLchar* fragment_shader_source_NV12 =
 	"#version 300 es\n"
