@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <cassert>
 #include "GL_shader.h"
 
 static const char *GlErrorString(GLenum error ){
@@ -169,12 +170,7 @@ GLint common_get_shader_program(const char *vertex_shader_source, const char *fr
 }
 
 void GL_shader::initialize() {
-// Shader 1
-  egl_shader.program = common_get_shader_program(vertex_shader_source, fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL);
-  egl_shader.pos = glGetAttribLocation(egl_shader.program, "position");
-  egl_shader.uvs = glGetAttribLocation(egl_shader.program, "tex_coords");
-  checkGlError("Create shader EGL");
-  // Shader 2
+  // Shader 1
   rgba_shader.program = common_get_shader_program(vertex_shader_source,fragment_shader_source_RGB);
   rgba_shader.pos = glGetAttribLocation(rgba_shader.program, "position");
   assert(rgba_shader.pos>=0);
@@ -183,6 +179,14 @@ void GL_shader::initialize() {
   rgba_shader.sampler = glGetUniformLocation(rgba_shader.program, "s_texture" );
   assert(rgba_shader.sampler>=0);
   checkGlError("Create shader RGBA");
+  // Shader 2
+  egl_shader.program = common_get_shader_program(vertex_shader_source, fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL);
+  assert(egl_shader.program>=0);
+  egl_shader.pos = glGetAttribLocation(egl_shader.program, "position");
+  assert(egl_shader.pos>=0);
+  egl_shader.uvs = glGetAttribLocation(egl_shader.program, "tex_coords");
+  assert(egl_shader.uvs>=0);
+  checkGlError("Create shader EGL");
   // Shader 3
   nv_12_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_NV12);
   nv_12_shader.pos = glGetAttribLocation(nv_12_shader.program, "position");
