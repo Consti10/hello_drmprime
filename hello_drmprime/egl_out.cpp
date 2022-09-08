@@ -118,9 +118,14 @@ static const GLchar* fragment_shader_source_YUV420P =
 	"	float V = texture2D(s_texture_v, v_texCoord).x;\n"
 	"	vec3 YUV = vec3(Y, U, V);"
 	"	mat3 colorMatrix = mat3(\n"
+	"		1.1644f, 1.1644f, 1.1644f,\n"
+	"        0.0f, -0.3917f, 2.0172f,\n"
+	"        1.5960f, -0.8129f, 0.0f"
+	"		);\n"
+	/*"	mat3 colorMatrix = mat3(\n"
 	"		1,   0,       1.402,\n"
 	"		1,  -0.344,  -0.714,\n"
-	"		1,   1.772,   0);\n"
+	"		1,   1.772,   0);\n"*/
 	"	gl_FragColor = vec4(YUV*colorMatrix, 1.0);\n"
 	"}\n";
 static const GLchar* fragment_shader_source_NV12 =
@@ -332,6 +337,7 @@ void EGLOut::update_texture_yuv420p(AVFrame* frame) {
 	glBindTexture(GL_TEXTURE_2D, yuv_420_p_sw_frame_texture.textures[i]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	if(i==0){
 	  // Full Y plane
 	  glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width, frame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[0]);
