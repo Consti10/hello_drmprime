@@ -561,8 +561,6 @@ void EGLOut::render_once() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	checkGlError("Draw RGBA texture");
   }
-  glFinish();
-  glFlush();
   glfwSwapBuffers(window);
 }
 
