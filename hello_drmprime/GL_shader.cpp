@@ -236,19 +236,20 @@ void GL_shader::initialize() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void GL_shader::draw_egl(GLuint texture) {
-  glUseProgram(egl_shader.program);
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES,texture);
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES,0);
-  checkGlError("Draw EGL texture");
-}
 void GL_shader::draw_rgb(GLuint texture) {
   glUseProgram(rgba_shader.program);
   glBindTexture(GL_TEXTURE_2D, texture);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindTexture(GL_TEXTURE_2D, 0);
   checkGlError("Draw RGBA texture");
+}
+
+void GL_shader::draw_egl(GLuint texture) {
+  glUseProgram(egl_shader.program);
+  glBindTexture(GL_TEXTURE_EXTERNAL_OES,texture);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glBindTexture(GL_TEXTURE_EXTERNAL_OES,0);
+  checkGlError("Draw EGL texture");
 }
 
 void GL_shader::draw_YUV420P(GLuint textureY, GLuint textureU, GLuint textureV) {

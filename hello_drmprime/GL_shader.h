@@ -11,22 +11,23 @@ extern "C" {
 #include "glhelp.h"
 }
 
-
+// Holds multiple GL programs that render different types of (Video) textures
+// All textures fill up the full gl viewport, adjust it accordingly to preserve video ratio.
 class GL_shader {
  private:
-  // Single EGL external texture (We do not have to write our own YUV conversion(s), egl does it for us.
-  // Any platform where we can get the (HW) - decoded frame to EGL (e.g. rpi) this is the easiest and best way.
-  struct EGLShader{
-	GLuint program=0;
-	GLint pos=-1;
-	GLint uvs=-1;
-  };
   // Single RGB(A) texture
   struct RGBAShader{
 	GLuint program=0;
 	GLint pos=-1;
 	GLint uvs=-1;
 	GLint sampler=-1;
+  };
+  // Single EGL external texture (We do not have to write our own YUV conversion(s), egl does it for us.
+  // Any platform where we can get the (HW) - decoded frame to EGL (e.g. rpi) this is the easiest and best way.
+  struct EGLShader{
+	GLuint program=0;
+	GLint pos=-1;
+	GLint uvs=-1;
   };
   // NV12
   struct NV12Shader{
@@ -53,8 +54,8 @@ class GL_shader {
   GLuint vbo=0;
  public:
   void initialize();
-  void draw_egl(GLuint texture);
   void draw_rgb(GLuint texture);
+  void draw_egl(GLuint texture);
   void draw_YUV420P(GLuint textureY,GLuint textureU,GLuint textureV);
   void draw_NV12(GLuint textureY,GLuint textureUV);
 };
