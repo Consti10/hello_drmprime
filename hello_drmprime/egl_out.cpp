@@ -297,18 +297,30 @@ void EGLOut::initializeWindowRender() {
   }
 }
 
-
-void EGLOut::update_texture_rgb(AVFrame* frame) {
+// https://stackoverflow.com/questions/9413845/ffmpeg-avframe-to-opengl-texture-without-yuv-to-rgb-soft-conversion
+// https://bugfreeblog.duckdns.org/2022/01/yuv420p-opengl-shader-conversion.html
+// https://stackoverflow.com/questions/30191911/is-it-possible-to-draw-yuv422-and-yuv420-texture-using-opengl
+void EGLOut::update_texture_yuv420p(AVFrame* frame) {
   assert(frame);
-  assert(frame->format==AV_PIX_FMT_RGB8);
-  // https://stackoverflow.com/questions/9413845/ffmpeg-avframe-to-opengl-texture-without-yuv-to-rgb-soft-conversion
-  // https://bugfreeblog.duckdns.org/2022/01/yuv420p-opengl-shader-conversion.html
-  MLOGD<<"update_texture_rgb\n";
-  glBindTexture(GL_TEXTURE_2D, texture_rgb);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame->width, frame->height, 0, GL_RGB, GL_UNSIGNED_BYTE, frame->data[0]);
-  glBindTexture(GL_TEXTURE_2D,0);
+  assert(frame->format==AV_PIX_FMT_YUV420P);
+  MLOGD<<"update_texture_yuv420p\n";
+  for(int i=0;i<3;i++){
+	if(yuv_420_p_sw_frame_texture.textures[i]==0){
+	  glGenTextures(1,&yuv_420_p_sw_frame_texture.textures[i]);
+	}
+	glBindTexture(GL_TEXTURE_2D, yuv_420_p_sw_frame_texture.textures[i]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	if(i==0){
+	  // Full Y plane
+	  glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width, frame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[0]);
+	}else{
+	  // half size U,V planes
+	  glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width/2, frame->height/2, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[i]);
+	}
+	glBindTexture(GL_TEXTURE_2D,0);
+  }
+  yuv_420_p_sw_frame_texture.has_valid_image= true;
   av_frame_free(&frame);
 }
 
@@ -449,10 +461,9 @@ void EGLOut::update_texture(AVFrame *hw_frame) {
 	MLOGD<<"Transfer:"<<tmp.getAvgReadable()<<"\n";
 	//update_texture_rgb(sw_frame);
 	av_frame_free(&hw_frame);*/
-  }/*else if(hw_frame->format==AV_PIX_FMT_YUV420P){
-	AVFrame* rgb_frame=av_frame_alloc();
-	rgb_frame->format=AV_PIX_FMT_RGB8;
-  }*/
+  }else if(hw_frame->format==AV_PIX_FMT_YUV420P){
+	update_texture_yuv420p(hw_frame);
+  }
   else{
 	std::cerr<<"Unimplemented to texture"<<av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"\n";
 	av_frame_free(&hw_frame);
@@ -496,7 +507,15 @@ void EGLOut::render_once() {
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	checkGlError("Draw NV12 texture");
-  }else{
+  }else if(yuv_420_p_sw_frame_texture.has_valid_image){
+	glUseProgram(rgba_shader.program);
+	glBindTexture(GL_TEXTURE_2D, yuv_420_p_sw_frame_texture.textures[0]);
+	//glBindTexture(GL_TEXTURE_2D, cuda_frametexture.textures[0]);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	checkGlError("Draw YUV420P texture");
+  }
+  else{
 	//std::cout<<"Draw RGBA texture\n";
 	glUseProgram(rgba_shader.program);
 	glBindTexture(GL_TEXTURE_2D, texture_rgb);

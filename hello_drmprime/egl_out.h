@@ -37,6 +37,7 @@ extern "C" {
 #include <thread>
 #include <memory>
 #include "../common_consti/ThreadsafeQueue.hpp"
+#include "../common_consti/TimeHelper.hpp"
 
 // XXX
 #include "CUDAGLInteropHelper.h"
@@ -55,6 +56,13 @@ struct EGLFrameTexture{
 struct CUDAFrameTexture{
   AVFrame* av_frame=nullptr;
   GLuint textures[2]={0,0};
+  bool has_valid_image=false;
+};
+
+struct YUV420PSwFrameTexture{
+  // Since we copy the data, we do not need to keep the av frame around
+  //AVFrame* av_frame=nullptr;
+  GLuint textures[3]={0,0,0};
   bool has_valid_image=false;
 };
 
@@ -127,11 +135,12 @@ class EGLOut {
   //
   std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
   void update_texture_cuda(AVFrame* frame);
-  void update_texture_rgb(AVFrame* frame);
+  void update_texture_yuv420p(AVFrame* frame);
   AVFrame* last_rgba_frame= nullptr;
   GLuint texture_rgb=0;
   //
   CUDAFrameTexture cuda_frametexture{};
+  YUV420PSwFrameTexture yuv_420_p_sw_frame_texture{};
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
