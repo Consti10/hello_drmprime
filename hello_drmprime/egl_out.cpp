@@ -9,39 +9,6 @@
 #include <cassert>
 #include "extra_drm.h"
 
-static const char *GlErrorString(GLenum error ){
-  switch ( error ){
-	case GL_NO_ERROR:						return "GL_NO_ERROR";
-	case GL_INVALID_ENUM:					return "GL_INVALID_ENUM";
-	case GL_INVALID_VALUE:					return "GL_INVALID_VALUE";
-	case GL_INVALID_OPERATION:				return "GL_INVALID_OPERATION";
-	case GL_INVALID_FRAMEBUFFER_OPERATION:	return "GL_INVALID_FRAMEBUFFER_OPERATION";
-	case GL_OUT_OF_MEMORY:					return "GL_OUT_OF_MEMORY";
-	  //
-	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
-	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
-	default: return "unknown";
-  }
-}
-static void checkGlError(const std::string& caller) {
-  GLenum error;
-  std::stringstream ss;
-  ss<<"GLError:"<<caller.c_str();
-  ss<<__FILE__<<__LINE__;
-  bool anyError=false;
-  while ((error = glGetError()) != GL_NO_ERROR) {
-	ss<<" |"<<GlErrorString(error);
-	anyError=true;
-  }
-  if(anyError){
-	std::cout<<ss.str()<<"\n";
-	// CRASH_APPLICATION_ON_GL_ERROR
-	if(false){
-	  std::exit(-1);
-	}
-  }
-}
-
 static void print_hwframe_transfer_formats(AVBufferRef *hwframe_ctx){
   enum AVPixelFormat *formats;
   const auto err = av_hwframe_transfer_get_formats(hwframe_ctx, AV_HWFRAME_TRANSFER_DIRECTION_FROM, &formats, 0);
@@ -129,7 +96,6 @@ void EGLOut::initializeWindowRender() {
 	fillFrame(pixels,100,100,100*4, createColor(2,255));
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 100, 100, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 	glBindTexture(GL_TEXTURE_2D,0);
-	checkGlError("Create texture extra");
   }
 }
 
@@ -258,6 +224,7 @@ bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& e
   if (!image) {
 	printf("Failed to create EGLImage %s\n", strerror(errno));
 	egl_frame_texture.has_valid_image= false;
+	print_hwframe_transfer_formats(frame->hw_frames_ctx);
 	return false;
   }
   // Note that we do not have to delete and generate the texture (ID) every time we update the egl image backing.
@@ -289,7 +256,8 @@ void EGLOut::update_texture(AVFrame *hw_frame) {
 	update_texture_yuv420p(hw_frame);
   }
   else{
-	std::cerr<<"Unimplemented to texture"<<av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"\n";
+	std::cerr<<"Unimplemented to texture:"<<av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"\n";
+	print_hwframe_transfer_formats(hw_frame->hw_frames_ctx);
 	av_frame_free(&hw_frame);
   }
 }

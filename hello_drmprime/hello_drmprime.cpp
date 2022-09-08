@@ -338,10 +338,9 @@ int main(int argc, char *argv[]){
   	print_codecs_h264_h265_mjpeg();
 	//const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
-	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
+	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
-    //const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
-  	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
+  	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VDPAU;
 	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
 	/*if (type == AV_HWDEVICE_TYPE_NONE) {
 		fprintf(stderr, "Device type %s is not supported.\n", hwdev);
@@ -406,14 +405,12 @@ int main(int argc, char *argv[]){
             }
         }
 
-		//hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
+		//wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
 	  	//wanted_hw_pix_fmt = AV_PIX_FMT_CUDA;
-		//wanted_hw_pix_fmt = (AVPixelFormat)119;
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
-		//const int argh=(int)wanted_hw_pix_fmt;
-		//std::cout<<"ARGH:"<<av_get_pix_fmt_name(AV_PIX_FMT_CUDA)<<"("<<argh<<")\n";
-	  	wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
+	  	//wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
 	  	//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
+		wanted_hw_pix_fmt = AV_PIX_FMT_VDPAU;
     }
 
     if (!(decoder_ctx = avcodec_alloc_context3(decoder))){
@@ -433,12 +430,12 @@ int main(int argc, char *argv[]){
 
     decoder_ctx->get_format  = get_hw_format;
 
-    /*if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
+    if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
 	  std::cout<<"HW decoder init failed\n";
 	  // Use SW decode as fallback ?!
 	  //return -1;
 	  wanted_hw_pix_fmt=AV_PIX_FMT_YUV420P;
-	}*/
+	}
 
     // Consti10
     decoder_ctx->thread_count = 1;
