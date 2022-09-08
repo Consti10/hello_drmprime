@@ -5,6 +5,8 @@
 #ifndef HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
 #define HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
 
+#include "GL_shader.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -66,38 +68,6 @@ struct YUV420PSwFrameTexture{
   bool has_valid_image=false;
 };
 
-// Single EGL external texture (We do not have to write our own YUV conversion(s), egl does it for us.
-// Any platform where we can get the (HW) - decoded frame to EGL (e.g. rpi) this is the easiest and best way.
-struct EGLShader{
-  GLuint program=0;
-  GLint pos=-1;
-  GLint uvs=-1;
-};
-// Single RGB(A) texture
-struct RGBAShader{
-  GLuint program=0;
-  GLint pos=-1;
-  GLint uvs=-1;
-  GLint sampler=-1;
-};
-// NV12
-struct NV12Shader{
-  GLuint program=0;
-  GLint pos=-1;
-  GLint uvs=-1;
-  GLint s_texture_y=-1;
-  GLint s_texture_uv=-1;
-};
-// YUV 420P
-struct YUV420PShader{
-  GLuint program=0;
-  GLint pos=-1;
-  GLint uvs=-1;
-  GLint s_texture_y=-1;
-  GLint s_texture_u=-1;
-  GLint s_texture_v=-1;
-};
-
 
 class XAVFrameHolder{
  public:
@@ -130,18 +100,15 @@ class EGLOut {
   const int window_width;
   const int window_height;
   //
-  EGLShader egl_shader;
-  RGBAShader rgba_shader;
-  YUV420PShader yuv_420_p_shader;
-  NV12Shader nv_12_shader;
-  //
-  GLuint vbo=0;
   GLFWwindow* window= nullptr;
   // always called with the OpenGL context bound.
   void update_texture(AVFrame* frame);
   // allows frame drops (higher video fps than display refresh).
   std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue=std::make_unique<ThreadsafeQueue<XAVFrameHolder>>();
   EGLFrameTexture egl_frame_texture{};
+  // Holds shaders for common video formats / upload techniques
+  // Needs to be initialized on the GL thread.
+  std::unique_ptr<GL_shader> gl_shader=nullptr;
   //
   std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
   void update_texture_cuda(AVFrame* frame);
