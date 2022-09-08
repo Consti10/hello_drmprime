@@ -109,14 +109,14 @@ static std::string all_formats_to_string(const enum AVPixelFormat *pix_fmts){
 static void print_codecs_h264_h265(){
   void *iter = NULL;
   std::stringstream ss;
-  ss<<"Codecs:";
+  ss<<"Codecs:\n";
   for (;;) {
 	const AVCodec *cur = av_codec_iterate(&iter);
 	if (!cur)
 	  break;
 	if(av_codec_is_decoder(cur)!=0){
-	  if(cur->id==AV_CODEC_ID_H264 || cur->id==AV_CODEC_ID_H265){
-		ss<<"["<<cur->name<<":"<<cur->long_name<<" "<<all_formats_to_string(cur->pix_fmts)<<"],";
+	  if(cur->id==AV_CODEC_ID_H264 || cur->id==AV_CODEC_ID_H265 || cur->id==AV_CODEC_ID_MJPEG){
+		ss<<"["<<cur->name<<":"<<cur->long_name<<" "<<all_formats_to_string(cur->pix_fmts)<<"]\n";
 	  }
 	}
   }
