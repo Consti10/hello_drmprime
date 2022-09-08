@@ -441,7 +441,6 @@ int main(int argc, char *argv[]){
 	}*/
 
     // Consti10
-    //decoder_ctx->thread_count = 3;
     decoder_ctx->thread_count = 1;
 
     if ((ret = avcodec_open2(decoder_ctx, decoder, nullptr)) < 0) {
