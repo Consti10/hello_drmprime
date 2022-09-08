@@ -37,7 +37,7 @@ class GL_shader {
 	GLint s_texture_y=-1;
 	GLint s_texture_uv=-1;
   };
-  // YUV 420P
+  // YUV 420P (As defined in AV_PIX_FMT_YUV420P)
   struct YUV420PShader{
 	GLuint program=0;
 	GLint pos=-1;
