@@ -30,6 +30,7 @@ class GL_shader {
 	GLint uvs=-1;
   };
   // NV12
+  // 2 separate planes (textures) : Y and U,V
   struct NV12Shader{
 	GLuint program=0;
 	GLint pos=-1;
@@ -38,6 +39,7 @@ class GL_shader {
 	GLint s_texture_uv=-1;
   };
   // YUV 420P (As defined in AV_PIX_FMT_YUV420P)
+  // Y,U,V are in 3 separate planes (textures)
   struct YUV420PShader{
 	GLuint program=0;
 	GLint pos=-1;
