@@ -40,7 +40,7 @@ static void checkGlError(const std::string& caller) {
 
 // We always use the same vertex shader code - full screen texture.
 // (Adjust ratio by setting the OpenGL viewport)
-static const GLchar* vertex_shader_source =
+static const GLchar* vertex_shader_source_all =
 	"#version 300 es\n"
 	"in vec3 position;\n"
 	"in vec2 tex_coords;\n"
@@ -49,6 +49,7 @@ static const GLchar* vertex_shader_source =
 	"	gl_Position = vec4(position, 1.0);\n"
 	"	v_texCoord = tex_coords;\n"
 	"}\n";
+// All the different fragment shader
 static const GLchar* fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL =
 	"#version 300 es\n"
 	"#extension GL_OES_EGL_image_external : require\n"
@@ -110,18 +111,18 @@ static const GLchar* fragment_shader_source_NV12 =
 	"}\n";
 
 /// negative x,y is bottom left and first vertex
-//Consti10: Video was flipped horizontally (at least big buck bunny)
 static const GLfloat vertices[][4][3] =
 	{
 		{ {-1.0, -1.0, 0.0}, { 1.0, -1.0, 0.0}, {-1.0, 1.0, 0.0}, {1.0, 1.0, 0.0} }
 	};
+// Consti10: Video was flipped horizontally (at least big buck bunny), fixed
 static const GLfloat uv_coords[][4][2] =
 	{
 		//{ {0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}, {1.0, 1.0} }
 		{ {1.0, 1.0}, {0.0, 1.0}, {1.0, 0.0}, {0.0, 0.0} }
 	};
 
-GLint common_get_shader_program(const char *vertex_shader_source, const char *fragment_shader_source) {
+static GLint common_get_shader_program(const char *vertex_shader_source, const char *fragment_shader_source) {
   enum Consts {INFOLOG_LEN = 512};
   GLchar infoLog[INFOLOG_LEN];
   GLint fragment_shader;
@@ -167,7 +168,7 @@ GLint common_get_shader_program(const char *vertex_shader_source, const char *fr
 
 void GL_shader::initialize() {
   // Shader 1
-  rgba_shader.program = common_get_shader_program(vertex_shader_source,fragment_shader_source_RGB);
+  rgba_shader.program = common_get_shader_program(vertex_shader_source_all,fragment_shader_source_RGB);
   assert(rgba_shader.program!=0);
   rgba_shader.pos = glGetAttribLocation(rgba_shader.program, "position");
   assert(rgba_shader.pos>=0);
@@ -177,7 +178,7 @@ void GL_shader::initialize() {
   assert(rgba_shader.sampler>=0);
   checkGlError("Create shader RGBA");
   // Shader 2
-  egl_shader.program = common_get_shader_program(vertex_shader_source, fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL);
+  egl_shader.program = common_get_shader_program(vertex_shader_source_all, fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL);
   assert(egl_shader.program!=0);
   egl_shader.pos = glGetAttribLocation(egl_shader.program, "position");
   assert(egl_shader.pos>=0);
@@ -185,7 +186,7 @@ void GL_shader::initialize() {
   assert(egl_shader.uvs>=0);
   checkGlError("Create shader EGL");
   // Shader 3
-  yuv_420P_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_YUV420P);
+  yuv_420P_shader.program= common_get_shader_program(vertex_shader_source_all, fragment_shader_source_YUV420P);
   assert(yuv_420P_shader.program!=0);
   yuv_420P_shader.pos = glGetAttribLocation(yuv_420P_shader.program, "position");
   assert(yuv_420P_shader.pos>=0);
@@ -199,7 +200,7 @@ void GL_shader::initialize() {
   assert(yuv_420P_shader.s_texture_v>=0);
   checkGlError("Create shader YUV420P");
   // Shader 4
-  nv12_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_NV12);
+  nv12_shader.program= common_get_shader_program(vertex_shader_source_all, fragment_shader_source_NV12);
   assert(nv12_shader.program!=0);
   nv12_shader.pos = glGetAttribLocation(nv12_shader.program, "position");
   assert(nv12_shader.pos>=0);
