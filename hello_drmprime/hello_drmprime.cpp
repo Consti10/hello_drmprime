@@ -362,8 +362,8 @@ int main(int argc, char *argv[]){
 
 	//const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
-	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
-	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
+	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
+	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VDPAU;
 	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
     if (decoder->id == AV_CODEC_ID_H264) {
@@ -398,10 +398,10 @@ int main(int argc, char *argv[]){
         }
 
 		//wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
-	  	//wanted_hw_pix_fmt = AV_PIX_FMT_CUDA;
+	  	wanted_hw_pix_fmt = AV_PIX_FMT_CUDA;
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
 	  	//wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
-	  	wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
+	  	//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VDPAU;
     }
 
