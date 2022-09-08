@@ -342,14 +342,6 @@ int main(int argc, char *argv[]){
 	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
   	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VDPAU;
 	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
-	/*if (type == AV_HWDEVICE_TYPE_NONE) {
-		fprintf(stderr, "Device type %s is not supported.\n", hwdev);
-		fprintf(stderr, "Available device types:");
-		while((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE)
-			fprintf(stderr, " %s", av_hwdevice_get_type_name(type));
-		fprintf(stderr, "\n");
-		return -1;
-	}*/
 
     const char * in_file=mXOptions.in_filename;
 

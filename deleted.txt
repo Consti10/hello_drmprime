@@ -149,5 +149,12 @@ if(countLol>20){
         }
     }else{
     }
-
+if (type == AV_HWDEVICE_TYPE_NONE) {
+		fprintf(stderr, "Device type %s is not supported.\n", hwdev);
+		fprintf(stderr, "Available device types:");
+		while((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE)
+			fprintf(stderr, " %s", av_hwdevice_get_type_name(type));
+		fprintf(stderr, "\n");
+		return -1;
+	}
 fprintf(stdout, "Found hw device type name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
