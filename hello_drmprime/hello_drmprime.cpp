@@ -335,7 +335,7 @@ int main(int argc, char *argv[]){
 	  save_frames_to_file=std::make_unique<SaveFramesToFile>(mXOptions.out_filename);
     }
 	print_av_hwdevice_types();
-  print_codecs_h264_h265_mjpeg();
+  	print_codecs_h264_h265_mjpeg();
 	//const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
 	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
