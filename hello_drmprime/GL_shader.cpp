@@ -273,10 +273,13 @@ void GL_shader::draw_YUV420P(GLuint textureY, GLuint textureU, GLuint textureV) 
 
 void GL_shader::draw_NV12(GLuint textureY, GLuint textureUV) {
   glUseProgram(nv12_shader.program);
-  glActiveTexture(GL_TEXTURE0 + 0);
-  glBindTexture(GL_TEXTURE_2D,textureY);
-  glActiveTexture(GL_TEXTURE0 + 1);
-  glBindTexture(GL_TEXTURE_2D,textureUV);
+  for(int i=0;i<2;i++){
+	glActiveTexture(GL_TEXTURE0 + i);
+	GLuint texture;
+	if(i==0)texture=textureY;
+	if(i==1)texture=textureUV;
+	glBindTexture(GL_TEXTURE_2D,texture);
+  }
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindTexture(GL_TEXTURE_2D, 0);
   checkGlError("Draw NV12 texture");
