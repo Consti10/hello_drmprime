@@ -5,8 +5,6 @@
 #ifndef HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
 #define HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
 
-#include "GL_shader.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -40,6 +38,7 @@ extern "C" {
 #include <memory>
 #include "../common_consti/ThreadsafeQueue.hpp"
 #include "../common_consti/TimeHelper.hpp"
+#include "GL_shader.h"
 
 // XXX
 #include "CUDAGLInteropHelper.h"
@@ -112,6 +111,7 @@ class EGLOut {
   std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
   void update_texture_cuda(AVFrame* frame);
   void update_texture_yuv420p(AVFrame* frame);
+  void update_texture_vdpau(AVFrame* frame);
   // Blue RGB(A) texture, for testing. Uploaded once, then never modified.
   GLuint texture_rgb_blue=0;
   //

@@ -3,7 +3,6 @@
 //
 
 #include "egl_out.h"
-#include "../common_consti/TimeHelper.hpp"
 #include "ffmpeg_workaround_api_version.h"
 
 #include <cassert>
@@ -245,6 +244,12 @@ bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& e
   return true;
 }
 
+//https://registry.khronos.org/OpenGL/extensions/NV/NV_vdpau_interop.txt
+void EGLOut::update_texture_vdpau(AVFrame* hw_frame) {
+  assert(hw_frame);
+  av_frame_free(&hw_frame);
+}
+
 // "Consumes" the given hw_frame
 void EGLOut::update_texture(AVFrame *hw_frame) {
   if(hw_frame->format == AV_PIX_FMT_DRM_PRIME){
@@ -330,6 +335,7 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	// Apparently we can directly convert VAAPI to DRM PRIME and use it with egl
 	// (At least on Pi 4 & h264! decode ?!)
 	//printf("format == AV_PIX_FMT_VAAPI\n");
+	// ? https://gist.github.com/kajott/d1b29c613be30893c855621edd1f212e ?
 	frame = av_frame_alloc();
 	assert(frame);
 	frame->format = AV_PIX_FMT_DRM_PRIME;
