@@ -35,10 +35,6 @@ static void checkGlError(const std::string& caller) {
   }
   if(anyError){
 	std::cout<<ss.str()<<"\n";
-	// CRASH_APPLICATION_ON_GL_ERROR
-	if(false){
-	  std::exit(-1);
-	}
   }
 }
 
@@ -189,18 +185,6 @@ void GL_shader::initialize() {
   assert(egl_shader.uvs>=0);
   checkGlError("Create shader EGL");
   // Shader 3
-  nv12_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_NV12);
-  assert(nv12_shader.program!=0);
-  nv12_shader.pos = glGetAttribLocation(nv12_shader.program, "position");
-  assert(nv12_shader.pos>=0);
-  nv12_shader.uvs = glGetAttribLocation(nv12_shader.program, "tex_coords");
-  assert(nv12_shader.uvs>=0);
-  nv12_shader.s_texture_y=glGetUniformLocation(nv12_shader.program, "s_texture_y");
-  nv12_shader.s_texture_uv=glGetUniformLocation(nv12_shader.program, "s_texture_uv");
-  assert(nv12_shader.s_texture_y>=0);
-  assert(nv12_shader.s_texture_uv>=0);
-  checkGlError("Create shader NV12");
-  // Shader 4
   yuv_420P_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_YUV420P);
   assert(yuv_420P_shader.program!=0);
   yuv_420P_shader.pos = glGetAttribLocation(yuv_420P_shader.program, "position");
@@ -214,6 +198,18 @@ void GL_shader::initialize() {
   assert(yuv_420P_shader.s_texture_u>=0);
   assert(yuv_420P_shader.s_texture_v>=0);
   checkGlError("Create shader YUV420P");
+  // Shader 4
+  nv12_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_NV12);
+  assert(nv12_shader.program!=0);
+  nv12_shader.pos = glGetAttribLocation(nv12_shader.program, "position");
+  assert(nv12_shader.pos>=0);
+  nv12_shader.uvs = glGetAttribLocation(nv12_shader.program, "tex_coords");
+  assert(nv12_shader.uvs>=0);
+  nv12_shader.s_texture_y=glGetUniformLocation(nv12_shader.program, "s_texture_y");
+  nv12_shader.s_texture_uv=glGetUniformLocation(nv12_shader.program, "s_texture_uv");
+  assert(nv12_shader.s_texture_y>=0);
+  assert(nv12_shader.s_texture_uv>=0);
+  checkGlError("Create shader NV12");
   //
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
