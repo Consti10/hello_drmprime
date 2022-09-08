@@ -106,7 +106,7 @@ static std::string all_formats_to_string(const enum AVPixelFormat *pix_fmts){
   return ss.str();
 }
 
-static void print_codecs_h264_h265(){
+static void print_codecs_h264_h265_mjpeg(){
   void *iter = NULL;
   std::stringstream ss;
   ss<<"Codecs:\n";
@@ -335,7 +335,7 @@ int main(int argc, char *argv[]){
 	  save_frames_to_file=std::make_unique<SaveFramesToFile>(mXOptions.out_filename);
     }
 	print_av_hwdevice_types();
-  	print_codecs_h264_h265();
+  print_codecs_h264_h265_mjpeg();
 	//const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
 	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;

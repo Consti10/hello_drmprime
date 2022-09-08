@@ -310,9 +310,9 @@ void EGLOut::initializeWindowRender() {
   }
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   if(true){
-	glGenTextures(1,&texture_rgb);
-	assert(texture_rgb>=0);
-	glBindTexture(GL_TEXTURE_2D, texture_rgb);
+	glGenTextures(1,&texture_rgb_blue);
+	assert(texture_rgb_blue>=0);
+	glBindTexture(GL_TEXTURE_2D, texture_rgb_blue);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	uint8_t pixels[4*100*100];
@@ -544,7 +544,7 @@ void EGLOut::render_once() {
   else{
 	//std::cout<<"Draw RGBA texture\n";
 	glUseProgram(rgba_shader.program);
-	glBindTexture(GL_TEXTURE_2D, texture_rgb);
+	glBindTexture(GL_TEXTURE_2D, texture_rgb_blue);
 	//glBindTexture(GL_TEXTURE_2D, cuda_frametexture.textures[0]);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, 0);

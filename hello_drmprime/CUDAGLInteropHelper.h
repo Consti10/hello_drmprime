@@ -15,8 +15,7 @@ extern "C" {
 #define NV12_PLANES 2
 
 // Helper class to CUDA Memcpy a ffmpeg CUDA (decoded) image into a NV12 OpenGL Texture
-// ( Actually, 2 textures with 1xY and 1xU,V interleaved)
-// Such that the frame can be rendered by OpenGL (with color conversion in the shader).
+// ( Actually, 2 textures with 1xY and 1xU,V interleaved, the NV12 to RGB conversion is then done in a custom OpenGL shader)
 class CUDAGLInteropHelper {
  public:
   explicit CUDAGLInteropHelper(AVCUDADeviceContext* context);
