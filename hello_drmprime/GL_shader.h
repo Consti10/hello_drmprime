@@ -54,9 +54,13 @@ class GL_shader {
   GLuint vbo=0;
  public:
   void initialize();
+  // "normal" RGB(A) texture
   void draw_rgb(GLuint texture);
+  // gl oes egl external texture
   void draw_egl(GLuint texture);
+  // each plane (Y,U,V) has its own texture
   void draw_YUV420P(GLuint textureY,GLuint textureU,GLuint textureV);
+  // Y has its own texture, UV are interleaved in the same texture.
   void draw_NV12(GLuint textureY,GLuint textureUV);
 };
 
