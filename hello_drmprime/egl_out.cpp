@@ -349,9 +349,9 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	  return AVERROR(EINVAL);
 	}
   }
-  // Here the delay is still neglegible,aka ~0.15ms
   const auto delayBeforeDisplayQueueUs=getTimeUs()-frame->pts;
-  MLOGD<<"delayBeforeDisplayQueue:"<<frame->pts<<" delay:"<<(delayBeforeDisplayQueueUs/1000.0)<<" ms\n";
+  avg_delay_before_display_queue.addUs(delayBeforeDisplayQueueUs);
+  avg_delay_before_display_queue.printInIntervals(std::chrono::seconds(3));
   // push it immediately, even though frame(s) might already be inside the queue
   queue->push(std::make_shared<XAVFrameHolder>(frame));
   return 0;

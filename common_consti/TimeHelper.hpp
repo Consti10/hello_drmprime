@@ -72,6 +72,7 @@ private:
     std::chrono::nanoseconds min=std::chrono::nanoseconds::max();
     std::chrono::nanoseconds max{};
     const std::string name;
+    std::chrono::steady_clock::time_point last_log{};
 public:
     AvgCalculator(std::string name1=""):name(name1){reset();};
     void add(const std::chrono::nanoseconds& value){
@@ -135,6 +136,16 @@ public:
             ss<<"Avg "<<name<<":"<<getAvgReadable()<<"\n";
             std::cout<<ss.str();
             if(resetSamples)reset();
+        }
+    }
+    void printInIntervals(const std::chrono::steady_clock::duration interval_duration_size,bool resetSamples=true){
+        const auto timeSinceLastLog=std::chrono::steady_clock::now()-last_log;
+        if(timeSinceLastLog>interval_duration_size){
+            std::stringstream ss;
+            ss<<"Avg "<<name<<":"<<getAvgReadable()<<"\n";
+            std::cout<<ss.str();
+            if(resetSamples)reset();
+            last_log=std::chrono::steady_clock::now();
         }
     }
 };

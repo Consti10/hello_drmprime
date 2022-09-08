@@ -123,6 +123,7 @@ class EGLOut {
   // (including any conversions when they are done in the GL loop).
   // Does NOT include GL rendering time !
   Chronometer cpu_frame_time{"CPU frame time"};
+  AvgCalculator avg_delay_before_display_queue{"Delay before display queue"};
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
