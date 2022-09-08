@@ -81,11 +81,11 @@ static EGLint texgen_attrs[] = {
 static const GLchar* vertex_shader_source =
 	"#version 300 es\n"
 	"in vec3 position;\n"
-	"in vec2 tx_coords;\n"
+	"in vec2 tex_coords;\n"
 	"out vec2 v_texCoord;\n"
 	"void main() {  \n"
 	"	gl_Position = vec4(position, 1.0);\n"
-	"	v_texCoord = tx_coords;\n"
+	"	v_texCoord = tex_coords;\n"
 	"}\n";
 static const GLchar* fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL =
 	"#version 300 es\n"
@@ -239,12 +239,12 @@ void EGLOut::initializeWindowRender() {
   // Shader 1
   egl_shader.program = common_get_shader_program(vertex_shader_source, fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL);
   egl_shader.pos = glGetAttribLocation(egl_shader.program, "position");
-  egl_shader.uvs = glGetAttribLocation(egl_shader.program, "tx_coords");
+  egl_shader.uvs = glGetAttribLocation(egl_shader.program, "tex_coords");
   // Shader 2
   rgba_shader.program = common_get_shader_program(vertex_shader_source,fragment_shader_source_RGB);
   rgba_shader.pos = glGetAttribLocation(rgba_shader.program, "position");
   assert(rgba_shader.pos>=0);
-  rgba_shader.uvs = glGetAttribLocation(rgba_shader.program, "tx_coords");
+  rgba_shader.uvs = glGetAttribLocation(rgba_shader.program, "tex_coords");
   assert(rgba_shader.uvs>=0);
   rgba_shader.sampler = glGetUniformLocation(rgba_shader.program, "s_texture" );
   assert(rgba_shader.sampler>=0);
@@ -252,7 +252,7 @@ void EGLOut::initializeWindowRender() {
   nv_12_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_NV12);
   nv_12_shader.pos = glGetAttribLocation(nv_12_shader.program, "position");
   assert(nv_12_shader.pos>=0);
-  nv_12_shader.uvs = glGetAttribLocation(nv_12_shader.program, "tx_coords");
+  nv_12_shader.uvs = glGetAttribLocation(nv_12_shader.program, "tex_coords");
   assert(nv_12_shader.uvs>=0);
   nv_12_shader.s_texture_y=glGetUniformLocation(nv_12_shader.program, "s_texture_y");
   nv_12_shader.s_texture_uv=glGetUniformLocation(nv_12_shader.program, "s_texture_uv");
@@ -266,7 +266,7 @@ void EGLOut::initializeWindowRender() {
 	yuv_420_p_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_YUV420P);
 	yuv_420_p_shader.pos = glGetAttribLocation(yuv_420_p_shader.program, "position");
 	assert(yuv_420_p_shader.pos>=0);
-	yuv_420_p_shader.uvs = glGetAttribLocation(yuv_420_p_shader.program, "tx_coords");
+	yuv_420_p_shader.uvs = glGetAttribLocation(yuv_420_p_shader.program, "tex_coords");
 	assert(yuv_420_p_shader.uvs>=0);
 	yuv_420_p_shader.s_texture_y=glGetUniformLocation(yuv_420_p_shader.program, "s_texture_y");
 	yuv_420_p_shader.s_texture_u=glGetUniformLocation(yuv_420_p_shader.program, "s_texture_u");
