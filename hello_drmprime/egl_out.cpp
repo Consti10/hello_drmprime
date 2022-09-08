@@ -322,6 +322,7 @@ void EGLOut::render_once() {
 	// This will free the last (rendered) av frame if given.
 	update_texture(latest_new_frame);
   }
+  // We use Red as the clear color such that it is easier t debug (black) video textures.
   glClearColor(1.0, 0.0, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
   // Only render the texture if we have one (aka we have gotten at least one frame from the decoder)
