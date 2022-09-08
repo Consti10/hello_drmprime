@@ -446,7 +446,7 @@ bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& e
 										   EGL_LINUX_DMA_BUF_EXT,
 										   NULL, attribs);
   if (!image) {
-	printf("Failed to create EGLImage\n");
+	printf("Failed to create EGLImage %s\n", strerror(errno));
 	egl_frame_texture.has_valid_image= false;
 	return false;
   }
