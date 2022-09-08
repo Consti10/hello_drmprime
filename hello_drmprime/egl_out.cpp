@@ -105,7 +105,7 @@ static const GLchar* fragment_shader_source_RGB =
 	"	gl_FragColor = texture2D( s_texture, v_texCoord );\n"
 	//"	out_color = vec4(v_texCoord.x,1.0,0.0,1.0);\n"
 	"}\n";
-/*static const GLchar* fragment_shader_source_YUV =
+static const GLchar* fragment_shader_source_YUV420P =
 	"#version 300 es\n"
 	"precision highp float;\n"
 	"uniform sampler2D s_texture_y;\n"
@@ -122,7 +122,7 @@ static const GLchar* fragment_shader_source_RGB =
 	"		1,  -0.344,  -0.714,\n"
 	"		1,   1.772,   0);\n"
 	"	gl_FragColor = vec4(color*colorMatrix, 1.0);\n"
-	"}\n";*/
+	"}\n";
 static const GLchar* fragment_shader_source_NV12 =
 	"#version 300 es\n"
 	"precision mediump float;\n"
@@ -256,6 +256,21 @@ void EGLOut::initializeWindowRender() {
   assert(nv_12_shader.s_texture_uv>=0);
   //assert(nv_12_shader.s_texture_v>=0);
   checkGlError("NV12");
+  // Shader 4
+  {
+	yuv_420_p_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_YUV420P);
+	yuv_420_p_shader.pos = glGetAttribLocation(yuv_420_p_shader.program, "position");
+	assert(yuv_420_p_shader.pos>=0);
+	yuv_420_p_shader.uvs = glGetAttribLocation(yuv_420_p_shader.program, "tx_coords");
+	assert(yuv_420_p_shader.uvs>=0);
+	yuv_420_p_shader.s_texture_y=glGetUniformLocation(yuv_420_p_shader.program, "s_texture_y");
+	yuv_420_p_shader.s_texture_u=glGetUniformLocation(yuv_420_p_shader.program, "s_texture_u");
+	yuv_420_p_shader.s_texture_v=glGetUniformLocation(yuv_420_p_shader.program, "s_texture_v");
+	assert(yuv_420_p_shader.s_texture_y>=0);
+	assert(yuv_420_p_shader.s_texture_u>=0);
+	assert(yuv_420_p_shader.s_texture_v>=0);
+	checkGlError("YUV420P");
+  }
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glViewport(0, 0, window_width, window_height);
@@ -281,6 +296,12 @@ void EGLOut::initializeWindowRender() {
 	glEnableVertexAttribArray(nv_12_shader.uvs);
 	glVertexAttribPointer(nv_12_shader.pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 	glVertexAttribPointer(nv_12_shader.uvs, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(vertices)); /// last is offset to loc in buf memory
+  }
+  {
+	glEnableVertexAttribArray(yuv_420_p_shader.pos);
+	glEnableVertexAttribArray(yuv_420_p_shader.uvs);
+	glVertexAttribPointer(yuv_420_p_shader.pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+	glVertexAttribPointer(yuv_420_p_shader.uvs, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(vertices)); /// last is offset to loc in buf memory
   }
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   if(true){
@@ -471,6 +492,15 @@ void EGLOut::update_texture(AVFrame *hw_frame) {
 }
 
 void EGLOut::render_once() {
+  if(frame_delta_chrono== nullptr){
+	frame_delta_chrono=std::make_unique<Chronometer>("FrameDelta");
+	frame_delta_chrono->start();
+  }else{
+	frame_delta_chrono->stop();
+	frame_delta_chrono->printInIntervalls(std::chrono::seconds(3), false);
+	frame_delta_chrono->start();
+  }
+  //std::this_thread::sleep_for(std::chrono::milliseconds(100));
   // update the video frame to the most recent one
   // A bit overkill, but it was quicker to just copy paste the logic from hello_drmprime.
   const auto allBuffers=queue->getAllAndClear();
@@ -508,12 +538,19 @@ void EGLOut::render_once() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	checkGlError("Draw NV12 texture");
   }else if(yuv_420_p_sw_frame_texture.has_valid_image){
-	glUseProgram(rgba_shader.program);
+	/*glUseProgram(rgba_shader.program);
 	glBindTexture(GL_TEXTURE_2D, yuv_420_p_sw_frame_texture.textures[0]);
-	//glBindTexture(GL_TEXTURE_2D, cuda_frametexture.textures[0]);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	checkGlError("Draw YUV420P texture");
+	checkGlError("Draw YUV420P texture");*/
+	glUseProgram(yuv_420_p_shader.program);
+	for(int i=0;i<3;i++){
+	  glActiveTexture(GL_TEXTURE0 + i);
+	  glBindTexture(GL_TEXTURE_2D,yuv_420_p_sw_frame_texture.textures[i]);
+	}
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	checkGlError("Draw NV12 texture");
   }
   else{
 	//std::cout<<"Draw RGBA texture\n";
@@ -524,6 +561,8 @@ void EGLOut::render_once() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	checkGlError("Draw RGBA texture");
   }
+  glFinish();
+  glFlush();
   glfwSwapBuffers(window);
 }
 

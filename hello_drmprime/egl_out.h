@@ -79,7 +79,7 @@ struct RGBAShader{
   GLint uvs=-1;
   GLint sampler=-1;
 };
-// YUV / NV12
+// NV12
 struct NV12Shader{
   GLuint program=0;
   GLint pos=-1;
@@ -87,6 +87,15 @@ struct NV12Shader{
   GLint s_texture_y=-1;
   GLint s_texture_uv=-1;
   //GLint s_texture_v=-1;
+};
+// YUV 420P
+struct YUV420PShader{
+  GLuint program=0;
+  GLint pos=-1;
+  GLint uvs=-1;
+  GLint s_texture_y=-1;
+  GLint s_texture_u=-1;
+  GLint s_texture_v=-1;
 };
 
 
@@ -123,6 +132,7 @@ class EGLOut {
   //
   EGLShader egl_shader;
   RGBAShader rgba_shader;
+  YUV420PShader yuv_420_p_shader;
   NV12Shader nv_12_shader;
   //
   GLuint vbo=0;
@@ -141,6 +151,7 @@ class EGLOut {
   //
   CUDAFrameTexture cuda_frametexture{};
   YUV420PSwFrameTexture yuv_420_p_sw_frame_texture{};
+  std::unique_ptr<Chronometer> frame_delta_chrono=nullptr;
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
