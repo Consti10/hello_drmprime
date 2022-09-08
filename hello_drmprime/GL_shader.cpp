@@ -172,6 +172,7 @@ GLint common_get_shader_program(const char *vertex_shader_source, const char *fr
 void GL_shader::initialize() {
   // Shader 1
   rgba_shader.program = common_get_shader_program(vertex_shader_source,fragment_shader_source_RGB);
+  assert(rgba_shader.program!=0);
   rgba_shader.pos = glGetAttribLocation(rgba_shader.program, "position");
   assert(rgba_shader.pos>=0);
   rgba_shader.uvs = glGetAttribLocation(rgba_shader.program, "tex_coords");
@@ -181,35 +182,37 @@ void GL_shader::initialize() {
   checkGlError("Create shader RGBA");
   // Shader 2
   egl_shader.program = common_get_shader_program(vertex_shader_source, fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL);
-  assert(egl_shader.program>=0);
+  assert(egl_shader.program!=0);
   egl_shader.pos = glGetAttribLocation(egl_shader.program, "position");
   assert(egl_shader.pos>=0);
   egl_shader.uvs = glGetAttribLocation(egl_shader.program, "tex_coords");
   assert(egl_shader.uvs>=0);
   checkGlError("Create shader EGL");
   // Shader 3
-  nv_12_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_NV12);
-  nv_12_shader.pos = glGetAttribLocation(nv_12_shader.program, "position");
-  assert(nv_12_shader.pos>=0);
-  nv_12_shader.uvs = glGetAttribLocation(nv_12_shader.program, "tex_coords");
-  assert(nv_12_shader.uvs>=0);
-  nv_12_shader.s_texture_y=glGetUniformLocation(nv_12_shader.program, "s_texture_y");
-  nv_12_shader.s_texture_uv=glGetUniformLocation(nv_12_shader.program, "s_texture_uv");
-  assert(nv_12_shader.s_texture_y>=0);
-  assert(nv_12_shader.s_texture_uv>=0);
+  nv12_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_NV12);
+  assert(nv12_shader.program!=0);
+  nv12_shader.pos = glGetAttribLocation(nv12_shader.program, "position");
+  assert(nv12_shader.pos>=0);
+  nv12_shader.uvs = glGetAttribLocation(nv12_shader.program, "tex_coords");
+  assert(nv12_shader.uvs>=0);
+  nv12_shader.s_texture_y=glGetUniformLocation(nv12_shader.program, "s_texture_y");
+  nv12_shader.s_texture_uv=glGetUniformLocation(nv12_shader.program, "s_texture_uv");
+  assert(nv12_shader.s_texture_y>=0);
+  assert(nv12_shader.s_texture_uv>=0);
   checkGlError("Create shader NV12");
   // Shader 4
-  yuv_420_p_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_YUV420P);
-  yuv_420_p_shader.pos = glGetAttribLocation(yuv_420_p_shader.program, "position");
-  assert(yuv_420_p_shader.pos>=0);
-  yuv_420_p_shader.uvs = glGetAttribLocation(yuv_420_p_shader.program, "tex_coords");
-  assert(yuv_420_p_shader.uvs>=0);
-  yuv_420_p_shader.s_texture_y=glGetUniformLocation(yuv_420_p_shader.program, "s_texture_y");
-  yuv_420_p_shader.s_texture_u=glGetUniformLocation(yuv_420_p_shader.program, "s_texture_u");
-  yuv_420_p_shader.s_texture_v=glGetUniformLocation(yuv_420_p_shader.program, "s_texture_v");
-  assert(yuv_420_p_shader.s_texture_y>=0);
-  assert(yuv_420_p_shader.s_texture_u>=0);
-  assert(yuv_420_p_shader.s_texture_v>=0);
+  yuv_420P_shader.program= common_get_shader_program(vertex_shader_source, fragment_shader_source_YUV420P);
+  assert(yuv_420P_shader.program!=0);
+  yuv_420P_shader.pos = glGetAttribLocation(yuv_420P_shader.program, "position");
+  assert(yuv_420P_shader.pos>=0);
+  yuv_420P_shader.uvs = glGetAttribLocation(yuv_420P_shader.program, "tex_coords");
+  assert(yuv_420P_shader.uvs>=0);
+  yuv_420P_shader.s_texture_y=glGetUniformLocation(yuv_420P_shader.program, "s_texture_y");
+  yuv_420P_shader.s_texture_u=glGetUniformLocation(yuv_420P_shader.program, "s_texture_u");
+  yuv_420P_shader.s_texture_v=glGetUniformLocation(yuv_420P_shader.program, "s_texture_v");
+  assert(yuv_420P_shader.s_texture_y>=0);
+  assert(yuv_420P_shader.s_texture_u>=0);
+  assert(yuv_420P_shader.s_texture_v>=0);
   checkGlError("Create shader YUV420P");
   //
   glGenBuffers(1, &vbo);
@@ -228,15 +231,15 @@ void GL_shader::initialize() {
   glVertexAttribPointer(rgba_shader.pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
   glVertexAttribPointer(rgba_shader.uvs, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(vertices)); /// last is offset to loc in buf memory
   //
-  glEnableVertexAttribArray(nv_12_shader.pos);
-  glEnableVertexAttribArray(nv_12_shader.uvs);
-  glVertexAttribPointer(nv_12_shader.pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
-  glVertexAttribPointer(nv_12_shader.uvs, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(vertices)); /// last is offset to loc in buf memory
+  glEnableVertexAttribArray(nv12_shader.pos);
+  glEnableVertexAttribArray(nv12_shader.uvs);
+  glVertexAttribPointer(nv12_shader.pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+  glVertexAttribPointer(nv12_shader.uvs, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(vertices)); /// last is offset to loc in buf memory
   //
-  glEnableVertexAttribArray(yuv_420_p_shader.pos);
-  glEnableVertexAttribArray(yuv_420_p_shader.uvs);
-  glVertexAttribPointer(yuv_420_p_shader.pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
-  glVertexAttribPointer(yuv_420_p_shader.uvs, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(vertices)); /// last is offset to loc in buf memory
+  glEnableVertexAttribArray(yuv_420P_shader.pos);
+  glEnableVertexAttribArray(yuv_420P_shader.uvs);
+  glVertexAttribPointer(yuv_420P_shader.pos, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+  glVertexAttribPointer(yuv_420P_shader.uvs, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(vertices)); /// last is offset to loc in buf memory
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -257,7 +260,7 @@ void GL_shader::draw_egl(GLuint texture) {
 }
 
 void GL_shader::draw_YUV420P(GLuint textureY, GLuint textureU, GLuint textureV) {
-  glUseProgram(yuv_420_p_shader.program);
+  glUseProgram(yuv_420P_shader.program);
   for(int i=0;i<3;i++){
 	glActiveTexture(GL_TEXTURE0 + i);
 	GLuint texture;
@@ -272,7 +275,7 @@ void GL_shader::draw_YUV420P(GLuint textureY, GLuint textureU, GLuint textureV) 
 }
 
 void GL_shader::draw_NV12(GLuint textureY, GLuint textureUV) {
-  glUseProgram(nv_12_shader.program);
+  glUseProgram(nv12_shader.program);
   glActiveTexture(GL_TEXTURE0 + 0);
   glBindTexture(GL_TEXTURE_2D,textureY);
   glActiveTexture(GL_TEXTURE0 + 1);

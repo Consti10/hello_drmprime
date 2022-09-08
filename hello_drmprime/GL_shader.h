@@ -48,8 +48,8 @@ class GL_shader {
   };
   EGLShader egl_shader;
   RGBAShader rgba_shader;
-  YUV420PShader yuv_420_p_shader;
-  NV12Shader nv_12_shader;
+  YUV420PShader yuv_420P_shader;
+  NV12Shader nv12_shader;
   // All shaders use the same VBO for vertex / uv coordinates
   GLuint vbo=0;
  public:
