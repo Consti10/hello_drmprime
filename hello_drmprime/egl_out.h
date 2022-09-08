@@ -67,6 +67,7 @@ struct YUV420PSwFrameTexture{
 };
 
 // Single EGL external texture (We do not have to write our own YUV conversion(s), egl does it for us.
+// Any platform where we can get the (HW) - decoded frame to EGL (e.g. rpi) this is the easiest and best way.
 struct EGLShader{
   GLuint program=0;
   GLint pos=-1;
