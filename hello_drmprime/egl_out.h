@@ -112,8 +112,10 @@ class EGLOut {
   void update_texture_cuda(AVFrame* frame);
   void update_texture_yuv420p(AVFrame* frame);
   void update_texture_vdpau(AVFrame* frame);
-  // Blue RGB(A) texture, for testing. Uploaded once, then never modified.
+  // green/ blue RGB(A) textures, for testing. Uploaded once, then never modified.
+  GLuint texture_rgb_green=0;
   GLuint texture_rgb_blue=0;
+  int frameCount=0;
   //
   EGLFrameTexture egl_frame_texture{};
   CUDAFrameTexture cuda_frametexture{};

@@ -57,6 +57,20 @@ EGLOut::~EGLOut() {
   }
 }
 
+static void create_rgba_texture(GLuint& tex_id,uint32_t color_rgba){
+  assert(tex_id==0);
+  glGenTextures(1,&tex_id);
+  assert(tex_id>=0);
+  glBindTexture(GL_TEXTURE_2D, tex_id);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  const int width=1280;
+  const int height=720;
+  uint8_t pixels[4*width*height];
+  fillFrame(pixels,width,height,width*4, color_rgba);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  glBindTexture(GL_TEXTURE_2D,0);
+}
 
 void EGLOut::initializeWindowRender() {
   glfwInit();
@@ -85,17 +99,8 @@ void EGLOut::initializeWindowRender() {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glViewport(0, 0, window_width, window_height);
 
-  if(true){
-	glGenTextures(1,&texture_rgb_blue);
-	assert(texture_rgb_blue>=0);
-	glBindTexture(GL_TEXTURE_2D, texture_rgb_blue);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	uint8_t pixels[4*100*100];
-	fillFrame(pixels,100,100,100*4, createColor(2,255));
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 100, 100, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-	glBindTexture(GL_TEXTURE_2D,0);
-  }
+  create_rgba_texture(texture_rgb_green, createColor(1,255));
+  create_rgba_texture(texture_rgb_blue, createColor(2,255));
 }
 
 // https://stackoverflow.com/questions/9413845/ffmpeg-avframe-to-opengl-texture-without-yuv-to-rgb-soft-conversion
@@ -310,11 +315,13 @@ void EGLOut::render_once() {
 							yuv_420_p_sw_frame_texture.textures[2]);
   }
   else{
-	gl_shader->draw_rgb(texture_rgb_blue);
+	const auto rgb_texture=frameCount%2==0? texture_rgb_blue:texture_rgb_green;
+	gl_shader->draw_rgb(rgb_texture);
   }
   cpu_frame_time.stop();
   cpu_frame_time.printInIntervalls(std::chrono::seconds(3), false);
   glfwSwapBuffers(window);
+  frameCount++;
 }
 
 
