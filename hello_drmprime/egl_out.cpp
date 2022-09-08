@@ -255,7 +255,8 @@ void EGLOut::update_texture_vdpau(AVFrame* hw_frame) {
   av_frame_free(&hw_frame);
 }
 
-// "Consumes" the given hw_frame
+// "Consumes" the given hw_frame (makes sure it is freed at the apropriate time / the previous one
+// is freed when updating to a new one.
 void EGLOut::update_texture(AVFrame *hw_frame) {
   if(hw_frame->format == AV_PIX_FMT_DRM_PRIME){
 	EGLDisplay egl_display=eglGetCurrentDisplay();
