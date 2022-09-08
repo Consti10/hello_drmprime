@@ -475,21 +475,6 @@ void EGLOut::update_texture(AVFrame *hw_frame) {
 	update_drm_prime_to_egl_texture(&egl_display, egl_frame_texture,hw_frame);
   }else if(hw_frame->format==AV_PIX_FMT_CUDA){
 	update_texture_cuda(hw_frame);
-	/*AVFrame* sw_frame = av_frame_alloc();
-	assert(sw_frame);
-	print_hwframe_transfer_formats(hw_frame->hw_frames_ctx);
-	Chronometer tmp{"AV hwframe transfer"};
-	tmp.start();
-	sw_frame->format = AV_PIX_FMT_NV12;
-	if (av_hwframe_transfer_data(sw_frame, hw_frame,0) != 0) {
-	  fprintf(stderr, "Failed to transfer frame (format=%d) to DRM_PRiME %s\n", hw_frame->format,strerror(errno));
-	  av_frame_free(&sw_frame);
-	  return;
-	}
-	tmp.stop();
-	MLOGD<<"Transfer:"<<tmp.getAvgReadable()<<"\n";
-	//update_texture_rgb(sw_frame);
-	av_frame_free(&hw_frame);*/
   }else if(hw_frame->format==AV_PIX_FMT_YUV420P){
 	update_texture_yuv420p(hw_frame);
   }

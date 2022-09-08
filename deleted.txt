@@ -148,3 +148,6 @@ if(countLol>20){
             fprintf(stderr, "drmModeSetCrtc success\n");
         }
     }else{
+    }
+
+fprintf(stdout, "Found hw device type name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));

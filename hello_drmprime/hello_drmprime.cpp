@@ -178,8 +178,8 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,AVPacket *pack
     // testing
     //check_single_nalu(packet->data,packet->size);
     MLOGD<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
-    const auto before=std::chrono::steady_clock::now();
-    const auto beforeUs=getTimeUs();
+    const auto beforeFeedFrame=std::chrono::steady_clock::now();
+    const auto beforeFeedFrameUs=getTimeUs();
     int ret = avcodec_send_packet(avctx, packet);
     if (ret < 0) {
         fprintf(stderr, "Error during decoding\n");
@@ -202,7 +202,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,AVPacket *pack
             break;
         }else if(ret==0){
             // we got a new frame
-            const auto x_delay=std::chrono::steady_clock::now()-before;
+            const auto x_delay=std::chrono::steady_clock::now()-beforeFeedFrame;
             MLOGD<<"(True) decode delay:"<<((float)std::chrono::duration_cast<std::chrono::microseconds>(x_delay).count()/1000.0f)<<" ms\n";
             avgDecodeTime.add(x_delay);
             avgDecodeTime.printInIntervals(CALCULATOR_LOG_INTERVAL);
@@ -210,7 +210,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,AVPacket *pack
             const auto now=getTimeUs();
             //MLOGD<<"Frame pts:"<<frame->pts<<" Set to:"<<now<<"\n";
             //frame->pts=now;
-            frame->pts=beforeUs;
+            frame->pts=beforeFeedFrameUs;
             // display frame
 			if(drm_prime_out!= nullptr){
 			  drm_prime_out->queue_new_frame_for_display(frame);
@@ -223,7 +223,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,AVPacket *pack
 			// for some video files, the decoder does not output a frame every time a h264 frame has been fed
 			// In this case, I unblock after 5 seconds, but we cannot measure the decode delay by using the before-after
 			// approach. We can still measure it using the pts timestamp from av, but this one cannot necessarily be trusted 100%
-			if(std::chrono::steady_clock::now()-loopUntilFrameBegin > std::chrono::seconds(3)){
+			if(std::chrono::steady_clock::now()-loopUntilFrameBegin > std::chrono::seconds(2)){
 			  std::cout<<"Go no frame after X seconds. Break, but decode delay will be reported wrong\n";
 			  break;
 			}
@@ -338,11 +338,11 @@ int main(int argc, char *argv[]){
   	print_codecs_h264_h265();
 	//const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
-	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
+	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
-    const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
+    //const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
   	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
-	fprintf(stdout, "Found hw device type name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
+	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
 	/*if (type == AV_HWDEVICE_TYPE_NONE) {
 		fprintf(stderr, "Device type %s is not supported.\n", hwdev);
 		fprintf(stderr, "Available device types:");
