@@ -105,7 +105,6 @@ class EGLOut {
   void update_texture(AVFrame* frame);
   // allows frame drops (higher video fps than display refresh).
   std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue=std::make_unique<ThreadsafeQueue<XAVFrameHolder>>();
-  EGLFrameTexture egl_frame_texture{};
   // Holds shaders for common video formats / upload techniques
   // Needs to be initialized on the GL thread.
   std::unique_ptr<GL_shader> gl_shader=nullptr;
@@ -116,8 +115,11 @@ class EGLOut {
   // Blue RGB(A) texture, for testing. Uploaded once, then never modified.
   GLuint texture_rgb_blue=0;
   //
+  EGLFrameTexture egl_frame_texture{};
   CUDAFrameTexture cuda_frametexture{};
   YUV420PSwFrameTexture yuv_420_p_sw_frame_texture{};
+  //
+  // Time between frames (frame time)
   std::unique_ptr<Chronometer> frame_delta_chrono=nullptr;
   // Here we measure the time the CPU spends to build the command buffer
   // (including any conversions when they are done in the GL loop).
