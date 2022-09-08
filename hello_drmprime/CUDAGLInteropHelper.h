@@ -14,7 +14,7 @@ extern "C" {
 
 #define NV12_PLANES 2
 
-// Helper class to CUDA Memcpy a ffmpeg CUDA (decoded) image into a NV12 OpenGL Texture
+// Helper class to CUDA memcpy a ffmpeg CUDA (decoded) image into a NV12 OpenGL Texture
 // ( Actually, 2 textures with 1xY and 1xU,V interleaved, the NV12 to RGB conversion is then done in a custom OpenGL shader)
 // NOTE: Has nothing to do with RPI ;)
 class CUDAGLInteropHelper {
