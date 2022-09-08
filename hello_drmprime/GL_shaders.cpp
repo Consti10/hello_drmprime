@@ -56,16 +56,18 @@ static const GLchar* fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL =
 	"precision mediump float;\n"
 	"uniform samplerExternalOES texture;\n"
 	"in vec2 v_texCoord;\n"
+	"out vec4 out_color;\n"
 	"void main() {	\n"
-	"	gl_FragColor = texture2D( texture, v_texCoord );\n"
+	"	out_color = texture2D( texture, v_texCoord );\n"
 	"}\n";
 static const GLchar* fragment_shader_source_RGB =
 	"#version 300 es\n"
 	"precision mediump float;\n"
 	"uniform sampler2D s_texture;\n"
 	"in vec2 v_texCoord;\n"
+	"out vec4 out_color;\n"
 	"void main() {	\n"
-	"	gl_FragColor = texture2D( s_texture, v_texCoord );\n"
+	"	out_color = texture2D( s_texture, v_texCoord );\n"
 	//"	out_color = vec4(v_texCoord.x,1.0,0.0,1.0);\n"
 	"}\n";
 static const GLchar* fragment_shader_source_YUV420P =
@@ -75,6 +77,7 @@ static const GLchar* fragment_shader_source_YUV420P =
 	"uniform sampler2D s_texture_u;\n"
 	"uniform sampler2D s_texture_v;\n"
 	"in vec2 v_texCoord;\n"
+	"out vec4 out_color;\n"
 	"void main() {	\n"
 	"	float Y = texture2D(s_texture_y, v_texCoord).x;\n"
 	"	float U = texture2D(s_texture_u, v_texCoord).x;\n"
@@ -89,7 +92,7 @@ static const GLchar* fragment_shader_source_YUV420P =
 	"		1,   0,       1.402,\n"
 	"		1,  -0.344,  -0.714,\n"
 	"		1,   1.772,   0);\n"*/
-	"	gl_FragColor = vec4(YUV*colorMatrix, 1.0);\n"
+	"	out_color = vec4(YUV*colorMatrix, 1.0);\n"
 	"}\n";
 static const GLchar* fragment_shader_source_NV12 =
 	"#version 300 es\n"
@@ -97,6 +100,7 @@ static const GLchar* fragment_shader_source_NV12 =
 	"uniform sampler2D s_texture_y;\n"
 	"uniform sampler2D s_texture_uv;\n"
 	"in vec2 v_texCoord;\n"
+	"out vec4 out_color;\n"
 	"void main() {	\n"
 	"	vec3 YCbCr = vec3(\n"
 	"		texture2D(s_texture_y, v_texCoord).x,\n"
@@ -107,7 +111,7 @@ static const GLchar* fragment_shader_source_NV12 =
 	"        0.0f, -0.3917f, 2.0172f,\n"
 	"        1.5960f, -0.8129f, 0.0f"
 	"		);\n"
-	"	gl_FragColor = vec4(clamp(YCbCr*colorMatrix,0.0,1.0), 1.0);\n"
+	"	out_color = vec4(clamp(YCbCr*colorMatrix,0.0,1.0), 1.0);\n"
 	"}\n";
 
 /// negative x,y is bottom left and first vertex
