@@ -76,7 +76,8 @@ static EGLint texgen_attrs[] = {
 	EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT,
 	EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT,
 };
-
+// We always use the same vertex shader code - full screen texture.
+// (Adjust ratio by setting the OpenGL viewport)
 static const GLchar* vertex_shader_source =
 	"#version 300 es\n"
 	"in vec3 position;\n"
@@ -86,7 +87,6 @@ static const GLchar* vertex_shader_source =
 	"	gl_Position = vec4(position, 1.0);\n"
 	"	v_texCoord = tx_coords;\n"
 	"}\n";
-
 static const GLchar* fragment_shader_source_GL_OES_EGL_IMAGE_EXTERNAL =
 	"#version 300 es\n"
 	"#extension GL_OES_EGL_image_external : require\n"
@@ -540,11 +540,6 @@ void EGLOut::render_once() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	checkGlError("Draw NV12 texture");
   }else if(yuv_420_p_sw_frame_texture.has_valid_image){
-	/*glUseProgram(rgba_shader.program);
-	glBindTexture(GL_TEXTURE_2D, yuv_420_p_sw_frame_texture.textures[0]);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	checkGlError("Draw YUV420P texture");*/
 	glUseProgram(yuv_420_p_shader.program);
 	for(int i=0;i<3;i++){
 	  glActiveTexture(GL_TEXTURE0 + i);
