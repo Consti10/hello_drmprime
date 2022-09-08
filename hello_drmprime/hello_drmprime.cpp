@@ -321,6 +321,8 @@ int main(int argc, char *argv[]){
 	  	MLOGD<<"use_page_flip_on_second_frame: "<<(mXOptions.use_page_flip_on_second_frame ? "Y":"N")<<"\n";
 
 		MLOGD<<"FFMPEG Version:"<<av_version_info()<<"\n";
+		print_av_hwdevice_types();
+		print_codecs_h264_h265_mjpeg();
     }
 
 	if(mXOptions.render_mode==0 || mXOptions.render_mode==1 || mXOptions.render_mode==2){
@@ -334,14 +336,6 @@ int main(int argc, char *argv[]){
     if (mXOptions.out_filename != nullptr) {
 	  save_frames_to_file=std::make_unique<SaveFramesToFile>(mXOptions.out_filename);
     }
-	print_av_hwdevice_types();
-  	print_codecs_h264_h265_mjpeg();
-	//const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
-	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
-	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
-	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
-  	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VDPAU;
-	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
 
     const char * in_file=mXOptions.in_filename;
 
@@ -366,6 +360,12 @@ int main(int argc, char *argv[]){
     }
     const int video_stream = ret;
 
+	//const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
+	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
+	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
+	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
+	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VDPAU;
+	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
     if (decoder->id == AV_CODEC_ID_H264) {
 	    std::cout<<"H264 decode\n";
         if ((decoder = avcodec_find_decoder_by_name("h264_v4l2m2m")) == NULL) {
