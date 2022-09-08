@@ -86,7 +86,6 @@ struct NV12Shader{
   GLint uvs=-1;
   GLint s_texture_y=-1;
   GLint s_texture_uv=-1;
-  //GLint s_texture_v=-1;
 };
 // YUV 420P
 struct YUV420PShader{

@@ -407,12 +407,12 @@ int main(int argc, char *argv[]){
         }
 
 		//hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
-	  	//wanted_hw_pix_fmt = AV_PIX_FMT_CUDA;
+	  	wanted_hw_pix_fmt = AV_PIX_FMT_CUDA;
 		//wanted_hw_pix_fmt = (AVPixelFormat)119;
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
 		//const int argh=(int)wanted_hw_pix_fmt;
 		//std::cout<<"ARGH:"<<av_get_pix_fmt_name(AV_PIX_FMT_CUDA)<<"("<<argh<<")\n";
-	  	wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
+	  	//wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
 	  	//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
     }
 
@@ -433,12 +433,12 @@ int main(int argc, char *argv[]){
 
     decoder_ctx->get_format  = get_hw_format;
 
-    /*if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
+    if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
 	  std::cout<<"HW decoder init failed\n";
 	  // Use SW decode as fallback ?!
 	  //return -1;
 	  wanted_hw_pix_fmt=AV_PIX_FMT_YUV420P;
-	}*/
+	}
 
     // Consti10
     //decoder_ctx->thread_count = 3;

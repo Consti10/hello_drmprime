@@ -371,7 +371,9 @@ void EGLOut::update_texture_cuda(AVFrame *frame) {
 	  glBindTexture(GL_TEXTURE_2D,cuda_frametexture.textures[i]);
 	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame->width,frame->height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	  // The first plane (Y) is full width and therefore needs 8 bits * width * height
+	  // The second plane is U,V interleaved and therefre needs 8 bits * width * height, too.
+	  glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width,frame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, nullptr);
 	  glBindTexture(GL_TEXTURE_2D,0);
 	}
   }
