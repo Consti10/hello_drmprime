@@ -2,8 +2,8 @@
 // Created by consti10 on 08.09.22.
 //
 
-#ifndef HELLO_DRMPRIME__GL_SHADER_H_
-#define HELLO_DRMPRIME__GL_SHADER_H_
+#ifndef HELLO_DRMPRIME__GL_SHADERS_H_
+#define HELLO_DRMPRIME__GL_SHADERS_H_
 
 #define GLFW_INCLUDE_ES2
 extern "C" {
@@ -13,7 +13,7 @@ extern "C" {
 
 // Holds multiple GL programs that render different types of (Video) textures
 // All textures fill up the full gl viewport, adjust it accordingly to preserve video ratio.
-class GL_shader {
+class GL_shaders {
  private:
   // Single RGB(A) texture
   struct RGBAShader{
@@ -66,4 +66,4 @@ class GL_shader {
   void draw_NV12(GLuint textureY,GLuint textureUV);
 };
 
-#endif //HELLO_DRMPRIME__GL_SHADER_H_
+#endif //HELLO_DRMPRIME__GL_SHADERS_H_

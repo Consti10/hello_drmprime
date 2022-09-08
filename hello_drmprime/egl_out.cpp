@@ -93,8 +93,8 @@ void EGLOut::initializeWindowRender() {
   printf("GL_VERSION  : %s\n", glGetString(GL_VERSION) );
   printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER) );
 
-  gl_shader=std::make_unique<GL_shader>();
-  gl_shader->initialize();
+  gl_shaders=std::make_unique<GL_shaders>();
+  gl_shaders->initialize();
 
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glViewport(0, 0, window_width, window_height);
@@ -307,17 +307,17 @@ void EGLOut::render_once() {
   // Only render the texture if we have one (aka we have gotten at least one frame from the decoder)
   // Note that otherwise, if we render via OpenGL but the texture has no backing, nothing really happens ;)
   if(egl_frame_texture.has_valid_image){
-	gl_shader->draw_egl(egl_frame_texture.texture);
+	gl_shaders->draw_egl(egl_frame_texture.texture);
   }else if(cuda_frametexture.has_valid_image) {
-	gl_shader->draw_NV12(cuda_frametexture.textures[0],cuda_frametexture.textures[1]);
+	gl_shaders->draw_NV12(cuda_frametexture.textures[0], cuda_frametexture.textures[1]);
   }else if(yuv_420_p_sw_frame_texture.has_valid_image){
-	gl_shader->draw_YUV420P(yuv_420_p_sw_frame_texture.textures[0],
-							yuv_420_p_sw_frame_texture.textures[1],
-							yuv_420_p_sw_frame_texture.textures[2]);
+	gl_shaders->draw_YUV420P(yuv_420_p_sw_frame_texture.textures[0],
+							 yuv_420_p_sw_frame_texture.textures[1],
+							 yuv_420_p_sw_frame_texture.textures[2]);
   }
   else{
 	const auto rgb_texture=frameCount%2==0? texture_rgb_blue:texture_rgb_green;
-	gl_shader->draw_rgb(rgb_texture);
+	gl_shaders->draw_rgb(rgb_texture);
   }
   cpu_frame_time.stop();
   cpu_frame_time.printInIntervalls(std::chrono::seconds(3), false);

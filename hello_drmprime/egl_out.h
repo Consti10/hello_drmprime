@@ -38,7 +38,7 @@ extern "C" {
 #include <memory>
 #include "../common_consti/ThreadsafeQueue.hpp"
 #include "../common_consti/TimeHelper.hpp"
-#include "GL_shader.h"
+#include "GL_shaders.h"
 
 // XXX
 #include "CUDAGLInteropHelper.h"
@@ -106,7 +106,7 @@ class EGLOut {
   std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue=std::make_unique<ThreadsafeQueue<XAVFrameHolder>>();
   // Holds shaders for common video formats / upload techniques
   // Needs to be initialized on the GL thread.
-  std::unique_ptr<GL_shader> gl_shader=nullptr;
+  std::unique_ptr<GL_shaders> gl_shaders=nullptr;
   //
   std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
   void update_texture_cuda(AVFrame* frame);

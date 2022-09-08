@@ -7,7 +7,7 @@
 #include <sstream>
 #include <iostream>
 #include <cassert>
-#include "GL_shader.h"
+#include "GL_shaders.h"
 
 static const char *GlErrorString(GLenum error ){
   switch ( error ){
@@ -166,7 +166,7 @@ static GLint common_get_shader_program(const char *vertex_shader_source, const c
   return shader_program;
 }
 
-void GL_shader::initialize() {
+void GL_shaders::initialize() {
   // Shader 1
   rgba_shader.program = common_get_shader_program(vertex_shader_source_all,fragment_shader_source_RGB);
   assert(rgba_shader.program!=0);
@@ -240,7 +240,7 @@ void GL_shader::initialize() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void GL_shader::draw_rgb(GLuint texture) {
+void GL_shaders::draw_rgb(GLuint texture) {
   glUseProgram(rgba_shader.program);
   glBindTexture(GL_TEXTURE_2D, texture);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -248,7 +248,7 @@ void GL_shader::draw_rgb(GLuint texture) {
   checkGlError("Draw RGBA texture");
 }
 
-void GL_shader::draw_egl(GLuint texture) {
+void GL_shaders::draw_egl(GLuint texture) {
   glUseProgram(egl_shader.program);
   glBindTexture(GL_TEXTURE_EXTERNAL_OES,texture);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -256,7 +256,7 @@ void GL_shader::draw_egl(GLuint texture) {
   checkGlError("Draw EGL texture");
 }
 
-void GL_shader::draw_YUV420P(GLuint textureY, GLuint textureU, GLuint textureV) {
+void GL_shaders::draw_YUV420P(GLuint textureY, GLuint textureU, GLuint textureV) {
   glUseProgram(yuv_420P_shader.program);
   for(int i=0;i<3;i++){
 	glActiveTexture(GL_TEXTURE0 + i);
@@ -271,7 +271,7 @@ void GL_shader::draw_YUV420P(GLuint textureY, GLuint textureU, GLuint textureV) 
   checkGlError("Draw NV12 texture");
 }
 
-void GL_shader::draw_NV12(GLuint textureY, GLuint textureUV) {
+void GL_shaders::draw_NV12(GLuint textureY, GLuint textureUV) {
   glUseProgram(nv12_shader.program);
   for(int i=0;i<2;i++){
 	glActiveTexture(GL_TEXTURE0 + i);
