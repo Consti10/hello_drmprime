@@ -54,6 +54,8 @@ class GL_shaders {
   NV12Shader nv12_shader;
   // All shaders use the same VBO for vertex / uv coordinates
   GLuint vbo=0;
+  void beforeDrawVboSetup(GLint pos,GLint uvs);
+  void afterDrawVboCleanup(GLint pos,GLint uvs);
  public:
   void initialize();
   // "normal" RGB(A) texture
