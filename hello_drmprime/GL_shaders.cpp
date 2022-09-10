@@ -271,11 +271,11 @@ void GL_shaders::draw_YUV420P(GLuint textureY, GLuint textureU, GLuint textureV)
 	if(i==2)texture=textureV;
 	glBindTexture(GL_TEXTURE_2D,texture);
   }
-  beforeDrawVboSetup(egl_shader.pos,egl_shader.uvs);
+  beforeDrawVboSetup(yuv_420P_shader.pos,yuv_420P_shader.uvs);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  afterDrawVboCleanup(egl_shader.pos,egl_shader.uvs);
+  afterDrawVboCleanup(yuv_420P_shader.pos,yuv_420P_shader.uvs);
   glBindTexture(GL_TEXTURE_2D, 0);
-  checkGlError("Draw NV12 texture");
+  checkGlError("Draw YUV420 texture");
 }
 
 void GL_shaders::draw_NV12(GLuint textureY, GLuint textureUV) {
