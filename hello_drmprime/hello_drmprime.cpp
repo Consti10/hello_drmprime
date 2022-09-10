@@ -324,7 +324,7 @@ int main(int argc, char *argv[]){
 		print_av_hwdevice_types();
 		print_codecs_h264_h265_mjpeg();
 		// Quite nice for development !
-	  	av_log_set_level(AV_LOG_DEBUG);
+	  	//av_log_set_level(AV_LOG_DEBUG);
     }
 
 	if(mXOptions.render_mode==0 || mXOptions.render_mode==1 || mXOptions.render_mode==2){

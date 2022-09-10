@@ -262,6 +262,7 @@ void GL_shaders::draw_egl(GLuint texture) {
 }
 
 void GL_shaders::draw_YUV420P(GLuint textureY, GLuint textureU, GLuint textureV) {
+  checkGlError("B Draw YUV420 texture");
   glUseProgram(yuv_420P_shader.program);
   for(int i=0;i<3;i++){
 	glActiveTexture(GL_TEXTURE0 + i);
