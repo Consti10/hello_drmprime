@@ -341,9 +341,15 @@ int main(int argc, char *argv[]){
 
     const char * in_file=mXOptions.in_filename;
 
+	// These options are needed for using the foo.sdp (rtp streaming)
+	AVDictionary* av_dictionary=nullptr;
+	av_dict_set(&av_dictionary, "protocol_whitelist", "file,udp,rtp", 0);
+	av_dict_set_int(&av_dictionary, "stimeout", 1000000, 0);
+	av_dict_set_int(&av_dictionary, "rw_timeout", 1000000, 0);
+	av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
   	AVFormatContext *input_ctx = nullptr;
     // open the input file
-    if (avformat_open_input(&input_ctx, in_file, NULL, NULL) != 0) {
+    if (avformat_open_input(&input_ctx, in_file, NULL, &av_dictionary) != 0) {
         fprintf(stderr, "Cannot open input file '%s'\n", in_file);
         return -1;
     }
@@ -424,12 +430,12 @@ int main(int argc, char *argv[]){
 
     decoder_ctx->get_format  = get_hw_format;
 
-    if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
+    /*if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
 	  std::cerr<<"HW decoder init failed,fallback to SW decode\n";
 	  // Use SW decode as fallback ?!
 	  //return -1;
 	  wanted_hw_pix_fmt=AV_PIX_FMT_YUV420P;
-	}
+	}*/
 
     // Consti10
     decoder_ctx->thread_count = 1;
