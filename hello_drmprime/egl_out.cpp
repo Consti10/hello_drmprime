@@ -333,6 +333,10 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", src_frame->format, src_frame->pts);
 	return 0;
   }
+  if(queue->size()>10){
+	std::cerr<<"Queue has more than 10 frames, perhaps the render thread died\n";
+	return 0;
+  }
   AVFrame *frame;
   if (src_frame->format == AV_PIX_FMT_DRM_PRIME) {
 	frame = av_frame_alloc();
