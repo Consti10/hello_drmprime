@@ -113,17 +113,34 @@ void EGLOut::update_texture_yuv420p(AVFrame* frame) {
   for(int i=0;i<3;i++){
 	if(yuv_420_p_sw_frame_texture.textures[i]==0){
 	  glGenTextures(1,&yuv_420_p_sw_frame_texture.textures[i]);
+	  assert(yuv_420_p_sw_frame_texture.textures[i]>0);
 	}
 	glBindTexture(GL_TEXTURE_2D, yuv_420_p_sw_frame_texture.textures[i]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	bool use_tex_sub_image= false;
+	if(yuv_420_p_sw_frame_texture.last_width==frame->width &&
+		yuv_420_p_sw_frame_texture.last_height==frame->height){
+	  	use_tex_sub_image= true;
+	}else{
+	  yuv_420_p_sw_frame_texture.last_width=frame->width;
+	  yuv_420_p_sw_frame_texture.last_height=frame->height;
+	}
 	if(i==0){
 	  // Full Y plane
-	  glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width, frame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[0]);
+	  if(use_tex_sub_image){
+		glTexSubImage2D(GL_TEXTURE_2D,0,0,0,frame->width,frame->height,GL_LUMINANCE,GL_UNSIGNED_BYTE,frame->data[0]);
+	  }else{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width, frame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[0]);
+	  }
 	}else{
 	  // half size U,V planes
-	  glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width/2, frame->height/2, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[i]);
+	  if(use_tex_sub_image){
+		glTexSubImage2D(GL_TEXTURE_2D, 0,0,0, frame->width/2, frame->height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[i]);
+	  } else{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width/2, frame->height/2, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[i]);
+	  }
 	}
 	glBindTexture(GL_TEXTURE_2D,0);
   }
@@ -252,6 +269,22 @@ bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& e
 //https://registry.khronos.org/OpenGL/extensions/NV/NV_vdpau_interop.txt
 void EGLOut::update_texture_vdpau(AVFrame* hw_frame) {
   assert(hw_frame);
+  std::cerr<<"Update_texture_vdpau:"<<av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"unimplemented\n";
+  print_hwframe_transfer_formats(hw_frame->hw_frames_ctx);
+  AVFrame* sw_frame=av_frame_alloc();
+  assert(sw_frame);
+  sw_frame->format=AV_PIX_FMT_YUV420P;
+  av_hframe_transfer_data.start();
+  if (av_hwframe_transfer_data(sw_frame, hw_frame, 0) !=0) {
+	fprintf(stderr, "Error transferring the data to system memory\n");
+	av_frame_free(&sw_frame);
+	av_frame_free(&hw_frame);
+	return;
+  }
+  av_hframe_transfer_data.stop();
+  av_hframe_transfer_data.printInIntervalls(std::chrono::seconds(3), false);
+  update_texture_yuv420p(sw_frame);
+  //av_frame_free(&sw_frame);
   av_frame_free(&hw_frame);
 }
 
@@ -265,6 +298,8 @@ void EGLOut::update_texture(AVFrame *hw_frame) {
 	update_texture_cuda(hw_frame);
   }else if(hw_frame->format==AV_PIX_FMT_YUV420P){
 	update_texture_yuv420p(hw_frame);
+  }else if(hw_frame->format==AV_PIX_FMT_VDPAU){
+	update_texture_vdpau(hw_frame);
   }
   else{
 	std::cerr<<"Unimplemented to texture:"<<av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"\n";

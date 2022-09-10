@@ -65,6 +65,9 @@ struct YUV420PSwFrameTexture{
   //AVFrame* av_frame=nullptr;
   GLuint textures[3]={0,0,0};
   bool has_valid_image=false;
+  // Allows us t use glTextSubImaage instead
+  int last_width=-1;
+  int last_height=-1;
 };
 
 
@@ -128,6 +131,8 @@ class EGLOut {
   // Does NOT include GL rendering time !
   Chronometer cpu_frame_time{"CPU frame time"};
   AvgCalculator avg_delay_before_display_queue{"Delay before display queue"};
+  //
+  Chronometer av_hframe_transfer_data{"AV HWFrame transfer data"};
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
