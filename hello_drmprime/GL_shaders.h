@@ -57,6 +57,8 @@ class GL_shaders {
   void beforeDrawVboSetup(GLint pos,GLint uvs);
   void afterDrawVboCleanup(GLint pos,GLint uvs);
  public:
+  static void checkGlError(const std::string& caller);
+  //
   void initialize();
   // "normal" RGB(A) texture
   void draw_rgb(GLuint texture);

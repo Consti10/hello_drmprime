@@ -402,9 +402,9 @@ int main(int argc, char *argv[]){
 		//wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
 	  	//wanted_hw_pix_fmt = AV_PIX_FMT_CUDA;
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
-	  	//wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
+	  	wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
 	  	//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
-		wanted_hw_pix_fmt = AV_PIX_FMT_VDPAU;
+		//wanted_hw_pix_fmt = AV_PIX_FMT_VDPAU;
     }
 
     if (!(decoder_ctx = avcodec_alloc_context3(decoder))){

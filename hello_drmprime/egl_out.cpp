@@ -115,6 +115,7 @@ void EGLOut::update_texture_yuv420p(AVFrame* frame) {
 	  glGenTextures(1,&yuv_420_p_sw_frame_texture.textures[i]);
 	  assert(yuv_420_p_sw_frame_texture.textures[i]>0);
 	}
+	GL_shaders::checkGlError("Xupload YUV420P");
 	glBindTexture(GL_TEXTURE_2D, yuv_420_p_sw_frame_texture.textures[i]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -122,7 +123,7 @@ void EGLOut::update_texture_yuv420p(AVFrame* frame) {
 	bool use_tex_sub_image= false;
 	if(yuv_420_p_sw_frame_texture.last_width==frame->width &&
 		yuv_420_p_sw_frame_texture.last_height==frame->height){
-	  	use_tex_sub_image= true;
+	  	//use_tex_sub_image= true;
 	}else{
 	  yuv_420_p_sw_frame_texture.last_width=frame->width;
 	  yuv_420_p_sw_frame_texture.last_height=frame->height;
@@ -146,6 +147,7 @@ void EGLOut::update_texture_yuv420p(AVFrame* frame) {
   }
   yuv_420_p_sw_frame_texture.has_valid_image= true;
   av_frame_free(&frame);
+  GL_shaders::checkGlError("upload YUV420P");
 }
 
 void EGLOut::update_texture_cuda(AVFrame *frame) {

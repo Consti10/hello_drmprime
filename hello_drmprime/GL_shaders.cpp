@@ -23,7 +23,7 @@ static const char *GlErrorString(GLenum error ){
 	default: return "unknown";
   }
 }
-static void checkGlError(const std::string& caller) {
+ void GL_shaders::checkGlError(const std::string& caller) {
   GLenum error;
   std::stringstream ss;
   ss<<"GLError:"<<caller.c_str();
