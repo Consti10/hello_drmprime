@@ -82,6 +82,7 @@ class XAVFrameHolder{
 
 // Use " export DISPLAY=:0 " for ssh
 // Needs to be run with X server running (at least for now), otherwise glfw cannot create a OpenGL window.
+// Nice tool: https://www.vsynctester.com/
 class EGLOut {
  public:
   EGLOut(int width,int height);
