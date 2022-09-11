@@ -77,9 +77,9 @@ target_link_libraries(hello_drmprime
 		-lavcodec -lavutil -lavformat -ldrm -lpthread -lGLESv2 -lglfw -lEGL #-lcuda
 		)
 
-find_package(CUDA 9.0 REQUIRED)
-target_link_libraries(hello_drmprime ${CUDA_LIBRARIES})
+#find_package(CUDA 9.0 REQUIRED)
+#target_link_libraries(hello_drmprime ${CUDA_LIBRARIES})
 
-find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIRS})
-target_link_libraries(hello_drmprime ${SDL2_LIBRARIES})
+#find_package(SDL2 REQUIRED)
+#include_directories(${SDL2_INCLUDE_DIRS})
+#target_link_libraries(hello_drmprime ${SDL2_LIBRARIES})
