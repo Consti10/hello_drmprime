@@ -58,7 +58,7 @@ class GL_shaders {
   void afterDrawVboCleanup(GLint pos,GLint uvs);
  public:
   static void checkGlError(const std::string& caller);
-  //
+  // needs to be called on the OpenGL thread and before the first use of any draw_XXX calls
   void initialize();
   // "normal" RGB(A) texture
   void draw_rgb(GLuint texture);
