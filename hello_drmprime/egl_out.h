@@ -137,6 +137,8 @@ class EGLOut {
   // (including any conversions when they are done in the GL loop).
   // Does NOT include GL rendering time !
   Chronometer cpu_frame_time{"CPU frame time"};
+  Chronometer cpu_swap_time{"CPU swap time"};
+  Chronometer cpu_glclear_time{"CPU glClear time"};
   AvgCalculator avg_delay_before_display_queue{"Delay before display queue"};
   //
   Chronometer av_hframe_transfer_data{"AV HWFrame transfer data"};
