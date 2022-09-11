@@ -80,8 +80,12 @@ void EGLOut::initializeWindowRender() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
   //glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  //window = glfwCreateWindow(window_width, window_height, __FILE__,glfwGetPrimaryMonitor(), NULL);
-  window = glfwCreateWindow(window_width, window_height, __FILE__, nullptr, nullptr);
+  //window = glfwCreateWindow(window_width, window_height, __FILE__, nullptr, nullptr);
+  const auto monitor=glfwGetPrimaryMonitor();
+  const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+  window = glfwCreateWindow(mode->width,mode->height,__FILE__,monitor, nullptr);
+  window_width=mode->width;
+  window_height=mode->height;
 
   glfwMakeContextCurrent(window);
 
@@ -100,8 +104,8 @@ void EGLOut::initializeWindowRender() {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glViewport(0, 0, window_width, window_height);
 
-  create_rgba_texture(texture_rgb_green, createColor(1,255));
-  create_rgba_texture(texture_rgb_blue, createColor(2,255));
+  create_rgba_texture(texture_rgb_green, create_pixel_rgba(0,255,0,255));
+  create_rgba_texture(texture_rgb_blue, create_pixel_rgba(0,0,255,255));
   //
   /*if(SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE)){
 	std::cout<<"SDL init failed\n";

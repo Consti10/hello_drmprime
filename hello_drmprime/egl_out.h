@@ -82,7 +82,7 @@ class XAVFrameHolder{
 
 // Use " export DISPLAY=:0 " for ssh
 // Needs to be run with X server running (at least for now), otherwise glfw cannot create a OpenGL window.
-// Nice tool: https://www.vsynctester.com/
+// Nice tool: https://www.vsynctester.com/https
 class EGLOut {
  public:
   EGLOut(int width,int height);
@@ -107,8 +107,8 @@ class EGLOut {
  private:
   std::unique_ptr<std::thread> render_thread;
   bool terminate=false;
-  const int window_width;
-  const int window_height;
+  int window_width;
+  int window_height;
   //
   GLFWwindow* window= nullptr;
   // always called with the OpenGL context bound.

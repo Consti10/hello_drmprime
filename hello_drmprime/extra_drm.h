@@ -43,6 +43,17 @@ static int XdrmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
     return XDRM_IOCTL(fd, DRM_IOCTL_MODE_SETPLANE, &s);
 }
 
+static uint32_t create_pixel_rgba(uint8_t r,uint8_t g,uint8_t b,uint8_t a){
+  uint8_t rgba[4];
+  rgba[0]=r;
+  rgba[1]=g;
+  rgba[2]=b;
+  rgba[3]=a;
+  uint32_t ret;
+  memcpy(&ret,rgba,4);
+  return ret;
+}
+
 // --------------------------------------------------- from drm-howto ---------------------------------------------------
 // returns fully red,green,blue color alternating and wrapping around
 static uint32_t createColor(const int idx,const uint8_t alpha=50){
@@ -62,15 +73,7 @@ static uint32_t createColor(const int idx,const uint8_t alpha=50){
 	b=255;
   }
   //const uint32_t rgb=(r << 16) | (g << 8) | b;
-  //return rgb;
-  uint8_t rgba[4];
-  rgba[0]=r;
-  rgba[1]=g;
-  rgba[2]=b;
-  rgba[3]=alpha;
-  uint32_t ret;
-  memcpy(&ret,rgba,4);
-  return ret;
+  return create_pixel_rgba(r,g,b,alpha);
 }
 
 static inline void memset32_loop(uint32_t* dest,const uint32_t value,int num){
