@@ -211,6 +211,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,AVPacket *pack
             //MLOGD<<"Frame pts:"<<frame->pts<<" Set to:"<<now<<"\n";
             //frame->pts=now;
             frame->pts=beforeFeedFrameUs;
+		  	std::cout<<"Got frame format:"<<av_get_pix_fmt_name((AVPixelFormat)frame->format)<<"\n";
             // display frame
 			if(drm_prime_out!= nullptr){
 			  drm_prime_out->queue_new_frame_for_display(frame);
