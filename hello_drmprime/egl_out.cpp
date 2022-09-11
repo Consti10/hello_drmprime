@@ -3,27 +3,10 @@
 //
 
 #include "egl_out.h"
-#include "ffmpeg_workaround_api_version.h"
+#include "ffmpeg_workaround_api_version.hpp"
 
 #include <cassert>
 #include "extra_drm.h"
-
-static void print_hwframe_transfer_formats(AVBufferRef *hwframe_ctx){
-  enum AVPixelFormat *formats;
-  const auto err = av_hwframe_transfer_get_formats(hwframe_ctx, AV_HWFRAME_TRANSFER_DIRECTION_FROM, &formats, 0);
-  if (err < 0) {
-	std::cout<<"av_hwframe_transfer_get_formats error\n";
-	return;
-  }
-  std::stringstream ss;
-  ss<<"Supported transfers:";
-  for (int i = 0; formats[i] != AV_PIX_FMT_NONE; i++) {
-	ss<<i<<":"<<safe_av_get_pix_fmt_name(formats[i])<<",";
-  }
-  ss<<"\n";
-  std::cout<<ss.str();
-  av_freep(&formats);
-}
 
 static EGLint texgen_attrs[] = {
 	EGL_DMA_BUF_PLANE0_FD_EXT,
@@ -80,12 +63,12 @@ void EGLOut::initializeWindowRender() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
   //glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  //window = glfwCreateWindow(window_width, window_height, __FILE__, nullptr, nullptr);
-  const auto monitor=glfwGetPrimaryMonitor();
+  window = glfwCreateWindow(window_width, window_height, __FILE__, nullptr, nullptr);
+  /*const auto monitor=glfwGetPrimaryMonitor();
   const GLFWvidmode* mode = glfwGetVideoMode(monitor);
   window = glfwCreateWindow(mode->width,mode->height,__FILE__,monitor, nullptr);
   window_width=mode->width;
-  window_height=mode->height;
+  window_height=mode->height;*/
 
   glfwMakeContextCurrent(window);
 
@@ -384,7 +367,6 @@ void EGLOut::render_once() {
 
 int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
   assert(src_frame);
-  if(true)return 0;
   //std::cout<<"DRMPrimeOut::drmprime_out_display "<<src_frame->width<<"x"<<src_frame->height<<"\n";
   if ((src_frame->flags & AV_FRAME_FLAG_CORRUPT) != 0) {
 	fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", src_frame->format, src_frame->pts);

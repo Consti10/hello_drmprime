@@ -71,40 +71,13 @@ extern "C" {
 
 #include "MMapFrame.h"
 #include "SaveFramesToFile.hpp"
-#include "ffmpeg_workaround_api_version.h"
+#include "ffmpeg_workaround_api_version.hpp"
 
 static enum AVPixelFormat wanted_hw_pix_fmt;
 
 static AvgCalculator avgDecodeTime{"DecodeTime"};
 static Chronometer mmapBuffer{"mmapBuffer"};
 static Chronometer copyMmappedBuffer{"copyMmappedBuffer"};
-
-static void print_av_hwdevice_types(){
-  std::stringstream ss;
-  AVHWDeviceType tmp_type=AV_HWDEVICE_TYPE_NONE;
-  ss<< "Available HW device types:";
-  while((tmp_type = av_hwdevice_iterate_types(tmp_type)) != AV_HWDEVICE_TYPE_NONE){
-	ss<<" "<<safe_av_hwdevice_get_type_name(tmp_type);
-  }
-  ss<<"\n";
-  fprintf(stdout, "%s",ss.str().c_str());
-}
-
-static std::string all_formats_to_string(const enum AVPixelFormat *pix_fmts){
-  std::stringstream ss;
-  ss<<"PixelFormats:[";
-  if(pix_fmts== nullptr){
-	ss<<"none]";
-	return ss.str();
-  }
-  for(int i=0;;i++){
-	auto tmp=pix_fmts[i];
-	if(tmp==AV_PIX_FMT_NONE)break;
-	ss<<safe_av_get_pix_fmt_name(tmp)<<",";
-  }
-  ss<<"]";
-  return ss.str();
-}
 
 static void print_codecs_h264_h265_mjpeg(){
   void *iter = NULL;
@@ -346,8 +319,8 @@ int main(int argc, char *argv[]){
 	// These options are needed for using the foo.sdp (rtp streaming)
 	AVDictionary* av_dictionary=nullptr;
 	av_dict_set(&av_dictionary, "protocol_whitelist", "file,udp,rtp", 0);
-	av_dict_set_int(&av_dictionary, "stimeout", 1000000, 0);
-	av_dict_set_int(&av_dictionary, "rw_timeout", 1000000, 0);
+	/*av_dict_set_int(&av_dictionary, "stimeout", 1000000, 0);
+	av_dict_set_int(&av_dictionary, "rw_timeout", 1000000, 0);*/
 	av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
   	AVFormatContext *input_ctx = nullptr;
     // open the input file
@@ -378,11 +351,12 @@ int main(int argc, char *argv[]){
 	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", safe_av_hwdevice_get_type_name(kAvhwDeviceType).c_str());
     if (decoder->id == AV_CODEC_ID_H264) {
 	    std::cout<<"H264 decode\n";
-        if ((decoder = avcodec_find_decoder_by_name("h264_v4l2m2m")) == NULL) {
+        /*if ((decoder = avcodec_find_decoder_by_name("h264_v4l2m2m")) == NULL) {
             fprintf(stderr, "Cannot find the h264 v4l2m2m decoder\n");
             return -1;
         }
-	  	wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
+	  	wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;*/
+		wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
     }
     else {
 	  	assert(decoder->id==AV_CODEC_ID_H265);
@@ -408,10 +382,10 @@ int main(int argc, char *argv[]){
             }
         }
 
-		wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
+		//wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
 	  	//wanted_hw_pix_fmt = AV_PIX_FMT_CUDA;
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
-	  	//wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
+	  	wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
 	  	//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VDPAU;
     }
@@ -434,12 +408,12 @@ int main(int argc, char *argv[]){
 
     decoder_ctx->get_format  = get_hw_format;
 
-    if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
+    /*if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
 	  std::cerr<<"HW decoder init failed,fallback to SW decode\n";
 	  // Use SW decode as fallback ?!
 	  //return -1;
 	  wanted_hw_pix_fmt=AV_PIX_FMT_YUV420P;
-	}
+	}*/
 
     // Consti10
     decoder_ctx->thread_count = 1;
