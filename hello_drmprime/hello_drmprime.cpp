@@ -332,6 +332,7 @@ int main(int argc, char *argv[]){
 	  drm_prime_out = new DRMPrimeOut(mXOptions.render_mode,mXOptions.drm_add_dummy_overlay,mXOptions.use_page_flip_on_second_frame);
 	}else {
 	  egl_out=new EGLOut(1280,720);
+	  egl_out->wait_until_ready();
 	}
 
 	std::unique_ptr<SaveFramesToFile> save_frames_to_file=nullptr;

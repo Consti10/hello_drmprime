@@ -92,6 +92,13 @@ class EGLOut {
    * where it is then picked up by the render thread.
 	*/
   int queue_new_frame_for_display(struct AVFrame * src_frame);
+  // Set to true when the window and OpenGL context creation is finished (we can accept frames)
+  bool render_ready=false;
+  void wait_until_ready(){
+	while (!render_ready) {
+	  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	}
+  }
  private:
   void initializeWindowRender();
   void render_once();

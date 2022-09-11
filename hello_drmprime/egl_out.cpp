@@ -317,6 +317,7 @@ void EGLOut::update_texture(AVFrame *hw_frame) {
 }
 
 void EGLOut::render_once() {
+  render_ready= true;
   cpu_frame_time.start();
   if(frame_delta_chrono== nullptr){
 	frame_delta_chrono=std::make_unique<Chronometer>("FrameDelta");
