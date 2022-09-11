@@ -192,7 +192,7 @@ void EGLOut::update_texture_cuda(AVFrame *frame) {
   //MLOGD<<"CUDA memcpy:"<<cuda_memcpy_time.getAvgReadable()<<"\n";
   av_frame_free(&frame);
 #else
-	//av_frame_free(&frame);
+  std::cerr<<"Compile with CUDA\n";
 #endif
 }
 
@@ -378,9 +378,14 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", src_frame->format, src_frame->pts);
 	return 0;
   }
-  if(queue->size()>4){
+  std::cerr<<"Queue size:"<<queue->size()<<"\n";
+  if(queue->size()>=4){
 	std::cerr<<"Queue has more than X frames, perhaps the render thread died\n";
-	return 0;
+	auto all=queue->getAllAndClear();
+	for(auto& tmp:all){
+	  av_frame_free(&tmp->frame);
+	}
+	//return 0;
   }
   AVFrame *frame;
   if (src_frame->format == AV_PIX_FMT_DRM_PRIME) {
