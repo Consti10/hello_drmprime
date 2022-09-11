@@ -41,8 +41,8 @@ extern "C" {
 #include "GL_shaders.h"
 
 // XXX
-#include "CUDAGLInteropHelper.h"
-#include <SDL.h>
+//#include "CUDAGLInteropHelper.h"
+//#include <SDL.h>
 
 struct EGLFrameTexture{
   // I think we need to keep the av frame reference around as long as we use the generated egl texture in opengl.
@@ -111,7 +111,7 @@ class EGLOut {
   // Needs to be initialized on the GL thread.
   std::unique_ptr<GL_shaders> gl_shaders=nullptr;
   //
-  std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
+  //std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
   void update_texture_cuda(AVFrame* frame);
   void update_texture_yuv420p(AVFrame* frame);
   void update_texture_vdpau(AVFrame* frame);

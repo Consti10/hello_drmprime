@@ -156,7 +156,7 @@ void EGLOut::update_texture_yuv420p(AVFrame* frame) {
 }
 
 void EGLOut::update_texture_cuda(AVFrame *frame) {
-  assert(frame);
+  /*assert(frame);
   assert(frame->format==AV_PIX_FMT_CUDA);
   MLOGD<<"update_egl_texture_cuda\n";
   // We can now also give the frame back to av, since we are updating to a new one.
@@ -194,10 +194,12 @@ void EGLOut::update_texture_cuda(AVFrame *frame) {
   cuda_memcpy_time.start();
   if(m_cuda_gl_interop_helper->copyCudaFrameToTextures(frame)){
 	cuda_frametexture.has_valid_image= true;
+  }else{
+	cuda_frametexture.has_valid_image=false;
   }
   cuda_memcpy_time.stop();
   // I don't think we can measure CUDA memcpy time
-  //MLOGD<<"CUDA memcpy:"<<cuda_memcpy_time.getAvgReadable()<<"\n";
+  //MLOGD<<"CUDA memcpy:"<<cuda_memcpy_time.getAvgReadable()<<"\n";*/
 }
 
 // Also https://code.videolan.org/videolan/vlc/-/blob/master/modules/video_output/opengl/importer.c#L414-417
@@ -275,7 +277,7 @@ bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& e
 //https://registry.khronos.org/OpenGL/extensions/NV/NV_vdpau_interop.txt
 void EGLOut::update_texture_vdpau(AVFrame* hw_frame) {
   assert(hw_frame);
-  std::cerr<<"Update_texture_vdpau:"<<av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"unimplemented\n";
+  std::cerr<<"Update_texture_vdpau:"<<av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"slow\n";
   print_hwframe_transfer_formats(hw_frame->hw_frames_ctx);
   AVFrame* sw_frame=av_frame_alloc();
   assert(sw_frame);
