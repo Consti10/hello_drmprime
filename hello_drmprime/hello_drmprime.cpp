@@ -333,7 +333,6 @@ int main(int argc, char *argv[]){
 	}else {
 	  egl_out=new EGLOut(1280,720);
 	  egl_out->wait_until_ready();
-	  std::this_thread::sleep_for(std::chrono::seconds(10));
 	}
 
 	std::unique_ptr<SaveFramesToFile> save_frames_to_file=nullptr;
