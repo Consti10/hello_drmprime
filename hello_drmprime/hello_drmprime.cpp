@@ -394,6 +394,10 @@ int main(int argc, char *argv[]){
 	  std::cout<<"Codec mjpeg\n";
 	  //wanted_hw_pix_fmt=AV_PIX_FMT_YUVJ422P;
 	  wanted_hw_pix_fmt=AV_PIX_FMT_CUDA;
+	}else{
+	  std::cerr<<"We only do h264,h265 and mjpeg in this project\n";
+	  avformat_close_input(&input_ctx);
+	  return 0;
 	}
 
     if (!(decoder_ctx = avcodec_alloc_context3(decoder))){
