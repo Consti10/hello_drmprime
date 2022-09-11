@@ -200,7 +200,7 @@ void EGLOut::update_texture_cuda(AVFrame *frame) {
   //MLOGD<<"CUDA memcpy:"<<cuda_memcpy_time.getAvgReadable()<<"\n";
 }
 
-
+// Also https://code.videolan.org/videolan/vlc/-/blob/master/modules/video_output/opengl/importer.c#L414-417
 bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& egl_frame_texture, AVFrame* frame){
   assert(frame);
   assert(frame->format==AV_PIX_FMT_DRM_PRIME);
