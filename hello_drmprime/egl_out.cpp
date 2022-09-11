@@ -145,14 +145,15 @@ void EGLOut::update_texture_yuv420p(AVFrame* frame) {
 }
 
 void EGLOut::update_texture_cuda(AVFrame *frame) {
-  /*assert(frame);
+#ifdef X_HAS_LIB_CUDA
+  assert(frame);
   assert(frame->format==AV_PIX_FMT_CUDA);
   MLOGD<<"update_egl_texture_cuda\n";
   // We can now also give the frame back to av, since we are updating to a new one.
-  if(cuda_frametexture.av_frame!= nullptr){
+  /*if(cuda_frametexture.av_frame!= nullptr){
 	av_frame_free(&cuda_frametexture.av_frame);
   }
-  cuda_frametexture.av_frame=frame;
+  cuda_frametexture.av_frame=frame;*/
   if(m_cuda_gl_interop_helper== nullptr){
 	AVHWDeviceContext* tmp=((AVHWFramesContext*)frame->hw_frames_ctx->data)->device_ctx;
 	AVCUDADeviceContext* avcuda_device_context=(AVCUDADeviceContext*)tmp->hwctx;
@@ -188,7 +189,11 @@ void EGLOut::update_texture_cuda(AVFrame *frame) {
   }
   cuda_memcpy_time.stop();
   // I don't think we can measure CUDA memcpy time
-  //MLOGD<<"CUDA memcpy:"<<cuda_memcpy_time.getAvgReadable()<<"\n";*/
+  //MLOGD<<"CUDA memcpy:"<<cuda_memcpy_time.getAvgReadable()<<"\n";
+  av_frame_free(&frame);
+#else
+	//av_frame_free(&frame);
+#endif
 }
 
 // Also https://code.videolan.org/videolan/vlc/-/blob/master/modules/video_output/opengl/importer.c#L414-417
@@ -373,8 +378,8 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", src_frame->format, src_frame->pts);
 	return 0;
   }
-  if(queue->size()>10){
-	std::cerr<<"Queue has more than 10 frames, perhaps the render thread died\n";
+  if(queue->size()>4){
+	std::cerr<<"Queue has more than X frames, perhaps the render thread died\n";
 	return 0;
   }
   AVFrame *frame;

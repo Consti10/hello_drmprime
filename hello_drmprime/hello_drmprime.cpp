@@ -346,9 +346,9 @@ int main(int argc, char *argv[]){
     const int video_stream = ret;
 
 	//const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
-	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
+	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
-	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
+	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VDPAU;
 	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", safe_av_hwdevice_get_type_name(kAvhwDeviceType).c_str());
     if (decoder->id == AV_CODEC_ID_H264) {
@@ -392,7 +392,8 @@ int main(int argc, char *argv[]){
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VDPAU;
     }else if(decoder->id==AV_CODEC_ID_MJPEG){
 	  std::cout<<"Codec mjpeg\n";
-	  wanted_hw_pix_fmt=AV_PIX_FMT_YUVJ422P;
+	  //wanted_hw_pix_fmt=AV_PIX_FMT_YUVJ422P;
+	  wanted_hw_pix_fmt=AV_PIX_FMT_CUDA;
 	}
 
     if (!(decoder_ctx = avcodec_alloc_context3(decoder))){
@@ -413,12 +414,12 @@ int main(int argc, char *argv[]){
 
     decoder_ctx->get_format  = get_hw_format;
 
-    /*if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
+    if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
 	  std::cerr<<"HW decoder init failed,fallback to SW decode\n";
 	  // Use SW decode as fallback ?!
 	  //return -1;
 	  wanted_hw_pix_fmt=AV_PIX_FMT_YUV420P;
-	}*/
+	}
 
     // Consti10
     decoder_ctx->thread_count = 1;

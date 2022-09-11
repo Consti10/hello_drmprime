@@ -3,7 +3,6 @@
 //
 
 #include "CUDAGLInteropHelper.h"
-#include <SDL.h>
 
 extern "C" {
 #include <GLFW/glfw3.h>

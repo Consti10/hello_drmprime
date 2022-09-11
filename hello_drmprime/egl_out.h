@@ -40,8 +40,11 @@ extern "C" {
 #include "../common_consti/TimeHelper.hpp"
 #include "GL_shaders.h"
 
+#define X_HAS_LIB_CUDA
+#ifdef X_HAS_LIB_CUDA
+#include "CUDAGLInteropHelper.h"
+#endif
 // XXX
-//#include "CUDAGLInteropHelper.h"
 //#include <SDL.h>
 
 struct EGLFrameTexture{
@@ -55,7 +58,8 @@ struct EGLFrameTexture{
 };
 
 struct CUDAFrameTexture{
-  AVFrame* av_frame=nullptr;
+  // Since we memcpy with cuda, we do not need to keep the av_frame around
+  //AVFrame* av_frame=nullptr;
   GLuint textures[2]={0,0};
   bool has_valid_image=false;
 };
@@ -119,7 +123,9 @@ class EGLOut {
   // Needs to be initialized on the GL thread.
   std::unique_ptr<GL_shaders> gl_shaders=nullptr;
   //
-  //std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
+#ifdef X_HAS_LIB_CUDA
+  std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
+#endif
   void update_texture_cuda(AVFrame* frame);
   void update_texture_yuv420p(AVFrame* frame);
   void update_texture_vdpau(AVFrame* frame);
