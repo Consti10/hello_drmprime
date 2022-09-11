@@ -406,9 +406,9 @@ int main(int argc, char *argv[]){
         }
 
 		//wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
-	  	wanted_hw_pix_fmt = AV_PIX_FMT_CUDA;
+	  	//wanted_hw_pix_fmt = AV_PIX_FMT_CUDA;
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
-	  	//wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
+	  	wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
 	  	//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VDPAU;
     }
@@ -430,12 +430,12 @@ int main(int argc, char *argv[]){
 
     decoder_ctx->get_format  = get_hw_format;
 
-    if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
+    /*if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
 	  std::cerr<<"HW decoder init failed,fallback to SW decode\n";
 	  // Use SW decode as fallback ?!
 	  //return -1;
 	  wanted_hw_pix_fmt=AV_PIX_FMT_YUV420P;
-	}
+	}*/
 
     // Consti10
     decoder_ctx->thread_count = 1;

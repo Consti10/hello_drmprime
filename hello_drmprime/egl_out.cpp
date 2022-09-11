@@ -150,6 +150,7 @@ void EGLOut::update_texture_yuv420p(AVFrame* frame) {
 	glBindTexture(GL_TEXTURE_2D,0);
   }
   yuv_420_p_sw_frame_texture.has_valid_image= true;
+  std::cout<<"Colorspace:"<<av_color_space_name(frame->colorspace)<<"\n";
   av_frame_free(&frame);
   GL_shaders::checkGlError("upload YUV420P");
 }
