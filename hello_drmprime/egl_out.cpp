@@ -80,8 +80,8 @@ void EGLOut::initializeWindowRender() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
   //glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  //window = glfwCreateWindow(window_width, window_height, __FILE__,glfwGetPrimaryMonitor(), NULL);
-  window = glfwCreateWindow(window_width, window_height, __FILE__, nullptr, nullptr);
+  window = glfwCreateWindow(window_width, window_height, __FILE__,glfwGetPrimaryMonitor(), NULL);
+  //window = glfwCreateWindow(window_width, window_height, __FILE__, nullptr, nullptr);
 
   glfwMakeContextCurrent(window);
 
