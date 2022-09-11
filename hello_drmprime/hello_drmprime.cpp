@@ -370,9 +370,9 @@ int main(int argc, char *argv[]){
     const int video_stream = ret;
 
 	//const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
-	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
+	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
-	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
+	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VDPAU;
 	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
     if (decoder->id == AV_CODEC_ID_H264) {
