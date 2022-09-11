@@ -84,7 +84,7 @@ static void print_av_hwdevice_types(){
   AVHWDeviceType tmp_type=AV_HWDEVICE_TYPE_NONE;
   ss<< "Available HW device types:";
   while((tmp_type = av_hwdevice_iterate_types(tmp_type)) != AV_HWDEVICE_TYPE_NONE){
-	ss<<" "<<av_hwdevice_get_type_name(tmp_type);
+	ss<<" "<<safe_av_hwdevice_get_type_name(tmp_type);
   }
   ss<<"\n";
   fprintf(stdout, "%s",ss.str().c_str());
@@ -100,7 +100,7 @@ static std::string all_formats_to_string(const enum AVPixelFormat *pix_fmts){
   for(int i=0;;i++){
 	auto tmp=pix_fmts[i];
 	if(tmp==AV_PIX_FMT_NONE)break;
-	ss<<av_get_pix_fmt_name(tmp)<<",";
+	ss<<safe_av_get_pix_fmt_name(tmp)<<",";
   }
   ss<<"]";
   return ss.str();
@@ -141,7 +141,7 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,const enum AVPixelFo
 	std::stringstream supported_formats;
     for (p = pix_fmts; *p != -1; p++) {
 	    const int tmp=(int)*p;
-	  	supported_formats<<av_get_pix_fmt_name(*p)<<"("<<tmp<<"),";
+	  	supported_formats<<safe_av_get_pix_fmt_name(*p)<<"("<<tmp<<"),";
         if (*p == wanted_hw_pix_fmt){
 		  // matches what we want
 		  ret=*p;
@@ -211,7 +211,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,AVPacket *pack
             //MLOGD<<"Frame pts:"<<frame->pts<<" Set to:"<<now<<"\n";
             //frame->pts=now;
             frame->pts=beforeFeedFrameUs;
-		  	std::cout<<"Got frame format:"<<av_get_pix_fmt_name((AVPixelFormat)frame->format)<<"\n";
+		  	std::cout<<"Got frame format:"<<safe_av_get_pix_fmt_name((AVPixelFormat)frame->format)<<"\n";
             // display frame
 			if(drm_prime_out!= nullptr){
 			  drm_prime_out->queue_new_frame_for_display(frame);
@@ -267,7 +267,7 @@ int main(int argc, char *argv[]){
     //enum AVHWDeviceType type;
     const char * hwdev = "drm";
     DRMPrimeOut* drm_prime_out=nullptr;
-	EGLOut* egl_out=nullptr;
+	std::unique_ptr<EGLOut> egl_out=nullptr;
 
     Options mXOptions{};
     {
@@ -331,7 +331,7 @@ int main(int argc, char *argv[]){
 	if(mXOptions.render_mode==0 || mXOptions.render_mode==1 || mXOptions.render_mode==2){
 	  drm_prime_out = new DRMPrimeOut(mXOptions.render_mode,mXOptions.drm_add_dummy_overlay,mXOptions.use_page_flip_on_second_frame);
 	}else {
-	  egl_out=new EGLOut(1280,720);
+	  egl_out=std::make_unique<EGLOut>(1280,720);
 	  egl_out->wait_until_ready();
 	}
 
@@ -375,7 +375,7 @@ int main(int argc, char *argv[]){
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VDPAU;
-	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", av_hwdevice_get_type_name(kAvhwDeviceType));
+	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", safe_av_hwdevice_get_type_name(kAvhwDeviceType).c_str());
     if (decoder->id == AV_CODEC_ID_H264) {
 	    std::cout<<"H264 decode\n";
         if ((decoder = avcodec_find_decoder_by_name("h264_v4l2m2m")) == NULL) {
@@ -391,13 +391,14 @@ int main(int argc, char *argv[]){
             const AVCodecHWConfig *config = avcodec_get_hw_config(decoder, i);
             if (!config) {
                 fprintf(stderr, "Decoder %s does not support device type %s.\n",
-                        decoder->name, av_hwdevice_get_type_name(kAvhwDeviceType));
-                return -1;
+                        decoder->name, safe_av_hwdevice_get_type_name(kAvhwDeviceType).c_str());
+                //return -1;
+			  	break;
             }
 			std::stringstream ss;
 			ss<<"HW config "<<i<<" ";
-		  	ss<<"HW Device name: "<<av_hwdevice_get_type_name(config->device_type);
-			ss<<" PIX fmt: "<<av_get_pix_fmt_name(config->pix_fmt)<<"\n";
+		  	ss<<"HW Device name: "<<safe_av_hwdevice_get_type_name(config->device_type);
+			ss<<" PIX fmt: "<<safe_av_get_pix_fmt_name(config->pix_fmt)<<"\n";
 			std::cout<<ss.str();
 
             if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX &&
@@ -416,6 +417,7 @@ int main(int argc, char *argv[]){
     }
 
     if (!(decoder_ctx = avcodec_alloc_context3(decoder))){
+	  	std::cout<<"avcodec_alloc_context3 failed\n";
         return AVERROR(ENOMEM);
     }
 	// From moonlight-qt. However, on PI, this doesn't seem to make any difference, at least for H265 decode.
@@ -473,7 +475,7 @@ int main(int argc, char *argv[]){
                     lastFrame=std::chrono::steady_clock::now();
                 }
             }
-            ret = decode_and_wait_for_frame(decoder_ctx, &packet,drm_prime_out,egl_out);
+            ret = decode_and_wait_for_frame(decoder_ctx, &packet,drm_prime_out,egl_out.get());
             nFeedFrames++;
             const uint64_t runTimeMs=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-decodingStart).count();
             const double runTimeS=runTimeMs/1000.0f;
@@ -486,7 +488,7 @@ int main(int argc, char *argv[]){
     // flush the decoder
     packet.data = NULL;
     packet.size = 0;
-    ret = decode_and_wait_for_frame(decoder_ctx, &packet,drm_prime_out,egl_out);
+    ret = decode_and_wait_for_frame(decoder_ctx, &packet,drm_prime_out,egl_out.get());
     av_packet_unref(&packet);
 
     if (save_frames_to_file){
@@ -498,9 +500,7 @@ int main(int argc, char *argv[]){
     if(drm_prime_out!=nullptr){
         delete drm_prime_out;
     }
-	if(egl_out!= nullptr){
-	  delete egl_out;
-	}
+  	egl_out= nullptr;
 
     return 0;
 }

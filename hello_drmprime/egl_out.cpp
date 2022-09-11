@@ -18,7 +18,7 @@ static void print_hwframe_transfer_formats(AVBufferRef *hwframe_ctx){
   std::stringstream ss;
   ss<<"Supported transfers:";
   for (int i = 0; formats[i] != AV_PIX_FMT_NONE; i++) {
-	ss<<i<<":"<<av_get_pix_fmt_name(formats[i])<<",";
+	ss<<i<<":"<<safe_av_get_pix_fmt_name(formats[i])<<",";
   }
   ss<<"\n";
   std::cout<<ss.str();
@@ -279,7 +279,7 @@ bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& e
 //https://registry.khronos.org/OpenGL/extensions/NV/NV_vdpau_interop.txt
 void EGLOut::update_texture_vdpau(AVFrame* hw_frame) {
   assert(hw_frame);
-  std::cerr<<"Update_texture_vdpau:"<<av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"slow\n";
+  std::cerr<<"Update_texture_vdpau:"<<safe_av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"slow\n";
   print_hwframe_transfer_formats(hw_frame->hw_frames_ctx);
   AVFrame* sw_frame=av_frame_alloc();
   assert(sw_frame);
@@ -312,7 +312,7 @@ void EGLOut::update_texture(AVFrame *hw_frame) {
 	update_texture_vdpau(hw_frame);
   }
   else{
-	std::cerr<<"Unimplemented to texture:"<<av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"\n";
+	std::cerr<<"Unimplemented to texture:"<<safe_av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"\n";
 	print_hwframe_transfer_formats(hw_frame->hw_frames_ctx);
 	av_frame_free(&hw_frame);
   }
