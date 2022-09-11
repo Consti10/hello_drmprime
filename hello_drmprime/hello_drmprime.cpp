@@ -318,6 +318,7 @@ int main(int argc, char *argv[]){
 
 	// These options are needed for using the foo.sdp (rtp streaming)
 	// https://stackoverflow.com/questions/20538698/minimum-sdp-for-making-a-h264-rtp-stream
+	// https://stackoverflow.com/questions/16658873/how-to-minimize-the-delay-in-a-live-streaming-with-ffmpeg
 	AVDictionary* av_dictionary=nullptr;
 	av_dict_set(&av_dictionary, "protocol_whitelist", "file,udp,rtp", 0);
 	/*av_dict_set_int(&av_dictionary, "stimeout", 1000000, 0);
