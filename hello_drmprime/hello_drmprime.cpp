@@ -317,6 +317,7 @@ int main(int argc, char *argv[]){
     const char * in_file=mXOptions.in_filename;
 
 	// These options are needed for using the foo.sdp (rtp streaming)
+	// https://stackoverflow.com/questions/20538698/minimum-sdp-for-making-a-h264-rtp-stream
 	AVDictionary* av_dictionary=nullptr;
 	av_dict_set(&av_dictionary, "protocol_whitelist", "file,udp,rtp", 0);
 	/*av_dict_set_int(&av_dictionary, "stimeout", 1000000, 0);
