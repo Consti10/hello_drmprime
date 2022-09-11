@@ -274,7 +274,7 @@ public:
             lastLog=now;
             // avoid garbled output in multi thread
             std::stringstream ss;
-            ss<<(mName)<<"Avg: "<<AvgCalculator::getAvgReadable(avgOnly)<<"\n";
+            ss<<"Avg "<<(mName)<<AvgCalculator::getAvgReadable(avgOnly)<<"\n";
             std::cout<<ss.str();
             reset();
         }
