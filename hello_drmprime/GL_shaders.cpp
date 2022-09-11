@@ -222,6 +222,7 @@ void GL_shaders::initialize() {
   glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
   glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertices), sizeof(uv_coords), uv_coords);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+  checkGlError("Create VBO");
 }
 
 void GL_shaders::beforeDrawVboSetup(GLint pos, GLint uvs) {
@@ -243,9 +244,7 @@ void GL_shaders::draw_rgb(GLuint texture) {
   glBindTexture(GL_TEXTURE_2D, texture);
   glUniform1i(rgba_shader.sampler,0);
   beforeDrawVboSetup(rgba_shader.pos,rgba_shader.uvs);
-  //
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  //
   glBindTexture(GL_TEXTURE_2D, 0);
   afterDrawVboCleanup(rgba_shader.pos,rgba_shader.uvs);
   checkGlError("Draw RGBA texture");
@@ -289,9 +288,7 @@ void GL_shaders::draw_NV12(GLuint textureY, GLuint textureUV) {
 	glBindTexture(GL_TEXTURE_2D,texture);
   }
   beforeDrawVboSetup(nv12_shader.pos,nv12_shader.uvs);
-  //
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  //
   afterDrawVboCleanup(nv12_shader.pos,nv12_shader.uvs);
   glBindTexture(GL_TEXTURE_2D, 0);
   checkGlError("Draw NV12 texture");
