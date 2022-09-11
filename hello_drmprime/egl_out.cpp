@@ -319,6 +319,7 @@ void EGLOut::render_once() {
   //std::this_thread::sleep_for(std::chrono::milliseconds(100));
   // update the video frame to the most recent one
   // A bit overkill, but it was quicker to just copy paste the logic from hello_drmprime.
+  fetch_latest_frame();
   const auto allBuffers=queue->getAllAndClear();
   if(!allBuffers.empty()) {
 	const int nDroppedFrames = (int)allBuffers.size() - 1;
@@ -421,5 +422,25 @@ void EGLOut::render_thread_run() {
 	render_once();
   }
   glfwTerminate();
+}
+void EGLOut::set_codec_context(AVCodecContext *avctx) {
+  this->avctx=avctx;
+}
+
+void EGLOut::fetch_latest_frame() {
+  if(avctx== nullptr)return;
+  AVFrame *frame = nullptr;
+  if (!(frame = av_frame_alloc())) {
+	std::cerr<<"Fetch latest frame -> cannot alloc frame\n";
+	return;
+  }
+  auto ret = avcodec_receive_frame(avctx, frame);
+  if(ret==0){
+	std::cout<<"Fetch latest frame - success\n";
+	queue_new_frame_for_display(frame);
+  } else{
+	std::cout<<"Didn't get a new frame: "<<ret<<"\n";
+  }
+  av_frame_free(&frame);
 }
 

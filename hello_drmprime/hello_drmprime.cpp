@@ -193,7 +193,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,AVPacket *pack
 			  egl_out->queue_new_frame_for_display(frame);
 			}
         }else{
-            //std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";
+            std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";
 			// for some video files, the decoder does not output a frame every time a h264 frame has been fed
 			// In this case, I unblock after X seconds, but we cannot measure the decode delay by using the before-after
 			// approach. We can still measure it using the pts timestamp from av, but this one cannot necessarily be trusted 100%
@@ -360,7 +360,7 @@ int main(int argc, char *argv[]){
 	  	wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;*/
 		wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
     }
-    else {
+    else if(decoder->id==AV_CODEC_ID_H265){
 	  	assert(decoder->id==AV_CODEC_ID_H265);
 	  	std::cout<<"H265 decode\n";
         for (int i = 0;; i++) {
@@ -390,7 +390,10 @@ int main(int argc, char *argv[]){
 	  	wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
 	  	//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VDPAU;
-    }
+    }else if(decoder->id==AV_CODEC_ID_MJPEG){
+	  std::cout<<"Codec mjpeg\n";
+	  wanted_hw_pix_fmt=AV_PIX_FMT_YUVJ422P;
+	}
 
     if (!(decoder_ctx = avcodec_alloc_context3(decoder))){
 	  	std::cout<<"avcodec_alloc_context3 failed\n";
@@ -425,6 +428,9 @@ int main(int argc, char *argv[]){
         return -1;
     }
 
+	/*if(egl_out){
+	  egl_out->set_codec_context(decoder_ctx);
+	}*/
     // actual decoding and dump the raw data
     const auto decodingStart=std::chrono::steady_clock::now();
     int nFeedFrames=0;

@@ -143,6 +143,11 @@ class EGLOut {
   AvgCalculator avg_delay_before_display_queue{"Delay before display queue"};
   //
   Chronometer av_hframe_transfer_data{"AV HWFrame transfer data"};
+ public:
+  void set_codec_context(AVCodecContext *avctx);
+ private:
+  AVCodecContext* avctx=nullptr;
+  void fetch_latest_frame();
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_

@@ -32,6 +32,10 @@ static std::string safe_av_get_pix_fmt_name(enum AVPixelFormat pix_fmt){
 }
 
 static void print_hwframe_transfer_formats(AVBufferRef *hwframe_ctx){
+  if(hwframe_ctx== nullptr){
+	std::cout<<"Frame has no hwframe_ctx\n";
+	return;
+  }
   enum AVPixelFormat *formats;
   const auto err = av_hwframe_transfer_get_formats(hwframe_ctx, AV_HWFRAME_TRANSFER_DIRECTION_FROM, &formats, 0);
   if (err < 0) {
