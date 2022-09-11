@@ -372,6 +372,7 @@ void EGLOut::render_once() {
 
 int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
   assert(src_frame);
+  if(true)return 0;
   //std::cout<<"DRMPrimeOut::drmprime_out_display "<<src_frame->width<<"x"<<src_frame->height<<"\n";
   if ((src_frame->flags & AV_FRAME_FLAG_CORRUPT) != 0) {
 	fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", src_frame->format, src_frame->pts);
