@@ -101,6 +101,10 @@ void EGLOut::initializeWindowRender() {
 
   create_rgba_texture(texture_rgb_green, createColor(1,255));
   create_rgba_texture(texture_rgb_blue, createColor(2,255));
+  //
+  /*if(SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE)){
+	std::cout<<"SDL init failed\n";
+  }*/
 }
 
 // https://stackoverflow.com/questions/9413845/ffmpeg-avframe-to-opengl-texture-without-yuv-to-rgb-soft-conversion
@@ -185,7 +189,6 @@ void EGLOut::update_texture_cuda(AVFrame *frame) {
   if(fresh){
 	m_cuda_gl_interop_helper->registerTextures(cuda_frametexture.textures[0],cuda_frametexture.textures[1]);
   }
-  glBindTexture(GL_TEXTURE_2D, cuda_frametexture.textures[0]);
   Chronometer cuda_memcpy_time{"CUDA memcpy"};
   cuda_memcpy_time.start();
   if(m_cuda_gl_interop_helper->copyCudaFrameToTextures(frame)){

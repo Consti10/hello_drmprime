@@ -11,6 +11,7 @@ extern "C" {
 
 #include <cstring>
 #include <iostream>
+#include <cassert>
 
 CUDAGLInteropHelper::CUDAGLInteropHelper(AVCUDADeviceContext* context)
     : m_Funcs(nullptr),
@@ -111,6 +112,7 @@ void CUDAGLInteropHelper::unregisterTextures()
 
 bool CUDAGLInteropHelper::copyCudaFrameToTextures(AVFrame* frame)
 {
+    assert(frame->format==AV_PIX_FMT_CUDA);
     int err;
 
     if (m_Funcs == nullptr) {
