@@ -348,9 +348,9 @@ int main(int argc, char *argv[]){
     const int video_stream = ret;
 
 	//const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
-	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
+	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
-	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
+	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VDPAU;
 	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", safe_av_hwdevice_get_type_name(kAvhwDeviceType).c_str());
     if (decoder->id == AV_CODEC_ID_H264) {
@@ -360,7 +360,8 @@ int main(int argc, char *argv[]){
             return -1;
         }
 	  	wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;*/
-		wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
+	  	wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
+		//wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
     }
     else if(decoder->id==AV_CODEC_ID_H265){
 	  	assert(decoder->id==AV_CODEC_ID_H265);
@@ -394,8 +395,9 @@ int main(int argc, char *argv[]){
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VDPAU;
     }else if(decoder->id==AV_CODEC_ID_MJPEG){
 	  std::cout<<"Codec mjpeg\n";
-	  wanted_hw_pix_fmt=AV_PIX_FMT_YUVJ422P;
+	  //wanted_hw_pix_fmt=AV_PIX_FMT_YUVJ422P;
 	  //wanted_hw_pix_fmt=AV_PIX_FMT_CUDA;
+	  wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
 	}else{
 	  std::cerr<<"We only do h264,h265 and mjpeg in this project\n";
 	  avformat_close_input(&input_ctx);
@@ -423,12 +425,12 @@ int main(int argc, char *argv[]){
 	// needed for FFMPEG ?
 	//decoder_ctx->extra_hw_frames = 10;
 
-    /*if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
+    if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
 	  std::cerr<<"HW decoder init failed,fallback to SW decode\n";
 	  // Use SW decode as fallback ?!
 	  //return -1;
 	  wanted_hw_pix_fmt=AV_PIX_FMT_YUV420P;
-	}*/
+	}
 
     // Consti10
     decoder_ctx->thread_count = 1;
