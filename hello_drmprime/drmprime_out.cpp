@@ -212,21 +212,12 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 		fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
 		return -1;
 	  }
+	  xFirst= false;
+	}else{
 	  drmModeAtomicReq *req= drmModeAtomicAlloc();
 	  drmModeAtomicAddProperty(req,de->setup.planeId,DRM_MODE_OBJECT_FB,da->fb_id);
-	 if(drmModeAtomicCommit(de->drm_fd, req,DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK , NULL)!=0){
-	   std::cerr<<"Cannot perform drmModeAtomicCommit\n";
-	 }
-	}else{
-	  //Argh
-	  /*drm_mode_update_plane_fb drm_mode_update_plane_fb_x;
-	  if(XDRM_IOCTL(fd, DRM_IOCTL_MODE_UPDATE_PLANE_FB, &s)){
-		fprintf(stderr, "DRM_IOCTL_MODE_UPDATE_PLANE_FB failed: %s\n", ERRSTR);
-	  }*/
-
-	  if(drmModePageFlip(de->drm_fd,de->setup.crtcId,da->fb_id,DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_PAGE_FLIP_ASYNC, nullptr)){
-		fprintf(stderr, "drmModePageFlip failed: %s\n", ERRSTR);
-		return -1;
+	  if(drmModeAtomicCommit(de->drm_fd, req,DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK , NULL)!=0){
+		std::cerr<<"Cannot perform drmModeAtomicCommit\n";
 	  }
 	}
   	chronometerDaInitSetPlane.stop();
