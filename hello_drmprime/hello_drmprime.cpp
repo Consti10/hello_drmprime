@@ -375,6 +375,7 @@ int main(int argc, char *argv[]){
 	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", safe_av_hwdevice_get_type_name(kAvhwDeviceType).c_str());
   	print_some(decoder);
 
+	bool is_mjpeg=false;
     if (decoder->id == AV_CODEC_ID_H264) {
 	    std::cout<<"H264 decode\n";
         if ((decoder = avcodec_find_decoder_by_name("h264_v4l2m2m")) == NULL) {
@@ -419,6 +420,7 @@ int main(int argc, char *argv[]){
 	  wanted_hw_pix_fmt=AV_PIX_FMT_YUVJ422P;
 	  //wanted_hw_pix_fmt=AV_PIX_FMT_CUDA;
 	  //wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
+	  is_mjpeg= true;
 	}else{
 	  std::cerr<<"We only do h264,h265 and mjpeg in this project\n";
 	  avformat_close_input(&input_ctx);
@@ -450,6 +452,10 @@ int main(int argc, char *argv[]){
 	  std::cerr<<"HW decoder init failed,fallback to SW decode\n";
 	  // Use SW decode as fallback ?!
 	  //return -1;
+	  // H264 and H265 sw decode is always YUV420P, MJPEG seems to be always YUVJ422P;
+	  if(is_mjpeg){
+		wanted_hw_pix_fmt=AV_PIX_FMT_YUVJ422P;
+	  }
 	  wanted_hw_pix_fmt=AV_PIX_FMT_YUV420P;
 	}
 
