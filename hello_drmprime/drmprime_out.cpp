@@ -217,7 +217,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 	  drmModeAtomicReq *req= drmModeAtomicAlloc();
 	  drmModeAtomicAddProperty(req,de->setup.planeId,DRM_MODE_OBJECT_FB,da->fb_id);
 	  if(drmModeAtomicCommit(de->drm_fd, req,DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK , NULL)!=0){
-		std::cerr<<"Cannot perform drmModeAtomicCommit\n";
+		std::cerr<<"Cannot perform drmModeAtomicCommit"<<strerror(errno)<<"\n";
 	  }else{
 		std::cout<<"Performed commit\n";
 	  }
