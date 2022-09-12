@@ -470,10 +470,11 @@ void EGLOut::render_thread_run() {
   }
   glfwTerminate();
 }
-void EGLOut::set_codec_context(AVCodecContext *avctx) {
-  this->avctx=avctx;
-}
 
+// Apparently ffmpeg is not thread safe, doesn't work
+void EGLOut::set_codec_context(AVCodecContext *avctx1) {
+  this->avctx=avctx1;
+}
 void EGLOut::fetch_latest_frame() {
   if(avctx== nullptr)return;
   AVFrame *frame = nullptr;
