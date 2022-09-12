@@ -345,6 +345,7 @@ void EGLOut::render_once() {
   if(m_latest_frame!= nullptr){
 	AVFrame* new_frame=m_latest_frame;
 	m_latest_frame= nullptr;
+	m_display_stats.n_frames_rendered++;
 	// Unlock before the update function, which might take a significant amount of time.
 	latest_frame_mutex.unlock();
 	update_texture(new_frame);
@@ -395,6 +396,7 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
   if(m_latest_frame!= nullptr){
 	av_frame_free(&m_latest_frame);
 	std::cout<<"Dropping frame\n";
+	m_display_stats.n_frames_dropped++;
   }
   AVFrame *frame=frame = av_frame_alloc();
   assert(frame);

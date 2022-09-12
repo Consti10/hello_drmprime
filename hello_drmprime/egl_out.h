@@ -158,6 +158,21 @@ class EGLOut {
  private:
   std::mutex latest_frame_mutex;
   AVFrame* m_latest_frame=nullptr;
+ private:
+  struct DisplayStats{
+	int n_frames_rendered=0;
+	int n_frames_dropped=0;
+	// Delay between frame was given to the egl render <-> we uploaded it to the texture (if not dropped)
+	AvgCalculator delay_until_uploaded{"Delay until uploaded"};
+	// Delay between frame was given to the egl renderer <-> swap operation returned (it is handed over to the hw composer)
+	AvgCalculator delay_until_swapped{"Delay until swapped"};
+  };
+  DisplayStats m_display_stats{};
+  static std::string display_stats_to_string(const DisplayStats& display_stats){
+	std::stringstream ss;
+	ss<<"DisplayStats{rendered:"<<display_stats.n_frames_rendered<<" dropped:"<<display_stats.n_frames_dropped<<"}\n";
+	return ss.str();
+  }
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_
