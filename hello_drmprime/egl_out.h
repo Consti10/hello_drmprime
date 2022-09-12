@@ -118,7 +118,7 @@ class EGLOut {
   // always called with the OpenGL context bound.
   void update_texture(AVFrame* frame);
   // allows frame drops (higher video fps than display refresh).
-  std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue=std::make_unique<ThreadsafeQueue<XAVFrameHolder>>();
+  //std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue=std::make_unique<ThreadsafeQueue<XAVFrameHolder>>();
   // Holds shaders for common video formats / upload techniques
   // Needs to be initialized on the GL thread.
   std::unique_ptr<GL_shaders> gl_shaders=nullptr;
@@ -154,6 +154,9 @@ class EGLOut {
  private:
   AVCodecContext* avctx=nullptr;
   void fetch_latest_frame();
+ private:
+  std::mutex latest_frame_mutex;
+  AVFrame* m_latest_frame=nullptr;
 };
 
 #endif //HELLO_DRMPRIME_HELLO_DRMPRIME_EGL_OUT_H_

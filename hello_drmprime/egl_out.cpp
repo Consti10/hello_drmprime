@@ -325,7 +325,7 @@ void EGLOut::render_once() {
   //std::this_thread::sleep_for(std::chrono::milliseconds(100));
   // update the video frame to the most recent one
   // A bit overkill, but it was quicker to just copy paste the logic from hello_drmprime.
-  fetch_latest_frame();
+  /*fetch_latest_frame();
   const auto allBuffers=queue->getAllAndClear();
   if(!allBuffers.empty()) {
 	const int nDroppedFrames = (int)allBuffers.size() - 1;
@@ -340,6 +340,16 @@ void EGLOut::render_once() {
 	const auto latest_new_frame = allBuffers[nDroppedFrames]->frame;
 	// This will free the last (rendered) av frame if given.
 	update_texture(latest_new_frame);
+  }*/
+  latest_frame_mutex.lock();
+  if(m_latest_frame!= nullptr){
+	AVFrame* new_frame=m_latest_frame;
+	m_latest_frame= nullptr;
+	// Unlock before the update function, which might take a significant amount of time.
+	latest_frame_mutex.unlock();
+	update_texture(new_frame);
+  }else{
+	latest_frame_mutex.unlock();
   }
   // We use Red as the clear color such that it is easier to debug (black) video textures.
   cpu_glclear_time.start();
@@ -379,7 +389,23 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", src_frame->format, src_frame->pts);
 	return 0;
   }
-  std::cerr<<"Queue size:"<<queue->size()<<"\n";
+  latest_frame_mutex.lock();
+  if(m_latest_frame!= nullptr){
+	av_frame_free(&m_latest_frame);
+  }
+  AVFrame *frame=frame = av_frame_alloc();
+  assert(frame);
+  if(av_frame_ref(frame, src_frame)!=0){
+	fprintf(stderr, "av_frame_ref error\n");
+	av_frame_free(&frame);
+	latest_frame_mutex.lock();
+	return AVERROR(EINVAL);
+  }
+  m_latest_frame=frame;
+  latest_frame_mutex.unlock();
+  return 0;
+
+  /*std::cerr<<"Queue size:"<<queue->size()<<"\n";
   if(queue->size()>=4){
 	std::cerr<<"Queue has more than X frames, perhaps the render thread died\n";
 	auto all=queue->getAllAndClear();
@@ -423,7 +449,7 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
   avg_delay_before_display_queue.printInIntervals(std::chrono::seconds(3));
   // push it immediately, even though frame(s) might already be inside the queue
   queue->push(std::make_shared<XAVFrameHolder>(frame));
-  return 0;
+  return 0;*/
 }
 
 void EGLOut::render_thread_run() {
