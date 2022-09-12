@@ -212,7 +212,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 		fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
 		return -1;
 	  }
-	  //xFirst= false;
+	  xFirst= false;
 	}else{
 	  drmModeAtomicReq *req= drmModeAtomicAlloc();
 	  drmModeAtomicAddProperty(req,de->setup.planeId,DRM_MODE_OBJECT_FB,da->fb_id);
