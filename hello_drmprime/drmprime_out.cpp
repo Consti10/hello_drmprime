@@ -301,6 +301,8 @@ static int do_display(DRMPrimeOut *const de, AVFrame *frame){
             if(xLast){
                 av_frame_free(&xLast);
             }
+		  	drm_clip_rect clip_rect{0,0,1920,1080};
+		  	drmModeDirtyFB(de->drm_fd,da->fb_id,&clip_rect,1);
             xLast=frame;
             const AVDRMFrameDescriptor *desc1 = (AVDRMFrameDescriptor *)da->frame->data[0];
             const AVDRMFrameDescriptor *desc2 = (AVDRMFrameDescriptor *)frame->data[0];
