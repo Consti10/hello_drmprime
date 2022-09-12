@@ -214,6 +214,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 	  }
 	  xFirst= false;
 	}else{
+	  drmSetClientCap(de->drm_fd,DRM_CLIENT_CAP_ATOMIC,de->setup.planeId);
 	  drmModeAtomicReq *req= drmModeAtomicAlloc();
 	  auto tmp_plane=drmModeGetPlane(de->drm_fd,de->setup.planeId);
 	  std::cout<<"Plane fb_id:"<<tmp_plane->fb_id<<"\n";
