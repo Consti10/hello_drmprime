@@ -321,6 +321,7 @@ int main(int argc, char *argv[]){
 	// https://stackoverflow.com/questions/16658873/how-to-minimize-the-delay-in-a-live-streaming-with-ffmpeg
 	AVDictionary* av_dictionary=nullptr;
 	av_dict_set(&av_dictionary, "protocol_whitelist", "file,udp,rtp", 0);
+  	av_dict_set(&av_dictionary, "buffer_size", "212992", 0);
 	/*av_dict_set_int(&av_dictionary, "stimeout", 1000000, 0);
 	av_dict_set_int(&av_dictionary, "rw_timeout", 1000000, 0);*/
 	av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
@@ -346,9 +347,9 @@ int main(int argc, char *argv[]){
     const int video_stream = ret;
 
 	//const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
-	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
+	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
-	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
+	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VDPAU;
 	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", safe_av_hwdevice_get_type_name(kAvhwDeviceType).c_str());
     if (decoder->id == AV_CODEC_ID_H264) {
@@ -417,6 +418,9 @@ int main(int argc, char *argv[]){
         return -1;
 
     decoder_ctx->get_format  = get_hw_format;
+
+	// needed for FFMPEG ?
+	//decoder_ctx->extra_hw_frames = 10;
 
     if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
 	  std::cerr<<"HW decoder init failed,fallback to SW decode\n";

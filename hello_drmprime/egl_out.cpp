@@ -193,6 +193,7 @@ void EGLOut::update_texture_cuda(AVFrame *frame) {
   av_frame_free(&frame);
 #else
   std::cerr<<"Compile with CUDA\n";
+  av_frame_free(&frame);
 #endif
 }
 

@@ -40,7 +40,7 @@ extern "C" {
 #include "../common_consti/TimeHelper.hpp"
 #include "GL_shaders.h"
 
-//#define X_HAS_LIB_CUDA
+#define X_HAS_LIB_CUDA
 #ifdef X_HAS_LIB_CUDA
 #include "CUDAGLInteropHelper.h"
 #endif
