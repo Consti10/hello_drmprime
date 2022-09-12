@@ -222,6 +222,11 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 	  std::cout<<"tmp_fb w:"<<tmp_fb->width<<"\n";
 	  drmModeAtomicAddProperty(req,de->setup.planeId,DRM_MODE_OBJECT_CRTC,de->setup.crtcId);
 	  drmModeAtomicAddProperty(req,de->setup.planeId,DRM_MODE_OBJECT_FB,da->fb_id);
+	  auto props= drmModeObjectGetProperties(de->drm_fd,de->setup.planeId,DRM_MODE_OBJECT_PLANE);
+	  for(unsigned int i=0;i<props->count_props;i++){
+		auto prop= drmModeGetProperty(de->drm_fd,props->props[i]);
+		std::cout<<"X:["<<prop->name<<"]"<<prop->prop_id<<"\n";
+	  }
 	  if(drmModeAtomicCommit(de->drm_fd, req,
 							 //0
 							 /*DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK*/
