@@ -222,9 +222,9 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 	  //drmModeAtomicAddProperty(req,de->setup.planeId,DRM_MODE_OBJECT_CRTC,de->setup.crtcId);
 	  drmModeAtomicAddProperty(req,de->setup.planeId,DRM_MODE_OBJECT_FB,da->fb_id);
 	  if(drmModeAtomicCommit(de->drm_fd, req,
-							 //0
+							 0
 							 /*DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK*/
-							 DRM_MODE_ATOMIC_ALLOW_MODESET
+							 //DRM_MODE_ATOMIC_ALLOW_MODESET
 							 , NULL)!=0){
 		std::cerr<<"Cannot perform drmModeAtomicCommit"<<strerror(errno)<<"\n";
 	  }else{
