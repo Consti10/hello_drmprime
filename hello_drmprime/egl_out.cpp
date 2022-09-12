@@ -486,15 +486,9 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 }
 
 void EGLOut::render_thread_run() {
-  //initializeWindowRender();
+#ifdef X_USE_SDL
   initializeWindowRendererSDL();
-  /*while (!glfwWindowShouldClose(window) && !terminate){
-	glfwPollEvents();  /// for mouse window closing
-	render_once();
-  }
-  glfwTerminate();*/
   int close = 0;
-  // animation loop
   while (!close) {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -509,6 +503,14 @@ void EGLOut::render_thread_run() {
   SDL_DestroyRenderer(rend);
   SDL_DestroyWindow(win);
   SDL_Quit();
+#else
+  initializeWindowRenderGlfw();
+  while (!glfwWindowShouldClose(window) && !terminate){
+	glfwPollEvents();  /// for mouse window closing
+	render_once();
+  }
+  glfwTerminate();
+#endif
 }
 
 

@@ -44,8 +44,7 @@ extern "C" {
 #ifdef X_HAS_LIB_CUDA
 #include "CUDAGLInteropHelper.h"
 #endif
-// XXX
-//#include <SDL.h>
+// we support glf or SDL for context creation
 #define X_USE_SDL
 #ifdef X_USE_SDL
 #include <SDL2/SDL.h>
