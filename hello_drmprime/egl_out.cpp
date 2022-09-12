@@ -8,6 +8,7 @@
 #include <cassert>
 #include "extra_drm.h"
 
+
 static EGLint texgen_attrs[] = {
 	EGL_DMA_BUF_PLANE0_FD_EXT,
 	EGL_DMA_BUF_PLANE0_OFFSET_EXT,
@@ -55,7 +56,7 @@ static void create_rgba_texture(GLuint& tex_id,uint32_t color_rgba){
   glBindTexture(GL_TEXTURE_2D,0);
 }
 
-void EGLOut::initializeWindowRender() {
+void EGLOut::initializeWindowRenderGlfw() {
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
   glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
@@ -80,23 +81,38 @@ void EGLOut::initializeWindowRender() {
   if(egl_display == EGL_NO_DISPLAY) {
 	printf("error: glfwGetEGLDisplay no EGLDisplay returned\n");
   }
+  glfwSwapInterval(0);
+  setup_gl();
+}
 
+void EGLOut::initializeWindowRendererSDL() {
+  if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+	printf("error initializing SDL: %s\n", SDL_GetError());
+	return;
+  }
+  const bool fullscreen=window_width==0 || window_height==0;
+  const auto flags = fullscreen ? SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL : SDL_WINDOW_OPENGL;
+  win = SDL_CreateWindow("GAME",
+									 SDL_WINDOWPOS_CENTERED,
+									 SDL_WINDOWPOS_CENTERED,
+									window_width, window_height, flags);
+  // triggers the program that controls
+  // your graphics hardware and sets flags
+  Uint32 render_flags = SDL_RENDERER_ACCELERATED;
+  // creates a renderer to render our images
+  rend = SDL_CreateRenderer(win, -1, render_flags);
+  setup_gl();
+}
+
+void EGLOut::setup_gl() {
   printf("GL_VERSION  : %s\n", glGetString(GL_VERSION) );
   printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER) );
-
   gl_shaders=std::make_unique<GL_shaders>();
   gl_shaders->initialize();
-
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glViewport(0, 0, window_width, window_height);
-
   create_rgba_texture(texture_rgb_green, create_pixel_rgba(0,255,0,255));
   create_rgba_texture(texture_rgb_blue, create_pixel_rgba(0,0,255,255));
-  //
-  /*if(SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE)){
-	std::cout<<"SDL init failed\n";
-  }*/
-  glfwSwapInterval(0);
 }
 
 // https://stackoverflow.com/questions/9413845/ffmpeg-avframe-to-opengl-texture-without-yuv-to-rgb-soft-conversion
@@ -383,7 +399,11 @@ void EGLOut::render_once() {
   cpu_frame_time.stop();
   cpu_frame_time.printInIntervalls(std::chrono::seconds(3), false);
   cpu_swap_time.start();
+#ifdef X_USE_SDL
+  SDL_RenderPresent(rend);
+#else
   glfwSwapBuffers(window);
+#endif
   cpu_swap_time.stop();
   cpu_swap_time.printInIntervalls(std::chrono::seconds(3), false);
   frameCount++;
@@ -466,32 +486,29 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 }
 
 void EGLOut::render_thread_run() {
-  initializeWindowRender();
-  while (!glfwWindowShouldClose(window) && !terminate){
+  //initializeWindowRender();
+  initializeWindowRendererSDL();
+  /*while (!glfwWindowShouldClose(window) && !terminate){
 	glfwPollEvents();  /// for mouse window closing
 	render_once();
   }
-  glfwTerminate();
+  glfwTerminate();*/
+  int close = 0;
+  // animation loop
+  while (!close) {
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+	  switch (event.type) {
+		case SDL_QUIT:
+		  close = 1;
+		  break;
+	  }
+	}
+	render_once();
+  }
+  SDL_DestroyRenderer(rend);
+  SDL_DestroyWindow(win);
+  SDL_Quit();
 }
 
-// Apparently ffmpeg is not thread safe, doesn't work
-void EGLOut::set_codec_context(AVCodecContext *avctx1) {
-  this->avctx=avctx1;
-}
-void EGLOut::fetch_latest_frame() {
-  if(avctx== nullptr)return;
-  AVFrame *frame = nullptr;
-  if (!(frame = av_frame_alloc())) {
-	std::cerr<<"Fetch latest frame -> cannot alloc frame\n";
-	return;
-  }
-  auto ret = avcodec_receive_frame(avctx, frame);
-  if(ret==0){
-	std::cout<<"Fetch latest frame - success\n";
-	queue_new_frame_for_display(frame);
-  } else{
-	std::cout<<"Didn't get a new frame: "<<ret<<"\n";
-  }
-  av_frame_free(&frame);
-}
 

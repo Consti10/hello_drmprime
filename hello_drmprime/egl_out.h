@@ -46,6 +46,10 @@ extern "C" {
 #endif
 // XXX
 //#include <SDL.h>
+#define X_USE_SDL
+#ifdef X_USE_SDL
+#include <SDL2/SDL.h>
+#endif
 
 struct EGLFrameTexture{
   // I think we need to keep the av frame reference around as long as we use the generated egl texture in opengl.
@@ -105,7 +109,10 @@ class EGLOut {
 	}
   }
  private:
-  void initializeWindowRender();
+  void initializeWindowRenderGlfw();
+  void initializeWindowRendererSDL();
+  // setup everyting that needs to be done once, but with gl context bound
+  void setup_gl();
   void render_once();
   void render_thread_run();
  private:
@@ -115,6 +122,9 @@ class EGLOut {
   int window_height;
   //
   GLFWwindow* window= nullptr;
+  //
+  SDL_Window* win;
+  SDL_Renderer* rend;
   // always called with the OpenGL context bound.
   void update_texture(AVFrame* frame);
   // allows frame drops (higher video fps than display refresh).
@@ -150,11 +160,6 @@ class EGLOut {
   //
   Chronometer av_hframe_transfer_data{"AV HWFrame transfer data"};
   Chronometer update_frame_producer{"Update frame producer"};
- public:
-  void set_codec_context(AVCodecContext *avctx);
- private:
-  AVCodecContext* avctx=nullptr;
-  void fetch_latest_frame();
  private:
   std::mutex latest_frame_mutex;
   AVFrame* m_latest_frame=nullptr;
