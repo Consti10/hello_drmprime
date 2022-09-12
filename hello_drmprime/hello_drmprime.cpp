@@ -416,9 +416,9 @@ int main(int argc, char *argv[]){
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VDPAU;
     }else if(decoder->id==AV_CODEC_ID_MJPEG){
 	  std::cout<<"Codec mjpeg\n";
-	  //wanted_hw_pix_fmt=AV_PIX_FMT_YUVJ422P;
+	  wanted_hw_pix_fmt=AV_PIX_FMT_YUVJ422P;
 	  //wanted_hw_pix_fmt=AV_PIX_FMT_CUDA;
-	  wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
+	  //wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
 	}else{
 	  std::cerr<<"We only do h264,h265 and mjpeg in this project\n";
 	  avformat_close_input(&input_ctx);
