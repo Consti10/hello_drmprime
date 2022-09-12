@@ -163,9 +163,9 @@ class EGLOut {
 	int n_frames_rendered=0;
 	int n_frames_dropped=0;
 	// Delay between frame was given to the egl render <-> we uploaded it to the texture (if not dropped)
-	AvgCalculator delay_until_uploaded{"Delay until uploaded"};
+	//AvgCalculator delay_until_uploaded{"Delay until uploaded"};
 	// Delay between frame was given to the egl renderer <-> swap operation returned (it is handed over to the hw composer)
-	AvgCalculator delay_until_swapped{"Delay until swapped"};
+	//AvgCalculator delay_until_swapped{"Delay until swapped"};
   };
   DisplayStats m_display_stats{};
   static std::string display_stats_to_string(const DisplayStats& display_stats){
