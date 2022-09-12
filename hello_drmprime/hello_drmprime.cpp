@@ -96,6 +96,20 @@ static void print_codecs_h264_h265_mjpeg(){
   std::cout<<ss.str()<<"\n";
 }
 
+static void print_some(const AVCodec *decoder){
+  for (int i = 0;; i++) {
+	const AVCodecHWConfig *config = avcodec_get_hw_config(decoder, i);
+	if (!config) {
+	  break;
+	}
+	std::stringstream ss;
+	ss<<"HW config "<<i<<" ";
+	ss<<"HW Device name: "<<safe_av_hwdevice_get_type_name(config->device_type);
+	ss<<" PIX fmt: "<<safe_av_get_pix_fmt_name(config->pix_fmt)<<"\n";
+	std::cout<<ss.str();
+  }
+}
+
 static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type){
     int err = 0;
     ctx->hw_frames_ctx = NULL;
@@ -347,19 +361,26 @@ int main(int argc, char *argv[]){
     }
     const int video_stream = ret;
 
+	if(!(decoder->id==AV_CODEC_ID_H264 || decoder->id==AV_CODEC_ID_H265 || decoder->id==AV_CODEC_ID_MJPEG)){
+	  std::cerr<<"We only do h264,h265 and mjpeg in this project\n";
+	  avformat_close_input(&input_ctx);
+	  return 0;
+	}
+
 	//const AVHWDeviceType kAvhwDeviceType = av_hwdevice_find_type_by_name(hwdev);
 	const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_DRM;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VAAPI;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_CUDA;
 	//const AVHWDeviceType kAvhwDeviceType = AV_HWDEVICE_TYPE_VDPAU;
 	fprintf(stdout, "kAvhwDeviceType name: [%s]\n", safe_av_hwdevice_get_type_name(kAvhwDeviceType).c_str());
+  	print_some(decoder);
+
     if (decoder->id == AV_CODEC_ID_H264) {
 	    std::cout<<"H264 decode\n";
-        /*if ((decoder = avcodec_find_decoder_by_name("h264_v4l2m2m")) == NULL) {
+        if ((decoder = avcodec_find_decoder_by_name("h264_v4l2m2m")) == NULL) {
             fprintf(stderr, "Cannot find the h264 v4l2m2m decoder\n");
             return -1;
         }
-	  	wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;*/
 	  	wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
 		//wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
     }
