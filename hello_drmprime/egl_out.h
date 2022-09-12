@@ -149,6 +149,7 @@ class EGLOut {
   AvgCalculator avg_delay_before_display_queue{"Delay before display queue"};
   //
   Chronometer av_hframe_transfer_data{"AV HWFrame transfer data"};
+  Chronometer update_frame_producer{"Update frame producer"};
  public:
   void set_codec_context(AVCodecContext *avctx);
  private:

@@ -389,6 +389,7 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	fprintf(stderr, "Discard corrupt frame: fmt=%d, ts=%" PRId64 "\n", src_frame->format, src_frame->pts);
 	return 0;
   }
+  update_frame_producer.start();
   latest_frame_mutex.lock();
   // We drop a frame that has (not yet) been consumed by the render thread to whatever is the newest available.
   if(m_latest_frame!= nullptr){
@@ -405,8 +406,9 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
   }
   m_latest_frame=frame;
   latest_frame_mutex.unlock();
+  update_frame_producer.stop();
+  update_frame_producer.printInIntervalls(std::chrono::seconds(3), false);
   return 0;
-
   /*std::cerr<<"Queue size:"<<queue->size()<<"\n";
   if(queue->size()>=4){
 	std::cerr<<"Queue has more than X frames, perhaps the render thread died\n";
