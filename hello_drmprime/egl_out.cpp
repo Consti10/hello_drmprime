@@ -343,13 +343,16 @@ void EGLOut::render_once() {
   }*/
   latest_frame_mutex.lock();
   if(m_latest_frame!= nullptr){
+	// Make a copy so we can unlock the mutex early
 	AVFrame* new_frame=m_latest_frame;
 	m_latest_frame= nullptr;
-	m_display_stats.n_frames_rendered++;
 	// Unlock before the update function, which might take a significant amount of time.
 	latest_frame_mutex.unlock();
+	// now update the texture with this frame
+	m_display_stats.n_frames_rendered++;
 	update_texture(new_frame);
   }else{
+	// There is no new frame, either no frame has been yet decoded or the ogl fps is higher than the video fps
 	latest_frame_mutex.unlock();
   }
   // We use Red as the clear color such that it is easier to debug (black) video textures.
@@ -370,7 +373,8 @@ void EGLOut::render_once() {
 							 yuv_420_p_sw_frame_texture.textures[2]);
   }
   else{
-	const auto rgb_texture=frameCount%2==0? texture_rgb_blue:texture_rgb_green;
+	// no valid video texture yet, alternating draw the rgb textures.
+	const auto rgb_texture=frameCount % 2==0? texture_rgb_blue:texture_rgb_green;
 	gl_shaders->draw_rgb(rgb_texture);
   }
   cpu_frame_time.stop();
