@@ -93,7 +93,7 @@ void EGLOut::initializeWindowRender() {
   /*if(SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE)){
 	std::cout<<"SDL init failed\n";
   }*/
-  //glfwSwapInterval(0);
+  glfwSwapInterval(0);
 }
 
 // https://stackoverflow.com/questions/9413845/ffmpeg-avframe-to-opengl-texture-without-yuv-to-rgb-soft-conversion
