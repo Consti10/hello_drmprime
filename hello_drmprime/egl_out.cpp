@@ -390,8 +390,10 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 	return 0;
   }
   latest_frame_mutex.lock();
+  // We drop a frame that has (not yet) been consumed by the render thread to whatever is the newest available.
   if(m_latest_frame!= nullptr){
 	av_frame_free(&m_latest_frame);
+	std::cout<<"Dropping frame\n";
   }
   AVFrame *frame=frame = av_frame_alloc();
   assert(frame);
