@@ -63,12 +63,15 @@ void EGLOut::initializeWindowRender() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
   //glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  window = glfwCreateWindow(window_width, window_height, __FILE__, nullptr, nullptr);
-  /*const auto monitor=glfwGetPrimaryMonitor();
-  const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-  window = glfwCreateWindow(mode->width,mode->height,__FILE__,monitor, nullptr);
-  window_width=mode->width;
-  window_height=mode->height;*/
+  if(window_width==0 || window_height==0){
+	const auto monitor=glfwGetPrimaryMonitor();
+	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+	window = glfwCreateWindow(mode->width,mode->height,__FILE__,monitor, nullptr);
+	window_width=mode->width;
+	window_height=mode->height;
+  }else{
+	window = glfwCreateWindow(window_width, window_height, __FILE__, nullptr, nullptr);
+  }
 
   glfwMakeContextCurrent(window);
 

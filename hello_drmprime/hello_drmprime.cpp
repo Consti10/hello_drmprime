@@ -230,8 +230,10 @@ struct Options{
     int limitedFrameRate=-1;
 	bool drm_add_dummy_overlay=false;
 	bool use_page_flip_on_second_frame=false;
+	int ogl_width=1280;
+	int ogl_height=720;
 };
-static const char optstr[] = "?:i:o:kr:f:zy";
+static const char optstr[] = "?:i:o:kr:f:zyw:h:";
 static const struct option long_options[] = {
         {"in_filename", required_argument, NULL, 'i'},
         {"out_filename", required_argument, NULL, 'o'},
@@ -241,6 +243,10 @@ static const struct option long_options[] = {
         {"framerate", no_argument, NULL, 'f'},
 		{"drm_add_dummy_overlay", no_argument, NULL, 'z'},
 		{"use_page_flip_on_second_frame", no_argument, NULL, 'y'},
+		// Only for egl out
+		{"gl_width", required_argument, NULL, 'w'},
+		{"gl_height", required_argument, NULL, 'w'},
+
         {NULL, 0, NULL, 0},
 };
 
@@ -283,6 +289,12 @@ int main(int argc, char *argv[]){
 			  case 'z':
 					mXOptions.drm_add_dummy_overlay=true;
 					break;
+			  case 'w':
+				mXOptions.ogl_width= atoi(tmp_optarg);
+				break;
+			  case 'h':
+				mXOptions.ogl_height= atoi(tmp_optarg);
+				break;
 			  case 'y':
 				mXOptions.use_page_flip_on_second_frame=true;
 				break;
@@ -318,7 +330,7 @@ int main(int argc, char *argv[]){
 	if(mXOptions.render_mode==0 || mXOptions.render_mode==1 || mXOptions.render_mode==2){
 	  drm_prime_out = new DRMPrimeOut(mXOptions.render_mode,mXOptions.drm_add_dummy_overlay,mXOptions.use_page_flip_on_second_frame);
 	}else {
-	  egl_out=std::make_unique<EGLOut>(1280,720);
+	  egl_out=std::make_unique<EGLOut>(mXOptions.ogl_width,mXOptions.ogl_height);
 	  egl_out->wait_until_ready();
 	}
 
