@@ -219,8 +219,8 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 	  std::cout<<"Plane fd:"<<tmp_plane->fb_id<<"\n";
 	  auto tmp_fb= drmModeGetFB2(de->drm_fd,da->fb_id);
 	  std::cout<<"tmp_fb w:"<<tmp_fb->width<<"\n";
-	  drmModeAtomicAddProperty(req,de->setup.crtcId,DRM_MODE_OBJECT_PLANE,de->setup.planeId);
-	  //drmModeAtomicAddProperty(req,de->setup.planeId,DRM_MODE_OBJECT_FB,da->fb_id);
+	  //drmModeAtomicAddProperty(req,de->setup.planeId,DRM_MODE_OBJECT_CRTC,de->setup.crtcId);
+	  drmModeAtomicAddProperty(req,de->setup.planeId,DRM_MODE_OBJECT_FB,da->fb_id);
 	  if(drmModeAtomicCommit(de->drm_fd, req,0/*DRM_MODE_PAGE_FLIP_ASYNC | DRM_MODE_ATOMIC_NONBLOCK*/ , NULL)!=0){
 		std::cerr<<"Cannot perform drmModeAtomicCommit"<<strerror(errno)<<"\n";
 	  }else{
