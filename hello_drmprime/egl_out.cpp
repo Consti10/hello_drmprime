@@ -411,6 +411,7 @@ void EGLOut::render_once() {
 
 
 int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
+  if(true)return 0;
   assert(src_frame);
   //std::cout<<"DRMPrimeOut::drmprime_out_display "<<src_frame->width<<"x"<<src_frame->height<<"\n";
   if ((src_frame->flags & AV_FRAME_FLAG_CORRUPT) != 0) {

@@ -14,11 +14,13 @@
 #include <unistd.h>
 #include <chrono>
 
+// we support glfw or SDL for context creation
 #define GLFW_INCLUDE_ES2
 extern "C" {
 #include <GLFW/glfw3.h>
 #include "glhelp.h"
 }
+#include <SDL2/SDL.h>
 
 #include <drm_fourcc.h>
 
@@ -44,11 +46,8 @@ extern "C" {
 #ifdef X_HAS_LIB_CUDA
 #include "CUDAGLInteropHelper.h"
 #endif
-// we support glf or SDL for context creation
+
 #define X_USE_SDL
-#ifdef X_USE_SDL
-#include <SDL2/SDL.h>
-#endif
 
 struct EGLFrameTexture{
   // I think we need to keep the av frame reference around as long as we use the generated egl texture in opengl.
