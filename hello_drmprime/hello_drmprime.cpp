@@ -393,8 +393,8 @@ int main(int argc, char *argv[]){
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VDPAU;
     }else if(decoder->id==AV_CODEC_ID_MJPEG){
 	  std::cout<<"Codec mjpeg\n";
-	  //wanted_hw_pix_fmt=AV_PIX_FMT_YUVJ422P;
-	  wanted_hw_pix_fmt=AV_PIX_FMT_CUDA;
+	  wanted_hw_pix_fmt=AV_PIX_FMT_YUVJ422P;
+	  //wanted_hw_pix_fmt=AV_PIX_FMT_CUDA;
 	}else{
 	  std::cerr<<"We only do h264,h265 and mjpeg in this project\n";
 	  avformat_close_input(&input_ctx);
@@ -422,12 +422,12 @@ int main(int argc, char *argv[]){
 	// needed for FFMPEG ?
 	//decoder_ctx->extra_hw_frames = 10;
 
-    if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
+    /*if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
 	  std::cerr<<"HW decoder init failed,fallback to SW decode\n";
 	  // Use SW decode as fallback ?!
 	  //return -1;
 	  wanted_hw_pix_fmt=AV_PIX_FMT_YUV420P;
-	}
+	}*/
 
     // Consti10
     decoder_ctx->thread_count = 1;
