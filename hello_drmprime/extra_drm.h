@@ -11,6 +11,30 @@
 #include <string>
 #include <sys/mman.h>*/
 
+static int add_plane_property(drmModeAtomicReq *req, uint32_t obj_id,
+							  const char *name, uint64_t value)
+{
+  struct plane *obj = drm.plane;
+  unsigned int i;
+  int prop_id = -1;
+
+  for (i = 0 ; i < obj->props->count_props ; i++) {
+	if (strcmp(obj->props_info[i]->name, name) == 0) {
+	  prop_id = obj->props_info[i]->prop_id;
+	  break;
+	}
+  }
+
+
+  if (prop_id < 0) {
+	printf("no plane property: %s\n", name);
+	return -EINVAL;
+  }
+
+  return drmModeAtomicAddProperty(req, obj_id, prop_id, value);
+}
+
+
 #define Xmemclear(s) memset(&s, 0, sizeof(s))
 
 static inline int XDRM_IOCTL(int fd, unsigned long cmd, void *arg)
