@@ -96,11 +96,15 @@ int main(int argc, char *argv[]){
 	assert(ret==0);
 	ret = av_opt_set(c->priv_data,"rc-lookahead","0",0);
 	assert(ret==0);
+	ret = av_opt_set(c->priv_data,"profile","baseline",0);
+	assert(ret==0);
   }
+  av_log_set_level(AV_LOG_DEBUG);
 
   //
   AVDictionary* av_dictionary=nullptr;
   av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
+  av_dict_set(&av_dictionary,"max_delay",0,0);
   //
   avcodec_open2(c, codec, &av_dictionary);
 
@@ -162,6 +166,7 @@ int main(int argc, char *argv[]){
 	frame->pts = i;
 
     const bool got_frame=encode_one_frame(c,frame,&pkt);
+	assert(got_frame);
 	if(got_frame){
 	  printf("Write frame %3d (size=%5d)\n", j++, pkt.size);
 	  av_interleaved_write_frame(avfctx, &pkt);
