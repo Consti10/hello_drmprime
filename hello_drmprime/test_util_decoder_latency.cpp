@@ -9,7 +9,6 @@
 // It works as following:
 
 #include <stdio.h>
-#include <stdbool.h>
 #include <sys/mman.h>
 #include <getopt.h>
 
@@ -23,11 +22,6 @@ extern "C" {
 #include <libavutil/imgutils.h>
 #include <libavutil/buffer.h>
 #include <libavutil/frame.h>
-//
-#include "libavutil/frame.h"
-#include "libavutil/hwcontext.h"
-#include "libavutil/hwcontext_drm.h"
-#include "libavutil/pixdesc.h"
 }
 
 #include <iostream>
