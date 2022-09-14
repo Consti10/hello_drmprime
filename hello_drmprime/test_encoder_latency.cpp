@@ -91,11 +91,20 @@ int main(int argc, char *argv[]){
 
   if (codec_id == AV_CODEC_ID_H264) {
 	ret = av_opt_set(c->priv_data, "preset", "ultrafast", 0);
+	assert(ret==0);
 	ret = av_opt_set(c->priv_data, "tune", "zerolatency", 0);
+	assert(ret==0);
 	ret = av_opt_set(c->priv_data,"rc-lookahead","0",0);
+	assert(ret==0);
   }
 
-  avcodec_open2(c, codec, NULL);
+  //
+  AVDictionary* av_dictionary=nullptr;
+  av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
+  //
+  avcodec_open2(c, codec, &av_dictionary);
+
+
 
   frame = av_frame_alloc();
   frame->format = c->pix_fmt;
@@ -106,6 +115,7 @@ int main(int argc, char *argv[]){
 
   AVFormatContext* avfctx;
   AVOutputFormat* fmt = av_guess_format("rtp", NULL, NULL);
+  std::cout<<"FMT name:"<<fmt->name<<"\n";
 
   ret = avformat_alloc_output_context2(&avfctx, fmt, fmt->name,
 									   "rtp://127.0.0.1:5600");
@@ -127,14 +137,14 @@ int main(int argc, char *argv[]){
   char buf[200000];
   AVFormatContext *ac[] = { avfctx };
   av_sdp_create(ac, 1, buf, 20000);
-  printf("sdp:\n%s\n", buf);
+  printf("sdp:[\n%s]\n", buf);
 
   int j = 0;
   for (i = 0; i < 10000; i++) {
 	av_init_packet(&pkt);
 	pkt.data = NULL;    // packet data will be allocated by the encoder
 	pkt.size = 0;
-	fflush(stdout);
+
 	/* prepare a dummy image */
 	/* Y */
 	for (y = 0; y < c->height; y++) {
@@ -159,34 +169,13 @@ int main(int argc, char *argv[]){
 	}else{
 	  std::cout<<"Got no frame\n";
 	}
-
-
 	std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 
   // end
   ret = avcodec_send_frame(c, NULL);
 
-  /* get the delayed frames */
-  for (; ; i++) {
-	fflush(stdout);
-	ret = avcodec_receive_packet(c, &pkt);
-	if (ret == AVERROR_EOF) {
-	  printf("Stream EOF\n");
-	  break;
-	} else if (ret == AVERROR(EAGAIN)) {
-	  printf("Stream EAGAIN\n");
-	  got_output = false;
-	} else {
-	  got_output = true;
-	}
-
-	if (got_output) {
-	  printf("Write frame %3d (size=%5d)\n", j++, pkt.size);
-	  av_interleaved_write_frame(avfctx, &pkt);
-	  av_packet_unref(&pkt);
-	}
-  }
+  // Note: we don't care about delayed frames
 
   avcodec_close(c);
   av_free(c);
