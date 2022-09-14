@@ -33,7 +33,32 @@ extern "C" {
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <cassert>
 
+static bool encode_one_frame(AVCodecContext *c,AVFrame *frame,AVPacket* out_packet){
+  // encoding should never fail
+  const auto ret1 = avcodec_send_frame(c, frame);
+  assert(ret1==0);
+  // We should always get a encoded packet out when we encode one frame
+  // (since we configure the encoder this way, and need this "property" for the test anyways.
+  const auto poll_frames_begin=std::chrono::steady_clock::now();
+  bool got_frame=false;
+  while (!got_frame){
+	const auto ret2 = avcodec_receive_packet(c, out_packet);
+	if(ret2==0){
+	  break;
+	}else if(ret2==AVERROR(EAGAIN)){
+	  //std::cout<<"EAGAIN\n";
+	}else{
+	  std::cout<<"Error:"<<ret2<<"\n";
+	}
+	if((std::chrono::steady_clock::now()-poll_frames_begin)>std::chrono::seconds(1)){
+	  std::cout<<"No frame after X seconds\n";
+	  return false;
+	}
+  }
+  return true;
+}
 
 int main(int argc, char *argv[]){
   std::cout<<"Test encoder latency begin\n";
@@ -62,10 +87,12 @@ int main(int argc, char *argv[]){
   c->pix_fmt = AV_PIX_FMT_YUV420P;
   c->codec_type = AVMEDIA_TYPE_VIDEO;
   //c->flags = CODEC_FLAG_GLOBAL_HEADER;
+  c->flags = AV_CODEC_FLAG_LOW_DELAY;
 
   if (codec_id == AV_CODEC_ID_H264) {
 	ret = av_opt_set(c->priv_data, "preset", "ultrafast", 0);
 	ret = av_opt_set(c->priv_data, "tune", "zerolatency", 0);
+	ret = av_opt_set(c->priv_data,"rc-lookahead","0",0);
   }
 
   avcodec_open2(c, codec, NULL);
@@ -123,25 +150,16 @@ int main(int argc, char *argv[]){
 	  }
 	}
 	frame->pts = i;
-	/* encode the image */
-	ret = avcodec_send_frame(c, frame);
-	ret = avcodec_receive_packet(c, &pkt);
 
-	if (ret == AVERROR_EOF) {
-	  got_output = false;
-	  printf("Stream EOF\n");
-	} else if(ret == AVERROR(EAGAIN)) {
-	  got_output = false;
-	  printf("Stream EAGAIN\n");
-	} else {
-	  got_output = true;
-	}
-
-	if (got_output) {
+    const bool got_frame=encode_one_frame(c,frame,&pkt);
+	if(got_frame){
 	  printf("Write frame %3d (size=%5d)\n", j++, pkt.size);
 	  av_interleaved_write_frame(avfctx, &pkt);
 	  av_packet_unref(&pkt);
+	}else{
+	  std::cout<<"Got no frame\n";
 	}
+
 
 	std::this_thread::sleep_for(std::chrono::seconds(1));
   }
