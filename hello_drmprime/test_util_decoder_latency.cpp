@@ -46,13 +46,15 @@ struct Options{
   int height=720;
   int limitedFrameRate=-1;
   bool keyboard_led_toggle=false;
+  int codec_type=0; //H264=0,H265=1,MJPEG=2
 };
-static const char optstr[] = "?:w:h:f:k";
+static const char optstr[] = "?:w:h:f:kc:";
 static const struct option long_options[] = {
 	{"width", required_argument, NULL, 'w'},
 	{"height", required_argument, NULL, 'w'},
 	{"framerate", no_argument, NULL, 'f'},
 	{"keyboard_led_toggle", no_argument, NULL, 'k'},
+	{"codec_type", no_argument, NULL, 'c'},
 	{NULL, 0, NULL, 0},
 };
 
@@ -75,6 +77,9 @@ static Options parse_options(int argc, char *argv[]){
 	  case 'h':
 		options.height= atoi(tmp_optarg);
 		break;
+	  case 'c':
+		options.codec_type= atoi(tmp_optarg);
+		break;
 	  case '?':
 	  default:
 		std::cout<<"Usage: "<<" -f --framerate [limit framerate]"<<"\n";
@@ -82,6 +87,11 @@ static Options parse_options(int argc, char *argv[]){
 	}
   }
   return options;
+}
+static AVCodecID av_codec_id_from_user(const Options& options){
+  if(options.codec_type==0)return AV_CODEC_ID_H264;
+  if(options.codec_type==1)return AV_CODEC_ID_H265;
+  return AV_CODEC_ID_MJPEG;
 }
 
 static void always_av_opt_set(void *obj, const char *name, const char *val, int search_flags){
@@ -175,7 +185,7 @@ int main(int argc, char *argv[]){
   av_register_all();
   avformat_network_init();
 
-  const AVCodecID codec_id = AV_CODEC_ID_H265;
+  const AVCodecID codec_id = av_codec_id_from_user(options);
   assert(codec_id == AV_CODEC_ID_H264 || codec_id == AV_CODEC_ID_H265 || codec_id == AV_CODEC_ID_MJPEG);
 
   AVCodec *codec;
@@ -195,7 +205,9 @@ int main(int argc, char *argv[]){
   c->time_base.num = 1;
   c->time_base.den = 25;
   c->gop_size = 25;
-  c->max_b_frames = 1;
+  if(codec_id==AV_CODEC_ID_H264 || codec_id==AV_CODEC_ID_H265){
+	c->max_b_frames = 1;
+  }
   if(codec_id==AV_CODEC_ID_MJPEG){
 	c->pix_fmt = AV_PIX_FMT_YUVJ422P;
   }else{
@@ -203,7 +215,9 @@ int main(int argc, char *argv[]){
   }
   c->codec_type = AVMEDIA_TYPE_VIDEO;
   //c->flags = CODEC_FLAG_GLOBAL_HEADER;
-  c->flags = AV_CODEC_FLAG_LOW_DELAY;
+  if(codec_id!=AV_CODEC_ID_MJPEG){
+	c->flags = AV_CODEC_FLAG_LOW_DELAY;
+  }
 
   AVDictionary* av_dictionary=nullptr;
   if (codec_id == AV_CODEC_ID_H264) {
@@ -230,8 +244,6 @@ int main(int argc, char *argv[]){
   //av_dict_set(&av_dictionary,"max_delay",0,0);
   //
   avcodec_open2(c, codec, &av_dictionary);
-
-
 
   frame = av_frame_alloc();
   frame->format = c->pix_fmt;
