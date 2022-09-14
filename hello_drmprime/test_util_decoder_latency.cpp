@@ -129,21 +129,32 @@ static void fill_image(AVFrame* frame,int i,int y,int x){
   }
 }
 
+//static std::array<uint8_t,3> rgb_to_YCbCr(uint32_t rgb){
+//}
+static std::array<uint8_t,3> YCbCr_from_index(int index){
+  std::array<uint8_t ,3> ret;
+  ret[0]=81;
+  if(index % 2 ==0){
+	ret[1]=240;
+  }else{
+	ret[1]=10;
+  }
+  ret[2]=90;
+}
+
 static void fill_image2(AVFrame* frame,int index){
   std::cout<<"Fill image index:"<<index<<"\n";
-  const uint8_t Y=81;
-  const uint8_t Cb=index%2==0 ? 240 : 0;
-  const uint8_t Cr=90;
+  const auto YCbCr= YCbCr_from_index(index);
   for (int y = 0; y < frame->height; y++) {
 	for (int x = 0; x < frame->width; x++) {
-	  frame->data[0][y * frame->linesize[0] + x] = Y;
+	  frame->data[0][y * frame->linesize[0] + x] = YCbCr[0];
 	}
   }
   // Cb and Cr
   for (int y = 0; y < frame->height / 2; y++) {
 	for (int x = 0; x < frame->width / 2; x++) {
-	  frame->data[1][y * frame->linesize[1] + x] = Cb;
-	  frame->data[2][y * frame->linesize[2] + x] = Cr;
+	  frame->data[1][y * frame->linesize[1] + x] = YCbCr[1];
+	  frame->data[2][y * frame->linesize[2] + x] = YCbCr[2];
 	}
   }
 }
@@ -243,7 +254,6 @@ int main(int argc, char *argv[]){
 	av_sdp_create(ac, 1, buf, 20000);
 	printf("sdp:[\n%s]\n", buf);
   }
-  int x=0,y=0;
   int i=0;
   int j = 0;
   auto lastFrame=std::chrono::steady_clock::now();
@@ -268,8 +278,8 @@ int main(int argc, char *argv[]){
 	pkt.data = NULL;    // packet data will be allocated by the encoder
 	pkt.size = 0;
 	// Draw something into the frame
-	//fill_image(frame,i,y,x);
-	fill_image2(frame,i);
+	fill_image(frame,i,0,0);
+	//fill_image2(frame,i);
 	frame->pts = i;
 
 	const bool got_frame=encode_one_frame(c,frame,&pkt);
