@@ -478,10 +478,6 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Failed to open codec for stream #%u\n", video_stream);
         return -1;
     }
-
-	/*if(egl_out){
-	  egl_out->set_codec_context(decoder_ctx);
-	}*/
     // actual decoding and dump the raw data
     const auto decodingStart=std::chrono::steady_clock::now();
     int nFeedFrames=0;

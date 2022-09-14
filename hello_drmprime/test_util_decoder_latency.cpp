@@ -232,7 +232,7 @@ int main(int argc, char *argv[]){
 	assert(got_frame);
 	if(got_frame){
 	  printf("Write frame %3d (size=%5d)\n", j++, pkt.size);
-	  // Change led before writing the frame
+	  // Change led just before writing the rtp data (for one single frame)
 	  if(options.keyboard_led_toggle){
 		switch_led_on_off();
 	  }
