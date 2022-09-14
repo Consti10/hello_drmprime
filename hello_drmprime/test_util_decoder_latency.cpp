@@ -233,7 +233,7 @@ int main(int argc, char *argv[]){
 	}
 	frame->pts = i;
 
-    const bool got_frame=encode_one_frame(c,frame,&pkt);
+	const bool got_frame=encode_one_frame(c,frame,&pkt);
 	assert(got_frame);
 	if(got_frame){
 	  printf("Write frame %3d (size=%5d)\n", j++, pkt.size);
