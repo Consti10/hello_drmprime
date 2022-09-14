@@ -67,7 +67,7 @@ int main(int argc, char *argv[]){
   av_register_all();
   avformat_network_init();
 
-  AVCodecID codec_id = AV_CODEC_ID_H264;
+  const AVCodecID codec_id = AV_CODEC_ID_H264;
   AVCodec *codec;
   AVCodecContext *c = NULL;
   int i, ret, x, y, got_output;
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]){
   stream->codecpar->bit_rate = 400000;
   stream->codecpar->width = 352;
   stream->codecpar->height = 288;
-  stream->codecpar->codec_id = AV_CODEC_ID_H264;
+  stream->codecpar->codec_id = codec_id;
   stream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
   stream->time_base.num = 1;
   stream->time_base.den = 25;
