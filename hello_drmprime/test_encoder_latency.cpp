@@ -35,6 +35,11 @@ extern "C" {
 #include <chrono>
 #include <cassert>
 
+static void always_av_opt_set(void *obj, const char *name, const char *val, int search_flags){
+  auto ret = av_opt_set(obj, name,val,search_flags);
+  assert(ret==0);
+}
+
 static bool encode_one_frame(AVCodecContext *c,AVFrame *frame,AVPacket* out_packet){
   // encoding should never fail
   const auto ret1 = avcodec_send_frame(c, frame);
@@ -72,16 +77,18 @@ int main(int argc, char *argv[]){
 
   AVCodec *codec;
   AVCodecContext *c = NULL;
-  int i, ret, x, y, got_output;
+  int i, ret, x, y;
   AVFrame *frame;
   AVPacket pkt;
 
   codec = avcodec_find_encoder(codec_id);
   c = avcodec_alloc_context3(codec);
 
+  const int video_width=640;
+  const int video_height=480;
   c->bit_rate = 400000;
-  c->width = 352;
-  c->height = 288;
+  c->width = video_width;
+  c->height = video_height;
   c->time_base.num = 1;
   c->time_base.den = 25;
   c->gop_size = 25;
@@ -95,15 +102,16 @@ int main(int argc, char *argv[]){
   //c->flags = CODEC_FLAG_GLOBAL_HEADER;
   c->flags = AV_CODEC_FLAG_LOW_DELAY;
 
-  if (codec_id == AV_CODEC_ID_H264 || codec_id == AV_CODEC_ID_H265) {
-	ret = av_opt_set(c->priv_data, "preset", "ultrafast", 0);
-	assert(ret==0);
-	ret = av_opt_set(c->priv_data, "tune", "zerolatency", 0);
-	assert(ret==0);
-	ret = av_opt_set(c->priv_data,"rc-lookahead","0",0);
-	assert(ret==0);
-	ret = av_opt_set(c->priv_data,"profile","baseline",0);
-	assert(ret==0);
+  if (codec_id == AV_CODEC_ID_H264) {
+	always_av_opt_set(c->priv_data, "preset", "ultrafast", 0);
+	always_av_opt_set(c->priv_data, "tune", "zerolatency", 0);
+	always_av_opt_set(c->priv_data,"rc-lookahead","0",0);
+	always_av_opt_set(c->priv_data,"profile","baseline",0);
+  }else if(codec_id==AV_CODEC_ID_H265){
+	always_av_opt_set(c->priv_data, "speed-preset", "ultrafast", 0);
+	always_av_opt_set(c->priv_data, "tune", "zerolatency", 0);
+	always_av_opt_set(c->priv_data,"rc-lookahead","0",0);
+	always_av_opt_set(c->priv_data,"profile","baseline",0);
   }
   av_log_set_level(AV_LOG_DEBUG);
 
@@ -136,15 +144,16 @@ int main(int argc, char *argv[]){
 
   AVStream* stream = avformat_new_stream(avfctx, codec);
   stream->codecpar->bit_rate = 400000;
-  stream->codecpar->width = 352;
-  stream->codecpar->height = 288;
+  stream->codecpar->width = video_width;
+  stream->codecpar->height = video_height;
   stream->codecpar->codec_id = codec_id;
   stream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
   stream->time_base.num = 1;
   stream->time_base.den = 25;
 
   avformat_write_header(avfctx, NULL);
-  char buf[200000];
+  // 3 Is enough for RGB so always enough space for the YUV420/YUV422 formats used here.
+  char buf[video_width*video_height*3];
   AVFormatContext *ac[] = { avfctx };
   av_sdp_create(ac, 1, buf, 20000);
   printf("sdp:[\n%s]\n", buf);
