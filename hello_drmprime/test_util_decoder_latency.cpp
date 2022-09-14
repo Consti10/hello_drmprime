@@ -263,6 +263,22 @@ int main(int argc, char *argv[]){
   int j = 0;
   auto lastFrame=std::chrono::steady_clock::now();
   while(true) {
+	if(options.keyboard_led_toggle){
+	  // wait for a keyboard input
+	  printf("Press ENTER key to encode new frame\n");
+	  auto tmp=getchar();
+	}else{
+	  // limit frame rate if enabled
+	  if(options.limitedFrameRate!=-1){
+		const long frameDeltaNs=1000*1000*1000 / options.limitedFrameRate;
+		while (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now()-lastFrame).count()<frameDeltaNs){
+		  // busy wait
+		}
+		lastFrame=std::chrono::steady_clock::now();
+	  }
+	  //std::this_thread::sleep_for(std::chrono::seconds(10));
+	}
+	printf("Encode one frame begin\n");
 	i++;
 	av_init_packet(&pkt);
 	pkt.data = NULL;    // packet data will be allocated by the encoder
@@ -285,24 +301,7 @@ int main(int argc, char *argv[]){
 	}else{
 	  std::cout<<"Got no frame\n";
 	}
-	//
-	if(options.keyboard_led_toggle){
-	  // wait for a keyboard input
-	  printf("Press ENTER key to encode new frame\n");
-	  auto tmp=getchar();
-	  std::cout<<"Options:\n"
-			   <<"keyboard_led_toggle:"<<(options.keyboard_led_toggle ? "Y":"N")<<"\n";
-	}else{
-	  // limit frame rate if enabled
-	  if(options.limitedFrameRate!=-1){
-		const long frameDeltaNs=1000*1000*1000 / options.limitedFrameRate;
-		while (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now()-lastFrame).count()<frameDeltaNs){
-		  // busy wait
-		}
-		lastFrame=std::chrono::steady_clock::now();
-	  }
-	  //std::this_thread::sleep_for(std::chrono::seconds(10));
-	}
+	printf("Encode one frame end\n");
   }
   // end
   ret = avcodec_send_frame(c, NULL);
