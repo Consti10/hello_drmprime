@@ -113,7 +113,7 @@ int main(int argc, char *argv[]){
 	always_av_opt_set(c->priv_data,"rc-lookahead","0",0);
 	always_av_opt_set(c->priv_data,"profile","baseline",0);
   }
-  av_log_set_level(AV_LOG_DEBUG);
+  av_log_set_level(AV_LOG_TRACE);
 
   //
   AVDictionary* av_dictionary=nullptr;
@@ -201,9 +201,6 @@ int main(int argc, char *argv[]){
   av_free(c);
   av_freep(&frame->data[0]);
   av_frame_free(&frame);
-  printf("\n");
-  system("pause");
-  return 0;
-  //
+  printf("DONE\n");
   return 0;
 }
