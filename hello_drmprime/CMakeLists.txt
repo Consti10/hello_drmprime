@@ -77,6 +77,13 @@ target_link_libraries(hello_drmprime
 		-lavcodec -lavutil -lavformat -ldrm -lpthread -lGLESv2 -lglfw -lEGL #-lcuda
 		)
 
+add_executable(test_encoder_latency test_encoder_latency.cpp)
+target_link_libraries(test_encoder_latency
+		#
+		-lavcodec -lavutil -lavformat -ldrm -lpthread -lGLESv2 -lglfw -lEGL #-lcuda
+		)
+
+
 #find_package(CUDA 9.0 REQUIRED)
 #target_link_libraries(hello_drmprime ${CUDA_LIBRARIES})
 
