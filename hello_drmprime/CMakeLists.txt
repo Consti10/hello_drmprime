@@ -77,10 +77,10 @@ target_link_libraries(hello_drmprime
 		-lavcodec -lavutil -lavformat -ldrm -lpthread -lGLESv2 -lglfw -lEGL #-lcuda
 		)
 
-add_executable(test_encoder_latency test_encoder_latency.cpp)
-target_link_libraries(test_encoder_latency
+add_executable(test_util_decoder_latency test_util_decoder_latency.cpp)
+target_link_libraries(test_util_decoder_latency
 		#
-		-lavcodec -lavutil -lavformat -ldrm -lpthread -lGLESv2 -lglfw -lEGL #-lcuda
+		-lavcodec -lavutil -lavformat -lpthread
 		)
 
 

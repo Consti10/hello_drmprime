@@ -189,7 +189,7 @@ int main(int argc, char *argv[]){
 	}else{
 	  std::cout<<"Got no frame\n";
 	}
-	std::this_thread::sleep_for(std::chrono::seconds(1));
+	std::this_thread::sleep_for(std::chrono::seconds(10));
   }
 
   // end
