@@ -198,9 +198,11 @@ int main(int argc, char *argv[]){
   avformat_write_header(avfctx, NULL);
   // 3 Is enough for RGB so always enough space for the YUV420/YUV422 formats used here.
   char buf[video_width*video_height*3];
-  AVFormatContext *ac[] = { avfctx };
-  av_sdp_create(ac, 1, buf, 20000);
-  printf("sdp:[\n%s]\n", buf);
+  {
+	AVFormatContext *ac[] = { avfctx };
+	av_sdp_create(ac, 1, buf, 20000);
+	printf("sdp:[\n%s]\n", buf);
+  }
 
   int j = 0;
   auto lastFrame=std::chrono::steady_clock::now();
@@ -212,7 +214,7 @@ int main(int argc, char *argv[]){
 
 	/* prepare a dummy image */
 	/* Y */
-	for (y = 0; y < c->height; y++) {
+	for (int y = 0; y < c->height; y++) {
 	  for (x = 0; x < c->width; x++) {
 		frame->data[0][y * frame->linesize[0] + x] = x + y + i * 3;
 	  }
@@ -230,6 +232,10 @@ int main(int argc, char *argv[]){
 	assert(got_frame);
 	if(got_frame){
 	  printf("Write frame %3d (size=%5d)\n", j++, pkt.size);
+	  // Change led before writing the frame
+	  if(options.keyboard_led_toggle){
+		switch_led_on_off();
+	  }
 	  av_interleaved_write_frame(avfctx, &pkt);
 	  av_packet_unref(&pkt);
 	}else{
@@ -239,8 +245,6 @@ int main(int argc, char *argv[]){
 	  // wait for a keyboard input
 	  printf("Press ENTER key to Feed new frame\n");
 	  auto tmp=getchar();
-	  // change LED, feed one new frame
-	  switch_led_on_off();
 	}else{
 	  // limit frame rate if enabled
 	  if(options.limitedFrameRate!=-1){
