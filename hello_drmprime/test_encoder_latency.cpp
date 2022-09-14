@@ -68,6 +68,8 @@ int main(int argc, char *argv[]){
   avformat_network_init();
 
   const AVCodecID codec_id = AV_CODEC_ID_H264;
+  assert(codec_id == AV_CODEC_ID_H264 || codec_id == AV_CODEC_ID_H265 || codec_id == AV_CODEC_ID_MJPEG);
+
   AVCodec *codec;
   AVCodecContext *c = NULL;
   int i, ret, x, y, got_output;
@@ -84,12 +86,15 @@ int main(int argc, char *argv[]){
   c->time_base.den = 25;
   c->gop_size = 25;
   c->max_b_frames = 1;
-  c->pix_fmt = AV_PIX_FMT_YUV420P;
+  if(codec_id==AV_CODEC_ID_MJPEG){
+	c->pix_fmt = AV_PIX_FMT_YUVJ422P;
+  }else{
+	c->pix_fmt = AV_PIX_FMT_YUV420P;
+  }
   c->codec_type = AVMEDIA_TYPE_VIDEO;
   //c->flags = CODEC_FLAG_GLOBAL_HEADER;
   c->flags = AV_CODEC_FLAG_LOW_DELAY;
 
-  assert(codec_id == AV_CODEC_ID_H264 || codec_id == AV_CODEC_ID_H265 || codec_id == AV_CODEC_ID_MJPEG);
   if (codec_id == AV_CODEC_ID_H264 || codec_id == AV_CODEC_ID_H265) {
 	ret = av_opt_set(c->priv_data, "preset", "ultrafast", 0);
 	assert(ret==0);
