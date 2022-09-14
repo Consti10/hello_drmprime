@@ -113,6 +113,41 @@ static bool encode_one_frame(AVCodecContext *c,AVFrame *frame,AVPacket* out_pack
   return true;
 }
 
+static void fill_image(AVFrame* frame,int i,int y,int x){
+  // Y
+  for (y = 0; y < frame->height; y++) {
+	for (x = 0; x < frame->width; x++) {
+	  frame->data[0][y * frame->linesize[0] + x] = x + y + i * 3;
+	}
+  }
+  // Cb and Cr
+  for (y = 0; y < frame->height / 2; y++) {
+	for (x = 0; x < frame->width / 2; x++) {
+	  frame->data[1][y * frame->linesize[1] + x] = 128 + y + i * 2;
+	  frame->data[2][y * frame->linesize[2] + x] = 64 + x + i * 5;
+	}
+  }
+}
+
+static void fill_image2(AVFrame* frame,int index){
+  std::cout<<"Fill image index:"<<index<<"\n";
+  const uint8_t Y=81;
+  const uint8_t Cb=index%2==0 ? 240 : 0;
+  const uint8_t Cr=90;
+  for (int y = 0; y < frame->height; y++) {
+	for (int x = 0; x < frame->width; x++) {
+	  frame->data[0][y * frame->linesize[0] + x] = Y;
+	}
+  }
+  // Cb and Cr
+  for (int y = 0; y < frame->height / 2; y++) {
+	for (int x = 0; x < frame->width / 2; x++) {
+	  frame->data[1][y * frame->linesize[1] + x] = Cb;
+	  frame->data[2][y * frame->linesize[2] + x] = Cr;
+	}
+  }
+}
+
 int main(int argc, char *argv[]){
   std::cout<<"Test encoder latency begin\n";
   const auto options= parse_options(argc,argv);
@@ -126,7 +161,7 @@ int main(int argc, char *argv[]){
 
   AVCodec *codec;
   AVCodecContext *c = NULL;
-  int i, ret, x, y;
+  int ret;
   AVFrame *frame;
   AVPacket pkt;
 
@@ -208,44 +243,11 @@ int main(int argc, char *argv[]){
 	av_sdp_create(ac, 1, buf, 20000);
 	printf("sdp:[\n%s]\n", buf);
   }
-
+  int x=0,y=0;
+  int i=0;
   int j = 0;
   auto lastFrame=std::chrono::steady_clock::now();
   while(true) {
-	i++;
-	av_init_packet(&pkt);
-	pkt.data = NULL;    // packet data will be allocated by the encoder
-	pkt.size = 0;
-
-	/* prepare a dummy image */
-	/* Y */
-	for (int y = 0; y < c->height; y++) {
-	  for (x = 0; x < c->width; x++) {
-		frame->data[0][y * frame->linesize[0] + x] = x + y + i * 3;
-	  }
-	}
-	/* Cb and Cr */
-	for (y = 0; y < c->height / 2; y++) {
-	  for (x = 0; x < c->width / 2; x++) {
-		frame->data[1][y * frame->linesize[1] + x] = 128 + y + i * 2;
-		frame->data[2][y * frame->linesize[2] + x] = 64 + x + i * 5;
-	  }
-	}
-	frame->pts = i;
-
-	const bool got_frame=encode_one_frame(c,frame,&pkt);
-	assert(got_frame);
-	if(got_frame){
-	  printf("Write frame %3d (size=%5d)\n", j++, pkt.size);
-	  // Change led just before writing the rtp data (for one single frame)
-	  if(options.keyboard_led_toggle){
-		switch_led_on_off();
-	  }
-	  av_interleaved_write_frame(avfctx, &pkt);
-	  av_packet_unref(&pkt);
-	}else{
-	  std::cout<<"Got no frame\n";
-	}
 	if(options.keyboard_led_toggle){
 	  // wait for a keyboard input
 	  printf("Press ENTER key to Feed new frame\n");
@@ -260,6 +262,28 @@ int main(int argc, char *argv[]){
 		lastFrame=std::chrono::steady_clock::now();
 	  }
 	  //std::this_thread::sleep_for(std::chrono::seconds(10));
+	}
+	i++;
+	av_init_packet(&pkt);
+	pkt.data = NULL;    // packet data will be allocated by the encoder
+	pkt.size = 0;
+	// Draw something into the frame
+	//fill_image(frame,i,y,x);
+	fill_image2(frame,i);
+	frame->pts = i;
+
+	const bool got_frame=encode_one_frame(c,frame,&pkt);
+	assert(got_frame);
+	if(got_frame){
+	  printf("Write frame %3d (size=%5d)\n", j++, pkt.size);
+	  // Change led just before writing the rtp data (for one single frame)
+	  if(options.keyboard_led_toggle){
+		switch_led_on_off();
+	  }
+	  av_interleaved_write_frame(avfctx, &pkt);
+	  av_packet_unref(&pkt);
+	}else{
+	  std::cout<<"Got no frame\n";
 	}
   }
   // end
