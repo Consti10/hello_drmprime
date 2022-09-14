@@ -34,6 +34,49 @@ extern "C" {
 #include <thread>
 #include <chrono>
 #include <cassert>
+#include "../common_consti/LEDSwap.h"
+
+struct Options{
+  int width=1280;
+  int height=720;
+  int limitedFrameRate=-1;
+  bool keyboard_led_toggle=false;
+};
+static const char optstr[] = "?:w:h:f:k";
+static const struct option long_options[] = {
+	{"width", required_argument, NULL, 'w'},
+	{"height", required_argument, NULL, 'w'},
+	{"framerate", no_argument, NULL, 'f'},
+	{"keyboard_led_toggle", no_argument, NULL, 'k'},
+	{NULL, 0, NULL, 0},
+};
+
+static Options parse_options(int argc, char *argv[]){
+  Options options{};
+  int c;
+  while ((c = getopt_long(argc, argv, optstr, long_options, NULL)) != -1) {
+	const char *tmp_optarg = optarg;
+	switch (c) {
+	  case 'k':
+		options.keyboard_led_toggle=true;
+		break;
+	  case 'f':
+		options.limitedFrameRate= atoi(tmp_optarg);
+		break;
+	  case 'w':
+		options.width= atoi(tmp_optarg);
+		break;
+	  case 'h':
+		options.height= atoi(tmp_optarg);
+		break;
+	  case '?':
+	  default:
+		std::cout<<"Usage: "<<" -f --framerate [limit framerate]"<<"\n";
+		exit(0);
+	}
+  }
+  return options;
+}
 
 static void always_av_opt_set(void *obj, const char *name, const char *val, int search_flags){
   auto ret = av_opt_set(obj, name,val,search_flags);
@@ -67,6 +110,7 @@ static bool encode_one_frame(AVCodecContext *c,AVFrame *frame,AVPacket* out_pack
 
 int main(int argc, char *argv[]){
   std::cout<<"Test encoder latency begin\n";
+  const auto options= parse_options(argc,argv);
   //
   avcodec_register_all();
   av_register_all();
@@ -84,8 +128,8 @@ int main(int argc, char *argv[]){
   codec = avcodec_find_encoder(codec_id);
   c = avcodec_alloc_context3(codec);
 
-  const int video_width=640;
-  const int video_height=480;
+  const int video_width=options.width;
+  const int video_height=options.height;
   c->bit_rate = 400000;
   c->width = video_width;
   c->height = video_height;
@@ -159,7 +203,9 @@ int main(int argc, char *argv[]){
   printf("sdp:[\n%s]\n", buf);
 
   int j = 0;
-  for (i = 0; i < 10000; i++) {
+  auto lastFrame=std::chrono::steady_clock::now();
+  while(true) {
+	i++;
 	av_init_packet(&pkt);
 	pkt.data = NULL;    // packet data will be allocated by the encoder
 	pkt.size = 0;
@@ -189,14 +235,27 @@ int main(int argc, char *argv[]){
 	}else{
 	  std::cout<<"Got no frame\n";
 	}
-	std::this_thread::sleep_for(std::chrono::seconds(10));
+	if(options.keyboard_led_toggle){
+	  // wait for a keyboard input
+	  printf("Press ENTER key to Feed new frame\n");
+	  auto tmp=getchar();
+	  // change LED, feed one new frame
+	  switch_led_on_off();
+	}else{
+	  // limit frame rate if enabled
+	  if(options.limitedFrameRate!=-1){
+		const long frameDeltaNs=1000*1000*1000 / options.limitedFrameRate;
+		while (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now()-lastFrame).count()<frameDeltaNs){
+		  // busy wait
+		}
+		lastFrame=std::chrono::steady_clock::now();
+	  }
+	  //std::this_thread::sleep_for(std::chrono::seconds(10));
+	}
   }
-
   // end
   ret = avcodec_send_frame(c, NULL);
-
   // Note: we don't care about delayed frames
-
   avcodec_close(c);
   av_free(c);
   av_freep(&frame->data[0]);
