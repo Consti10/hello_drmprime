@@ -88,6 +88,10 @@ static void always_av_opt_set(void *obj, const char *name, const char *val, int 
   auto ret = av_opt_set(obj, name,val,search_flags);
   assert(ret==0);
 }
+static void always_av_dict_set(AVDictionary **pm, const char *key, const char *value, int flags){
+  auto ret= av_dict_set(pm,key,value,flags);
+  assert(ret==0);
+}
 
 static bool encode_one_frame(AVCodecContext *c,AVFrame *frame,AVPacket* out_packet){
   // encoding should never fail
@@ -171,7 +175,7 @@ int main(int argc, char *argv[]){
   av_register_all();
   avformat_network_init();
 
-  const AVCodecID codec_id = AV_CODEC_ID_H264;
+  const AVCodecID codec_id = AV_CODEC_ID_H265;
   assert(codec_id == AV_CODEC_ID_H264 || codec_id == AV_CODEC_ID_H265 || codec_id == AV_CODEC_ID_MJPEG);
 
   AVCodec *codec;
@@ -201,26 +205,31 @@ int main(int argc, char *argv[]){
   //c->flags = CODEC_FLAG_GLOBAL_HEADER;
   c->flags = AV_CODEC_FLAG_LOW_DELAY;
 
+  AVDictionary* av_dictionary=nullptr;
   if (codec_id == AV_CODEC_ID_H264) {
+	/*always_av_opt_set(&av_dictionary, "preset", "ultrafast", 0);
+	always_av_opt_set(&av_dictionary, "tune", "zerolatency", 0);
+	always_av_opt_set(&av_dictionary,"rc-lookahead","0",0);
+	always_av_opt_set(&av_dictionary,"profile","baseline",0);*/
 	always_av_opt_set(c->priv_data, "preset", "ultrafast", 0);
 	always_av_opt_set(c->priv_data, "tune", "zerolatency", 0);
 	always_av_opt_set(c->priv_data,"rc-lookahead","0",0);
 	always_av_opt_set(c->priv_data,"profile","baseline",0);
   }else if(codec_id==AV_CODEC_ID_H265){
-	always_av_opt_set(c->priv_data, "speed-preset", "ultrafast", 0);
-	always_av_opt_set(c->priv_data, "tune", "zerolatency", 0);
-	always_av_opt_set(c->priv_data,"rc-lookahead","0",0);
-	always_av_opt_set(c->priv_data,"profile","baseline",0);
+	always_av_dict_set(&av_dictionary, "speed-preset", "ultrafast", 0);
+	always_av_dict_set(&av_dictionary,  "tune", "zerolatency", 0);
+	always_av_dict_set(&av_dictionary, "rc-lookahead","0",0);
+	//always_av_dict_set(&av_dictionary, "profile","baseline",0);
   }
   av_log_set_level(AV_LOG_TRACE);
   c->thread_count = 1;
 
   //
-  AVDictionary* av_dictionary=nullptr;
-  av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
-  av_dict_set(&av_dictionary,"max_delay",0,0);
+  //AVDictionary* av_dictionary=nullptr;
+  //av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
+  //av_dict_set(&av_dictionary,"max_delay",0,0);
   //
-  avcodec_open2(c, codec, NULL);
+  avcodec_open2(c, codec, &av_dictionary);
 
 
 
