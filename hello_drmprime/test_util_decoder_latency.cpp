@@ -239,13 +239,14 @@ int main(int argc, char *argv[]){
   frame->height = c->height;
   ret = av_image_alloc(frame->data, frame->linesize, c->width, c->height,
 					   c->pix_fmt, 32);
+  assert(ret>=0);
 
   AVFormatContext* avfctx;
   AVOutputFormat* fmt = av_guess_format("rtp", NULL, NULL);
   std::cout<<"FMT name:"<<fmt->name<<"\n";
 
-  ret = avformat_alloc_output_context2(&avfctx, fmt, fmt->name,
-									   "rtp://127.0.0.1:5600");
+  ret = avformat_alloc_output_context2(&avfctx, fmt, fmt->name,"rtp://127.0.0.1:5600");
+  assert(ret>=0);
 
   printf("Writing to %s\n", avfctx->filename);
 
