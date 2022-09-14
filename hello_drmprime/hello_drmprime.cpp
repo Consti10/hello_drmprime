@@ -163,7 +163,7 @@ static void map_frame_test(AVFrame* frame){
 static int decode_and_wait_for_frame(AVCodecContext * const avctx,AVPacket *packet,DRMPrimeOut * const drm_prime_out,EGLOut* const egl_out){
     AVFrame *frame = nullptr;
     // testing
-    //check_single_nalu(packet->data,packet->size);
+    check_single_nalu(packet->data,packet->size);
     MLOGD<<"Decode packet:"<<packet->pos<<" size:"<<packet->size<<" B\n";
     const auto beforeFeedFrame=std::chrono::steady_clock::now();
     const auto beforeFeedFrameUs=getTimeUs();

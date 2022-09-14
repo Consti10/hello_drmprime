@@ -58,7 +58,7 @@ static void check_single_nalu(const uint8_t* data,const size_t data_length){
                         }
                     }*/
                     const size_t naluLen=nalu_data_position-4;
-                    std::cout<<"Found nalu of len:"<<naluLen<<"\n";
+                    std::cout<<"Found nalu AUD of len:"<<naluLen<<"\n";
                     nNALUs++;
                     nalu_data_position = 4;
                 }
