@@ -89,7 +89,8 @@ int main(int argc, char *argv[]){
   //c->flags = CODEC_FLAG_GLOBAL_HEADER;
   c->flags = AV_CODEC_FLAG_LOW_DELAY;
 
-  if (codec_id == AV_CODEC_ID_H264) {
+  assert(codec_id == AV_CODEC_ID_H264 || codec_id == AV_CODEC_ID_H265 || codec_id == AV_CODEC_ID_MJPEG);
+  if (codec_id == AV_CODEC_ID_H264 || codec_id == AV_CODEC_ID_H265) {
 	ret = av_opt_set(c->priv_data, "preset", "ultrafast", 0);
 	assert(ret==0);
 	ret = av_opt_set(c->priv_data, "tune", "zerolatency", 0);
@@ -106,7 +107,7 @@ int main(int argc, char *argv[]){
   av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
   av_dict_set(&av_dictionary,"max_delay",0,0);
   //
-  avcodec_open2(c, codec, &av_dictionary);
+  avcodec_open2(c, codec, NULL);
 
 
 
