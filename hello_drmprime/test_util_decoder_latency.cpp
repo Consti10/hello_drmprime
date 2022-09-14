@@ -58,6 +58,7 @@ static const struct option long_options[] = {
 
 static Options parse_options(int argc, char *argv[]){
   Options options{};
+  options.keyboard_led_toggle= false;
   int c;
   while ((c = getopt_long(argc, argv, optstr, long_options, NULL)) != -1) {
 	const char *tmp_optarg = optarg;
@@ -140,10 +141,11 @@ static std::array<uint8_t,3> YCbCr_from_index(int index){
 	ret[1]=10;
   }
   ret[2]=90;
+  return ret;
 }
 
 static void fill_image2(AVFrame* frame,int index){
-  std::cout<<"Fill image index:"<<index<<"\n";
+  std::cout<<"Fill image "<<frame->width<<"x"<<frame->height<<"index:"<<index<<"\n";
   const auto YCbCr= YCbCr_from_index(index);
   for (int y = 0; y < frame->height; y++) {
 	for (int x = 0; x < frame->width; x++) {
@@ -162,6 +164,8 @@ static void fill_image2(AVFrame* frame,int index){
 int main(int argc, char *argv[]){
   std::cout<<"Test encoder latency begin\n";
   const auto options= parse_options(argc,argv);
+  std::cout<<"Options:\n"
+  <<"keyboard_led_toggle:"<<(options.keyboard_led_toggle ? "Y":"N")<<"\n";
   //
   avcodec_register_all();
   av_register_all();
@@ -209,6 +213,7 @@ int main(int argc, char *argv[]){
 	always_av_opt_set(c->priv_data,"profile","baseline",0);
   }
   av_log_set_level(AV_LOG_TRACE);
+  c->thread_count = 1;
 
   //
   AVDictionary* av_dictionary=nullptr;
@@ -258,28 +263,13 @@ int main(int argc, char *argv[]){
   int j = 0;
   auto lastFrame=std::chrono::steady_clock::now();
   while(true) {
-	if(options.keyboard_led_toggle){
-	  // wait for a keyboard input
-	  printf("Press ENTER key to Feed new frame\n");
-	  auto tmp=getchar();
-	}else{
-	  // limit frame rate if enabled
-	  if(options.limitedFrameRate!=-1){
-		const long frameDeltaNs=1000*1000*1000 / options.limitedFrameRate;
-		while (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now()-lastFrame).count()<frameDeltaNs){
-		  // busy wait
-		}
-		lastFrame=std::chrono::steady_clock::now();
-	  }
-	  //std::this_thread::sleep_for(std::chrono::seconds(10));
-	}
 	i++;
 	av_init_packet(&pkt);
 	pkt.data = NULL;    // packet data will be allocated by the encoder
 	pkt.size = 0;
 	// Draw something into the frame
-	fill_image(frame,i,0,0);
-	//fill_image2(frame,i);
+	//fill_image(frame,i,0,0);
+	fill_image2(frame,i);
 	frame->pts = i;
 
 	const bool got_frame=encode_one_frame(c,frame,&pkt);
@@ -294,6 +284,24 @@ int main(int argc, char *argv[]){
 	  av_packet_unref(&pkt);
 	}else{
 	  std::cout<<"Got no frame\n";
+	}
+	//
+	if(options.keyboard_led_toggle){
+	  // wait for a keyboard input
+	  printf("Press ENTER key to encode new frame\n");
+	  auto tmp=getchar();
+	  std::cout<<"Options:\n"
+			   <<"keyboard_led_toggle:"<<(options.keyboard_led_toggle ? "Y":"N")<<"\n";
+	}else{
+	  // limit frame rate if enabled
+	  if(options.limitedFrameRate!=-1){
+		const long frameDeltaNs=1000*1000*1000 / options.limitedFrameRate;
+		while (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now()-lastFrame).count()<frameDeltaNs){
+		  // busy wait
+		}
+		lastFrame=std::chrono::steady_clock::now();
+	  }
+	  //std::this_thread::sleep_for(std::chrono::seconds(10));
 	}
   }
   // end
