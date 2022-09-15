@@ -217,9 +217,11 @@ void EGLOut::update_texture_cuda(AVFrame *frame) {
 }
 
 // Also https://code.videolan.org/videolan/vlc/-/blob/master/modules/video_output/opengl/importer.c#L414-417
-bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& egl_frame_texture, AVFrame* frame){
+bool EGLOut::update_texture_egl(AVFrame* frame) {
   assert(frame);
   assert(frame->format==AV_PIX_FMT_DRM_PRIME);
+  EGLDisplay egl_display=eglGetCurrentDisplay();
+  assert(egl_display);
   auto before=std::chrono::steady_clock::now();
   // We can now also give the frame back to av, since we are updating to a new one.
   if(egl_frame_texture.av_frame!= nullptr){
@@ -260,7 +262,7 @@ bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& e
 	}
   }
   *a = EGL_NONE;
-  const EGLImage image = eglCreateImageKHR(*egl_display,
+  const EGLImage image = eglCreateImageKHR(egl_display,
 										   EGL_NO_CONTEXT,
 										   EGL_LINUX_DMA_BUF_EXT,
 										   NULL, attribs);
@@ -281,12 +283,13 @@ bool update_drm_prime_to_egl_texture(EGLDisplay *egl_display, EGLFrameTexture& e
   glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, image);
   // I do not know exactly how that works, but we seem to be able to immediately delete the EGL image, as long as we don't give the frame
   // back to the decoder I assume
-  eglDestroyImageKHR(*egl_display, image);
+  eglDestroyImageKHR(egl_display, image);
   auto delta=std::chrono::steady_clock::now()-before;
   std::cout<<"Creating texture took:"<<std::chrono::duration_cast<std::chrono::milliseconds>(delta).count()<<"ms\n";
   egl_frame_texture.has_valid_image= true;
   return true;
 }
+
 // TODO r.n we have 2 CPU copies !
 //https://registry.khronos.org/OpenGL/extensions/NV/NV_vdpau_interop.txt
 void EGLOut::update_texture_vdpau(AVFrame* hw_frame) {
@@ -314,8 +317,7 @@ void EGLOut::update_texture_vdpau(AVFrame* hw_frame) {
 // is freed when updating to a new one.
 void EGLOut::update_texture_gl(AVFrame *frame) {
   if(frame->format == AV_PIX_FMT_DRM_PRIME){
-	EGLDisplay egl_display=eglGetCurrentDisplay();
-	update_drm_prime_to_egl_texture(&egl_display, egl_frame_texture, frame);
+	update_texture_egl(frame);
   }else if(frame->format==AV_PIX_FMT_CUDA){
 	update_texture_cuda(frame);
   }else if(frame->format==AV_PIX_FMT_YUV420P){
@@ -501,4 +503,5 @@ void EGLOut::render_thread_run() {
   glfwTerminate();
 #endif
 }
+
 

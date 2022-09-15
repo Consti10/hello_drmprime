@@ -130,6 +130,7 @@ class EGLOut {
 #ifdef X_HAS_LIB_CUDA
   std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
 #endif
+  bool update_texture_egl(AVFrame* frame);
   void update_texture_cuda(AVFrame* frame);
   void update_texture_yuv420p(AVFrame* frame);
   void update_texture_vdpau(AVFrame* frame);
