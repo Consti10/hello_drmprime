@@ -4,20 +4,25 @@
 
 // Don't let the name fool you ;)
 // This is a (really special) program that allows you to measure the
-// "decode - to - display" delay of another application that receives video data via rtp.
+// "decode - to - display" delay of another application that receives video data via udp/rtp.
 // (e.g. rtp in, decode frame -> frame is shown on screen)
 // OpenHD defaults to QOpenHD as the UI application, but feel free to test things out / use some alternate form of Video+OSD compositor.
-// It works as following:
+// This test program works as following:
 // (If option keyboard & led toggle is set)
-// Each time a key is pressed
+// Each time a key on the keyboard is pressed
 // SW encode a new colored frame
 // Once the frame has been encoded (we get the raw encoded data for one frame)
 // toggle the LED on/off (almost instantaneous)
 // send the encoded frame data out via RTP
 // By mapping the LED toggles to the changes on the display (Warning: easy to mix up, keyword: rtp/encoder buffering
-// You can then measure the delta between <this application sends out a new encoded frame via RTP> -> the display application to
-// test (e.g. QOpenHD) is done decoding AND displaying (Decode delay,Opt OpenGL render delay, HVS delay, HDMI transmission (negligible),
+// You can then measure the delta between <this application sends out a new encoded frame via RTP> -> <the display application to
+// test (e.g. QOpenHD) is done decoding AND displaying> (Decode delay,Opt OpenGL render delay, HVS delay, HDMI transmission (negligible),
 // "monitor processing delay" (negligible on most recent high quality monitors), pixel response time).
+
+// NOTE: Since the LED toggle happens after a frame has been encoded (before it is sent out via udp/rtp) the encode
+// time doesn't matter in the context of this text. This is why it is okay to always use SW encoding here.
+
+// TODOs: MJPEG still doesn't work (some weird internal av pixel format rtp parser bug)
 
 #include <stdio.h>
 #include <sys/mman.h>
