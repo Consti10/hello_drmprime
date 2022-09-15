@@ -55,7 +55,7 @@ extern "C" {
 // Use " export DISPLAY=:0 " for ssh
 // Needs to be run with X server running (at least for now), otherwise glfw cannot create a OpenGL window.
 // Nice tool: https://www.vsynctester.com/https
-class EGLOut : public GL_VideoRenderer{
+class EGLOut{
  public:
   EGLOut(int width,int height);
   ~EGLOut();
@@ -97,12 +97,8 @@ class EGLOut : public GL_VideoRenderer{
   //
   SDL_Window* win;
   SDL_Renderer* rend;
-  // Holds shaders for common video formats / upload techniques
-  // Needs to be initialized on the GL thread.
-  std::unique_ptr<GL_shaders> gl_shaders=nullptr;
-  //std::unique_ptr<GL_VideoRenderer> gl_video_renderer=nullptr;
+  std::unique_ptr<GL_VideoRenderer> gl_video_renderer=nullptr;
   int frameCount=0;
-  //
   //
   Chronometer cpu_update_texture{"CPU Update texture"};
   // Time between frames (frame time)

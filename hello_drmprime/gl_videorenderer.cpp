@@ -39,9 +39,11 @@ static void create_rgba_texture(GLuint& tex_id,uint32_t color_rgba){
   glBindTexture(GL_TEXTURE_2D,0);
 }
 
-void GL_VideoRenderer::initGL() {
+void GL_VideoRenderer::init_gl() {
   create_rgba_texture(texture_rgb_green, create_pixel_rgba(0,255,0,255));
   create_rgba_texture(texture_rgb_blue, create_pixel_rgba(0,0,255,255));
+  gl_shaders=std::make_unique<GL_shaders>();
+  gl_shaders->initialize();
 }
 
 // https://stackoverflow.com/questions/9413845/ffmpeg-avframe-to-opengl-texture-without-yuv-to-rgb-soft-conversion
@@ -145,7 +147,7 @@ void GL_VideoRenderer::update_texture_cuda(AVFrame *frame) {
 }
 
 // Also https://code.videolan.org/videolan/vlc/-/blob/master/modules/video_output/opengl/importer.c#L414-417
-bool GL_VideoRenderer::update_texture_egl(AVFrame* frame) {
+bool GL_VideoRenderer::update_texture_egl_external(AVFrame* frame) {
   assert(frame);
   assert(frame->format==AV_PIX_FMT_DRM_PRIME);
   EGLDisplay egl_display=eglGetCurrentDisplay();
@@ -243,7 +245,7 @@ void GL_VideoRenderer::update_texture_vdpau(AVFrame* hw_frame) {
 void GL_VideoRenderer::update_texture_gl(AVFrame *frame) {
   if(frame->format == AV_PIX_FMT_DRM_PRIME){
 	std::cout<<"update_texture_drm_prime\n";
-	update_texture_egl(frame);
+	update_texture_egl_external(frame);
   }else if(frame->format==AV_PIX_FMT_CUDA){
 	std::cout<<"update_texture_cuda\n";
 	update_texture_cuda(frame);
@@ -258,5 +260,23 @@ void GL_VideoRenderer::update_texture_gl(AVFrame *frame) {
 	std::cerr << "Unimplemented to texture:" << safe_av_get_pix_fmt_name((AVPixelFormat)frame->format) << "\n";
 	std::cout<<all_av_hwframe_transfer_formats(frame->hw_frames_ctx);
 	av_frame_free(&frame);
+  }
+}
+
+void GL_VideoRenderer::draw_texture_gl() {
+  if(egl_frame_texture.has_valid_image){
+	gl_shaders->draw_egl(egl_frame_texture.texture);
+  }else if(cuda_frametexture.has_valid_image) {
+	gl_shaders->draw_NV12(cuda_frametexture.textures[0], cuda_frametexture.textures[1]);
+  }else if(yuv_420_p_sw_frame_texture.has_valid_image){
+	gl_shaders->draw_YUV420P(yuv_420_p_sw_frame_texture.textures[0],
+							 yuv_420_p_sw_frame_texture.textures[1],
+							 yuv_420_p_sw_frame_texture.textures[2]);
+  }
+  else{
+	// no valid video texture yet, alternating draw the rgb textures.
+	const auto rgb_texture=frameCount % 2==0? texture_rgb_blue:texture_rgb_green;
+	gl_shaders->draw_rgb(rgb_texture);
+	frameCount++;
   }
 }

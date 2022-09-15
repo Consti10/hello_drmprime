@@ -38,15 +38,17 @@ struct YUV420PSwFrameTexture{
 
 class GL_VideoRenderer {
  public:
-  void initGL();
   // always called with the OpenGL context bound.
+  void init_gl();
   void update_texture_gl(AVFrame* frame);
+  // draw the latest updated video texture (or the alternating colors if no video texture is set)
+  void draw_texture_gl();
  private:
   // Holds shaders for common video formats / upload techniques
   // Needs to be initialized on the GL thread.
   std::unique_ptr<GL_shaders> gl_shaders=nullptr;
  private:
-  bool update_texture_egl(AVFrame* frame);
+  bool update_texture_egl_external(AVFrame* frame);
   void update_texture_cuda(AVFrame* frame);
   void update_texture_yuv420p(AVFrame* frame);
   void update_texture_vdpau(AVFrame* frame);
@@ -57,6 +59,7 @@ class GL_VideoRenderer {
   // green/ blue RGB(A) textures, for testing. Uploaded once, then never modified.
   GLuint texture_rgb_green=0;
   GLuint texture_rgb_blue=0;
+  int frameCount=0;
   //
   EGLFrameTexture egl_frame_texture{};
   CUDAFrameTexture cuda_frametexture{};
