@@ -342,17 +342,17 @@ void EGLOut::render_once() {
 	frame_delta_chrono->printInIntervalls(std::chrono::seconds(3), false);
 	frame_delta_chrono->start();
   }
+  // We use Red as the clear color such that it is easier to debug (black) video textures.
+  cpu_glclear_time.start();
+  glClearColor(1.0, 0.0, 0.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
+  cpu_glclear_time.stop();
   AVFrame* new_frame=fetch_latest_decoded_frame();
   if(new_frame!= nullptr){
 	// update the texture with this frame
 	m_display_stats.n_frames_rendered++;
 	update_texture_gl(new_frame);
   }
-  // We use Red as the clear color such that it is easier to debug (black) video textures.
-  cpu_glclear_time.start();
-  glClearColor(1.0, 0.0, 0.0, 1.0);
-  glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
-  cpu_glclear_time.stop();
   cpu_glclear_time.printInIntervalls(std::chrono::seconds(3), false);
   // Only render the texture if we have one (aka we have gotten at least one frame from the decoder)
   // Note that otherwise, if we render via OpenGL but the texture has no backing, nothing really happens ;)
