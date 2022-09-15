@@ -204,6 +204,7 @@ int main(int argc, char *argv[]){
   c->codec_type = AVMEDIA_TYPE_VIDEO;
   //c->flags = CODEC_FLAG_GLOBAL_HEADER;
   if(codec_id!=AV_CODEC_ID_MJPEG){
+	// Only h265 and h264 accept this flag, MJPEG does not.
 	c->flags = AV_CODEC_FLAG_LOW_DELAY;
   }
 
