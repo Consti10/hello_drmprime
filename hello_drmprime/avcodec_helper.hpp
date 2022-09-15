@@ -2,8 +2,8 @@
 // Created by consti10 on 04.09.22.
 //
 
-#ifndef HELLO_DRMPRIME__FFMPEG_WORKAROUND_API_VERSION_HPP_
-#define HELLO_DRMPRIME__FFMPEG_WORKAROUND_API_VERSION_HPP_
+#ifndef HELLO_DRMPRIME__AVCODEC_HELPER_HPP_
+#define HELLO_DRMPRIME__AVCODEC_HELPER_HPP_
 
 // Include all the "av" stuff we need
 extern "C" {
@@ -103,4 +103,4 @@ static std::string all_formats_to_string(const enum AVPixelFormat *pix_fmts){
 }
 
 
-#endif //HELLO_DRMPRIME__FFMPEG_WORKAROUND_API_VERSION_HPP_
+#endif //HELLO_DRMPRIME__AVCODEC_HELPER_HPP_

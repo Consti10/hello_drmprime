@@ -3,7 +3,7 @@
 //
 
 #include "egl_out.h"
-#include "ffmpeg_workaround_api_version.hpp"
+#include "avcodec_helper.hpp"
 
 #include <cassert>
 #include "extra_drm.h"

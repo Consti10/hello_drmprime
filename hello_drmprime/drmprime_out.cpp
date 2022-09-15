@@ -42,7 +42,7 @@
 #include "drmprime_out.h"
 
 #include "drm_fourcc.h"
-#include "ffmpeg_workaround_api_version.hpp"
+#include "avcodec_helper.hpp"
 
 AvgCalculator avgDisplayThreadQueueLatency{"DisplayThreadQueue"};
 AvgCalculator avgTotalDecodeAndDisplayLatency{"TotalDecodeDisplayLatency"};
