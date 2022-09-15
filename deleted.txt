@@ -179,3 +179,19 @@ void EGLOut::fetch_latest_frame() {
   }
   av_frame_free(&frame);
 }
+
+static void fill_image(AVFrame* frame,int i,int y,int x){
+  // Y
+  for (y = 0; y < frame->height; y++) {
+	for (x = 0; x < frame->width; x++) {
+	  frame->data[0][y * frame->linesize[0] + x] = x + y + i * 3;
+	}
+  }
+  // Cb and Cr
+  for (y = 0; y < frame->height / 2; y++) {
+	for (x = 0; x < frame->width / 2; x++) {
+	  frame->data[1][y * frame->linesize[1] + x] = 128 + y + i * 2;
+	  frame->data[2][y * frame->linesize[2] + x] = 64 + x + i * 5;
+	}
+  }
+}

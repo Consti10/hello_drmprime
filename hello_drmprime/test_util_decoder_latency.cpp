@@ -133,22 +133,6 @@ static bool encode_one_frame(AVCodecContext *c,AVFrame *frame,AVPacket* out_pack
   return true;
 }
 
-static void fill_image(AVFrame* frame,int i,int y,int x){
-  // Y
-  for (y = 0; y < frame->height; y++) {
-	for (x = 0; x < frame->width; x++) {
-	  frame->data[0][y * frame->linesize[0] + x] = x + y + i * 3;
-	}
-  }
-  // Cb and Cr
-  for (y = 0; y < frame->height / 2; y++) {
-	for (x = 0; x < frame->width / 2; x++) {
-	  frame->data[1][y * frame->linesize[1] + x] = 128 + y + i * 2;
-	  frame->data[2][y * frame->linesize[2] + x] = 64 + x + i * 5;
-	}
-  }
-}
-
 //static std::array<uint8_t,3> rgb_to_YCbCr(uint32_t rgb){
 //}
 // https://tvone.com/tech-support/faqs/120-ycrcb-values-for-various-colors
@@ -160,15 +144,6 @@ static std::array<uint8_t,3> YCbCr_from_index(int index){
   if(index_mod==0)return red;
   if(index_mod==1)return green;
   return blue;
-  /*std::array<uint8_t ,3> ret;
-  ret[0]=81;
-  if(index % 2 ==0){
-	ret[1]=240;
-  }else{
-	ret[1]=10;
-  }
-  ret[2]=90;
-  return ret;*/
 }
 
 static void fill_image2(AVFrame* frame,int index){
