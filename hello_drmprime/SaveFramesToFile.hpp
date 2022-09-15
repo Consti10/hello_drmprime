@@ -4,6 +4,7 @@
 
 #ifndef HELLO_DRMPRIME_HELLO_DRMPRIME_EXTRA_FILTER_GRAPH_H_
 #define HELLO_DRMPRIME_HELLO_DRMPRIME_EXTRA_FILTER_GRAPH_H_
+
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
