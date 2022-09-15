@@ -5,11 +5,11 @@
 #ifndef HELLO_DRMPRIME__GL_SHADERS_H_
 #define HELLO_DRMPRIME__GL_SHADERS_H_
 
-#define GLFW_INCLUDE_ES2
 extern "C" {
-#include <GLFW/glfw3.h>
+#include <GLES2/gl2.h>
 #include "glhelp.h"
 }
+#include <string>
 
 // Holds multiple GL programs that render different types of (Video) textures
 // All textures fill up the full gl viewport, adjust it accordingly to preserve video ratio.

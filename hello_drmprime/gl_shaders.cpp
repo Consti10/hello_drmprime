@@ -7,7 +7,7 @@
 #include <sstream>
 #include <iostream>
 #include <cassert>
-#include "GL_shaders.h"
+#include "gl_shaders.h"
 
 static const char *GlErrorString(GLenum error ){
   switch ( error ){
@@ -68,6 +68,7 @@ static const GLchar* fragment_shader_source_RGB =
 	"out vec4 out_color;\n"
 	"void main() {	\n"
 	"	out_color = texture2D( s_texture, v_texCoord );\n"
+	"	out_color.a = 1.0;\n"
 	//"	out_color = vec4(v_texCoord.x,1.0,0.0,1.0);\n"
 	"}\n";
 static const GLchar* fragment_shader_source_YUV420P =

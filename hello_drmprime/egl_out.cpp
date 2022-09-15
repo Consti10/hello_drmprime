@@ -312,21 +312,21 @@ void EGLOut::update_texture_vdpau(AVFrame* hw_frame) {
 
 // "Consumes" the given hw_frame (makes sure it is freed at the apropriate time / the previous one
 // is freed when updating to a new one.
-void EGLOut::update_texture(AVFrame *hw_frame) {
-  if(hw_frame->format == AV_PIX_FMT_DRM_PRIME){
+void EGLOut::update_texture_gl(AVFrame *frame) {
+  if(frame->format == AV_PIX_FMT_DRM_PRIME){
 	EGLDisplay egl_display=eglGetCurrentDisplay();
-	update_drm_prime_to_egl_texture(&egl_display, egl_frame_texture,hw_frame);
-  }else if(hw_frame->format==AV_PIX_FMT_CUDA){
-	update_texture_cuda(hw_frame);
-  }else if(hw_frame->format==AV_PIX_FMT_YUV420P){
-	update_texture_yuv420p(hw_frame);
-  }else if(hw_frame->format==AV_PIX_FMT_VDPAU){
-	update_texture_vdpau(hw_frame);
+	update_drm_prime_to_egl_texture(&egl_display, egl_frame_texture, frame);
+  }else if(frame->format==AV_PIX_FMT_CUDA){
+	update_texture_cuda(frame);
+  }else if(frame->format==AV_PIX_FMT_YUV420P){
+	update_texture_yuv420p(frame);
+  }else if(frame->format==AV_PIX_FMT_VDPAU){
+	update_texture_vdpau(frame);
   }
   else{
-	std::cerr<<"Unimplemented to texture:"<<safe_av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"\n";
-	print_hwframe_transfer_formats(hw_frame->hw_frames_ctx);
-	av_frame_free(&hw_frame);
+	std::cerr << "Unimplemented to texture:" << safe_av_get_pix_fmt_name((AVPixelFormat)frame->format) << "\n";
+	print_hwframe_transfer_formats(frame->hw_frames_ctx);
+	av_frame_free(&frame);
   }
 }
 
@@ -344,7 +344,7 @@ void EGLOut::render_once() {
   if(new_frame!= nullptr){
 	// update the texture with this frame
 	m_display_stats.n_frames_rendered++;
-	update_texture(new_frame);
+	update_texture_gl(new_frame);
   }
   // We use Red as the clear color such that it is easier to debug (black) video textures.
   cpu_glclear_time.start();

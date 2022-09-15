@@ -40,7 +40,7 @@ extern "C" {
 #include <memory>
 #include "../common_consti/ThreadsafeQueue.hpp"
 #include "../common_consti/TimeHelper.hpp"
-#include "GL_shaders.h"
+#include "gl_shaders.h"
 
 //#define X_HAS_LIB_CUDA
 #ifdef X_HAS_LIB_CUDA
@@ -76,16 +76,6 @@ struct YUV420PSwFrameTexture{
   int last_height=-1;
 };
 
-
-class XAVFrameHolder{
- public:
-  XAVFrameHolder(AVFrame* f):frame(f){};
-  ~XAVFrameHolder(){
-	//av_frame_free(f)
-  };
-  AVFrame* frame;
-};
-
 // Use " export DISPLAY=:0 " for ssh
 // Needs to be run with X server running (at least for now), otherwise glfw cannot create a OpenGL window.
 // Nice tool: https://www.vsynctester.com/https
@@ -102,7 +92,7 @@ class EGLOut {
    * Thread - safe, and since we make sure to give up the mutex in the opengl thread as soon as
    * possible this call always returns immediately (unless the thread scheduler is overloaded / does something weird).
 	*/
-  int queue_new_frame_for_display(struct AVFrame * src_frame);
+  int queue_new_frame_for_display(AVFrame * src_frame);
   // Set to true when the window and OpenGL context creation is finished (we can accept frames)
   bool render_ready=false;
   void wait_until_ready(){
@@ -132,7 +122,7 @@ class EGLOut {
   SDL_Window* win;
   SDL_Renderer* rend;
   // always called with the OpenGL context bound.
-  void update_texture(AVFrame* frame);
+  void update_texture_gl(AVFrame* frame);
   // Holds shaders for common video formats / upload techniques
   // Needs to be initialized on the GL thread.
   std::unique_ptr<GL_shaders> gl_shaders=nullptr;
