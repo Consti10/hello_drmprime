@@ -145,7 +145,7 @@ static void map_frame_test(AVFrame* frame){
   	static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
     MLOGD<<"map_frame_test\n";
     MLOGD<<"Frame W:"<<frame->width<<" H:"<<frame->height
-    <<" Cropped W:"<<av_frame_cropped_width(frame)<<" H:"<<av_frame_cropped_height(frame)<<"\n";
+    <<" Cropped W:"<<x_av_frame_cropped_width(frame)<<" H:"<<x_av_frame_cropped_height(frame)<<"\n";
     mmapBuffer.start();
     const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
     MMapFrame mapFrame(frame);

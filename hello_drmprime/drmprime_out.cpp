@@ -181,8 +181,8 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
     //}
     //MLOGD<<"desc->nb_objects:"<<desc->nb_objects<<"desc->nb_layers"<<desc->nb_layers<<"\n";
     if (drmModeAddFB2WithModifiers(de->drm_fd,
-                                   av_frame_cropped_width(frame),
-                                   av_frame_cropped_height(frame),
+                                   x_av_frame_cropped_width(frame),
+								   x_av_frame_cropped_height(frame),
                                    desc->layers[0].format, bo_handles,
                                    pitches, offsets, modifiers,
                                    &da->fb_id, DRM_MODE_FB_MODIFIERS /** 0 if no mods */) != 0) {
@@ -196,7 +196,7 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 	// as long as the format doesn't change. Doesn't work though.
 	static bool xFirst= true;
     MLOGD<<"Compose:"<<de->setup.compose.x<<","<<de->setup.compose.y<<" "<<de->setup.compose.width<<"x"<<de->setup.compose.height<<"\n";
-	MLOGD<<"AV frame width:"<<(av_frame_cropped_width(frame) << 16)<<" height:"<<av_frame_cropped_height(frame) << 16<<"\n";
+	MLOGD<<"AV frame width:"<<(x_av_frame_cropped_width(frame) << 16)<<" height:"<<x_av_frame_cropped_height(frame) << 16<<"\n";
 	// https://github.com/grate-driver/libdrm/blob/master/xf86drmMode.c#L988
 	// https://github.com/raspberrypi/linux/blob/aeaa2460db088fb2c97ae56dec6d7d0058c68294/drivers/gpu/drm/drm_ioctl.c#L670
 	// https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/gpu/drm/drm_plane.c#L800
@@ -208,8 +208,8 @@ static int da_init(DRMPrimeOut *const de, DRMPrimeOut::drm_aux *da,AVFrame* fram
 						 de->setup.compose.width,
 						 de->setup.compose.height,
 						 0, 0,
-						 av_frame_cropped_width(frame) << 16,
-						 av_frame_cropped_height(frame) << 16)!=0){
+						 x_av_frame_cropped_width(frame) << 16,
+						 x_av_frame_cropped_height(frame) << 16)!=0){
 		fprintf(stderr, "drmModeSetPlane failed: %s\n", ERRSTR);
 		return -1;
 	  }
