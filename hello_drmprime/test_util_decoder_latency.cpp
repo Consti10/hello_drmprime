@@ -151,8 +151,16 @@ static void fill_image(AVFrame* frame,int i,int y,int x){
 
 //static std::array<uint8_t,3> rgb_to_YCbCr(uint32_t rgb){
 //}
+// https://tvone.com/tech-support/faqs/120-ycrcb-values-for-various-colors
 static std::array<uint8_t,3> YCbCr_from_index(int index){
-  std::array<uint8_t ,3> ret;
+  std::array<uint8_t,3> red{81,240,90};
+  std::array<uint8_t,3> green{145,34,54};
+  std::array<uint8_t,3> blue{41,110,240};
+  const int index_mod=index % 3;
+  if(index_mod==0)return red;
+  if(index_mod==1)return green;
+  return blue;
+  /*std::array<uint8_t ,3> ret;
   ret[0]=81;
   if(index % 2 ==0){
 	ret[1]=240;
@@ -160,7 +168,7 @@ static std::array<uint8_t,3> YCbCr_from_index(int index){
 	ret[1]=10;
   }
   ret[2]=90;
-  return ret;
+  return ret;*/
 }
 
 static void fill_image2(AVFrame* frame,int index){
