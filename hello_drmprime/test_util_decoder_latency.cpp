@@ -209,14 +209,11 @@ int main(int argc, char *argv[]){
 
   AVDictionary* av_dictionary=nullptr;
   if (codec_id == AV_CODEC_ID_H264) {
-	/*always_av_opt_set(&av_dictionary, "preset", "ultrafast", 0);
-	always_av_opt_set(&av_dictionary, "tune", "zerolatency", 0);
-	always_av_opt_set(&av_dictionary,"rc-lookahead","0",0);
-	always_av_opt_set(&av_dictionary,"profile","baseline",0);*/
 	always_av_opt_set(c->priv_data, "preset", "ultrafast", 0);
 	always_av_opt_set(c->priv_data, "tune", "zerolatency", 0);
 	always_av_opt_set(c->priv_data,"rc-lookahead","0",0);
 	always_av_opt_set(c->priv_data,"profile","baseline",0);
+	//always_av_opt_set(c->priv_data,"refs","1",0);
   }else if(codec_id==AV_CODEC_ID_H265){
 	always_av_dict_set(&av_dictionary, "speed-preset", "ultrafast", 0);
 	always_av_dict_set(&av_dictionary,  "tune", "zerolatency", 0);
@@ -228,8 +225,8 @@ int main(int argc, char *argv[]){
 
   //
   //AVDictionary* av_dictionary=nullptr;
-  //av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
-  //av_dict_set(&av_dictionary,"max_delay",0,0);
+  av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
+  av_dict_set(&av_dictionary,"max_delay",0,0);
   //
   avcodec_open2(c, codec, &av_dictionary);
 
