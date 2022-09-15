@@ -329,8 +329,6 @@ int main(int argc, char *argv[]){
 	  save_frames_to_file=std::make_unique<SaveFramesToFile>(mXOptions.out_filename);
     }
 
-    const char * in_file=mXOptions.in_filename;
-
 	// These options are needed for using the foo.sdp (rtp streaming)
 	// https://stackoverflow.com/questions/20538698/minimum-sdp-for-making-a-h264-rtp-stream
 	// https://stackoverflow.com/questions/16658873/how-to-minimize-the-delay-in-a-live-streaming-with-ffmpeg
@@ -343,8 +341,8 @@ int main(int argc, char *argv[]){
 	av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
   	AVFormatContext *input_ctx = nullptr;
     // open the input file
-    if (avformat_open_input(&input_ctx, in_file, NULL, &av_dictionary) != 0) {
-        fprintf(stderr, "Cannot open input file '%s'\n", in_file);
+    if (avformat_open_input(&input_ctx, mXOptions.in_filename, NULL, &av_dictionary) != 0) {
+        fprintf(stderr, "Cannot open input file '%s'\n", mXOptions.in_filename);
         return -1;
     }
 
