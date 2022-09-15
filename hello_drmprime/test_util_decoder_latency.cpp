@@ -216,6 +216,7 @@ int main(int argc, char *argv[]){
 	always_av_opt_set(c->priv_data,"profile","baseline",0);
 	//always_av_opt_set(c->priv_data,"refs","1",0);
   }else if(codec_id==AV_CODEC_ID_H265){
+	// In contrast to h264, h265 doesn't allow setting the options directly using the "priv_data" pointer
 	always_av_dict_set(&av_dictionary, "speed-preset", "ultrafast", 0);
 	always_av_dict_set(&av_dictionary,  "tune", "zerolatency", 0);
 	always_av_dict_set(&av_dictionary, "rc-lookahead","0",0);
@@ -225,7 +226,6 @@ int main(int argc, char *argv[]){
   c->thread_count = 1;
 
   //
-  //AVDictionary* av_dictionary=nullptr;
   av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
   av_dict_set(&av_dictionary,"max_delay",0,0);
   //
@@ -268,7 +268,7 @@ int main(int argc, char *argv[]){
 	printf("sdp:[\n%s]\n", buf);
   }
   int i=0;
-  int j = 0;
+  int frameCount=0;
   auto lastFrame=std::chrono::steady_clock::now();
   while(true) {
 	if(options.keyboard_led_toggle){
@@ -292,14 +292,13 @@ int main(int argc, char *argv[]){
 	pkt.data = NULL;    // packet data will be allocated by the encoder
 	pkt.size = 0;
 	// Draw something into the frame
-	//fill_image(frame,i,0,0);
 	fill_image2(frame,i);
 	frame->pts = i;
 
 	const bool got_frame=encode_one_frame(c,frame,&pkt);
 	assert(got_frame);
 	if(got_frame){
-	  printf("Write frame %3d (size=%5d)\n", j++, pkt.size);
+	  printf("Write frame %3d (size=%5d)\n", frameCount++, pkt.size);
 	  // Change led just before writing the rtp data (for one single frame)
 	  if(options.keyboard_led_toggle){
 		switch_led_on_off();
