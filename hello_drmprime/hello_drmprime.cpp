@@ -339,6 +339,7 @@ int main(int argc, char *argv[]){
 	/*av_dict_set_int(&av_dictionary, "stimeout", 1000000, 0);
 	av_dict_set_int(&av_dictionary, "rw_timeout", 1000000, 0);*/
 	av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
+  	av_dict_set(&av_dictionary,"reuse_sockets","1",0);
   	AVFormatContext *input_ctx = nullptr;
     // open the input file
     if (avformat_open_input(&input_ctx, mXOptions.in_filename, NULL, &av_dictionary) != 0) {
