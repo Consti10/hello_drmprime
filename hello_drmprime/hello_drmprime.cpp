@@ -249,68 +249,57 @@ static const struct option long_options[] = {
 
         {NULL, 0, NULL, 0},
 };
+static Options parse_user_input(int argc, char *argv[]){
+  Options mXOptions{};
+  int c;
+  while ((c = getopt_long(argc, argv, optstr, long_options, NULL)) != -1) {
+	const char *tmp_optarg = optarg;
+	switch (c) {
+	  case 'i': mXOptions.in_filename = tmp_optarg;
+		break;
+	  case 'o': mXOptions.out_filename = tmp_optarg;
+		break;
+		//case 'y':
+		//    mXOptions.deinterlace=true;
+		//    break;
+	  case 'k': mXOptions.keyboard_led_toggle = true;
+		break;
+	  case 'r': mXOptions.render_mode = atoi(tmp_optarg);
+		break;
+	  case 'f': mXOptions.limitedFrameRate = atoi(tmp_optarg);
+		break;
+	  case 'z': mXOptions.drm_add_dummy_overlay = true;
+		break;
+	  case 'w': mXOptions.ogl_width = atoi(tmp_optarg);
+		break;
+	  case 'h': mXOptions.ogl_height = atoi(tmp_optarg);
+		break;
+	  case 'y': mXOptions.use_page_flip_on_second_frame = true;
+		break;
+	  case '?':
+	  default:
+		MLOGD << "Usage: -i --in_filename [in_filename] -o --out_filename [optional raw out filename] " <<
+			  "-y --deinterlace [enable interlacing] -k --keyboard_led_toggle [enable keyboard led toggle] " <<
+			  "-r --render_mode [render mode for frames]" << " -f --framerate [limit framerate]"
+															 "\n";
+		exit(0);
+	}
+  }
+  if(mXOptions.in_filename==NULL){
+	MLOGD<<"No input filename,terminating\n";
+	exit(-1);
+  }
+  return mXOptions;
+}
 
 int main(int argc, char *argv[]){
-    //AVFormatContext *input_ctx = nullptr;
     int ret;
-    //AVStream *video = nullptr;
     AVCodecContext *decoder_ctx = nullptr;
     const AVCodec *decoder = nullptr;
-    AVPacket packet;
-    //enum AVHWDeviceType type;
-    const char * hwdev = "drm";
     DRMPrimeOut* drm_prime_out=nullptr;
 	std::unique_ptr<EGLOut> egl_out=nullptr;
-
-    Options mXOptions{};
+    const Options mXOptions=parse_user_input(argc,argv);
     {
-        int c;
-        while ((c = getopt_long(argc, argv, optstr, long_options, NULL)) != -1) {
-            const char *tmp_optarg = optarg;
-            switch (c) {
-                case 'i':
-                    mXOptions.in_filename=tmp_optarg;
-                    break;
-                case 'o':
-                    mXOptions.out_filename=tmp_optarg;
-                    break;
-                //case 'y':
-                //    mXOptions.deinterlace=true;
-                //    break;
-                case 'k':
-                    mXOptions.keyboard_led_toggle=true;
-                    break;
-                case 'r':
-                    mXOptions.render_mode=atoi(tmp_optarg);
-                    break;
-                case 'f':
-                    mXOptions.limitedFrameRate= atoi(tmp_optarg);
-                    break;
-			  case 'z':
-					mXOptions.drm_add_dummy_overlay=true;
-					break;
-			  case 'w':
-				mXOptions.ogl_width= atoi(tmp_optarg);
-				break;
-			  case 'h':
-				mXOptions.ogl_height= atoi(tmp_optarg);
-				break;
-			  case 'y':
-				mXOptions.use_page_flip_on_second_frame=true;
-				break;
-                case '?':
-                default:
-                    MLOGD<<"Usage: -i --in_filename [in_filename] -o --out_filename [optional raw out filename] "<<
-                    "-y --deinterlace [enable interlacing] -k --keyboard_led_toggle [enable keyboard led toggle] "<<
-                    "-r --render_mode [render mode for frames]"<<" -f --framerate [limit framerate]"
-                    "\n";
-                    return 0;
-            }
-        }
-        if(mXOptions.in_filename==NULL){
-            MLOGD<<"No input filename,terminating\n";
-            return 0;
-        }
         MLOGD<<"in_filename: "<<mXOptions.in_filename<<"\n";
         MLOGD<<"out_filename: "<<(mXOptions.out_filename==NULL ? "NONE": mXOptions.out_filename)<<"\n";
         //MLOGD<<"deinterlace: "<<(mXOptions.deinterlace ? "Y":"N")<<"\n";
@@ -478,6 +467,7 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Failed to open codec for stream #%u\n", video_stream);
         return -1;
     }
+  	AVPacket packet;
     // actual decoding and dump the raw data
     const auto decodingStart=std::chrono::steady_clock::now();
     int nFeedFrames=0;
