@@ -95,8 +95,12 @@ class EGLOut {
   ~EGLOut();
   /**
    * Display this frame via egl / OpenGL render.
-   * This does not directly render the frame, but rather pushes it onto a queue
-   * where it is then picked up by the render thread.
+   * This does not directly render the frame, but rather references it to be picked up
+   * by the OpenGL thread. If you call this with a new frame before the previous frame
+   * has been picked up by the OpenGL thread, the previous frame is dropped (freed) and the
+   * OpenGL thread will pick up the given frame next time (unless you also override this one).
+   * Thread - safe, and since we make sure to give up the mutex in the opengl thread as soon as
+   * possible this call always returns immediately (unless the thread scheduler is overloaded / does something weird).
 	*/
   int queue_new_frame_for_display(struct AVFrame * src_frame);
   // Set to true when the window and OpenGL context creation is finished (we can accept frames)
@@ -113,6 +117,10 @@ class EGLOut {
   void setup_gl();
   void render_once();
   void render_thread_run();
+  // Fetch the latest, decoded frame. Thread-safe.
+  // This method can return null (in this case no new frame is available)
+  // or return the AVFrame* - in which case the caller is then responsible to free the frame
+  AVFrame* fetch_latest_decoded_frame();
  private:
   std::unique_ptr<std::thread> render_thread;
   bool terminate=false;
@@ -125,8 +133,6 @@ class EGLOut {
   SDL_Renderer* rend;
   // always called with the OpenGL context bound.
   void update_texture(AVFrame* frame);
-  // allows frame drops (higher video fps than display refresh).
-  //std::unique_ptr<ThreadsafeQueue<XAVFrameHolder>> queue=std::make_unique<ThreadsafeQueue<XAVFrameHolder>>();
   // Holds shaders for common video formats / upload techniques
   // Needs to be initialized on the GL thread.
   std::unique_ptr<GL_shaders> gl_shaders=nullptr;

@@ -331,7 +331,6 @@ void EGLOut::update_texture(AVFrame *hw_frame) {
 }
 
 void EGLOut::render_once() {
-  render_ready= true;
   cpu_frame_time.start();
   if(frame_delta_chrono== nullptr){
 	frame_delta_chrono=std::make_unique<Chronometer>("FrameDelta");
@@ -341,38 +340,11 @@ void EGLOut::render_once() {
 	frame_delta_chrono->printInIntervalls(std::chrono::seconds(3), false);
 	frame_delta_chrono->start();
   }
-  //std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  // update the video frame to the most recent one
-  // A bit overkill, but it was quicker to just copy paste the logic from hello_drmprime.
-  /*fetch_latest_frame();
-  const auto allBuffers=queue->getAllAndClear();
-  if(!allBuffers.empty()) {
-	const int nDroppedFrames = (int)allBuffers.size() - 1;
-	if (nDroppedFrames != 0) {
-	  MLOGD << "N dropped:" << nDroppedFrames << "\n";
-	}
-	// don't forget to free the dropped frames
-	for (int i = 0; i < nDroppedFrames; i++) {
-	  av_frame_free(&allBuffers[i]->frame);
-	}
-	// The latest frame is the last one we did not drop
-	const auto latest_new_frame = allBuffers[nDroppedFrames]->frame;
-	// This will free the last (rendered) av frame if given.
-	update_texture(latest_new_frame);
-  }*/
-  latest_frame_mutex.lock();
-  if(m_latest_frame!= nullptr){
-	// Make a copy so we can unlock the mutex early
-	AVFrame* new_frame=m_latest_frame;
-	m_latest_frame= nullptr;
-	// Unlock before the update function, which might take a significant amount of time.
-	latest_frame_mutex.unlock();
-	// now update the texture with this frame
+  AVFrame* new_frame=fetch_latest_decoded_frame();
+  if(new_frame!= nullptr){
+	// update the texture with this frame
 	m_display_stats.n_frames_rendered++;
 	update_texture(new_frame);
-  }else{
-	// There is no new frame, either no frame has been yet decoded or the ogl fps is higher than the video fps
-	latest_frame_mutex.unlock();
   }
   // We use Red as the clear color such that it is easier to debug (black) video textures.
   cpu_glclear_time.start();
@@ -410,6 +382,19 @@ void EGLOut::render_once() {
 }
 
 
+AVFrame *EGLOut::fetch_latest_decoded_frame() {
+  std::lock_guard<std::mutex> lock(latest_frame_mutex);
+  if(m_latest_frame!= nullptr) {
+	// Make a copy and write nullptr to the thread-shared variable such that
+	// it is not freed by the providing thread.
+	AVFrame* new_frame = m_latest_frame;
+	m_latest_frame = nullptr;
+	return new_frame;
+  }
+  return nullptr;
+}
+
+
 int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
   //if(true)return 0;
   assert(src_frame);
@@ -431,7 +416,8 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
   if(av_frame_ref(frame, src_frame)!=0){
 	fprintf(stderr, "av_frame_ref error\n");
 	av_frame_free(&frame);
-	latest_frame_mutex.lock();
+	// don't forget to give up the lock
+	latest_frame_mutex.unlock();
 	return AVERROR(EINVAL);
   }
   m_latest_frame=frame;
@@ -489,8 +475,9 @@ int EGLOut::queue_new_frame_for_display(struct AVFrame *src_frame) {
 void EGLOut::render_thread_run() {
 #ifdef X_USE_SDL
   initializeWindowRendererSDL();
+  render_ready= true;
   int close = 0;
-  while (!close) {
+  while (!close && !terminate ) {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 	  switch (event.type) {
@@ -506,6 +493,7 @@ void EGLOut::render_thread_run() {
   SDL_Quit();
 #else
   initializeWindowRenderGlfw();
+  render_ready= true;
   while (!glfwWindowShouldClose(window) && !terminate){
 	glfwPollEvents();  /// for mouse window closing
 	render_once();
@@ -513,5 +501,4 @@ void EGLOut::render_thread_run() {
   glfwTerminate();
 #endif
 }
-
 
