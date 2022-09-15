@@ -310,7 +310,7 @@ int main(int argc, char *argv[]){
 	  	MLOGD<<"use_page_flip_on_second_frame: "<<(mXOptions.use_page_flip_on_second_frame ? "Y":"N")<<"\n";
 
 		MLOGD<<"FFMPEG Version:"<<av_version_info()<<"\n";
-		print_av_hwdevice_types();
+		std::cout<<all_av_hwdevice_types();
 		print_codecs_h264_h265_mjpeg();
 		// Quite nice for development !
 	  	//av_log_set_level(AV_LOG_DEBUG);

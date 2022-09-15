@@ -269,7 +269,7 @@ bool EGLOut::update_texture_egl(AVFrame* frame) {
   if (!image) {
 	printf("Failed to create EGLImage %s\n", strerror(errno));
 	egl_frame_texture.has_valid_image= false;
-	print_hwframe_transfer_formats(frame->hw_frames_ctx);
+	std::cout<<all_av_hwframe_transfer_formats(frame->hw_frames_ctx);
 	return false;
   }
   // Note that we do not have to delete and generate the texture (ID) every time we update the egl image backing.
@@ -295,7 +295,7 @@ bool EGLOut::update_texture_egl(AVFrame* frame) {
 void EGLOut::update_texture_vdpau(AVFrame* hw_frame) {
   assert(hw_frame);
   std::cerr<<"Update_texture_vdpau:"<<safe_av_get_pix_fmt_name((AVPixelFormat)hw_frame->format)<<"slow\n";
-  print_hwframe_transfer_formats(hw_frame->hw_frames_ctx);
+  std::cout<<all_av_hwframe_transfer_formats(hw_frame->hw_frames_ctx);
   AVFrame* sw_frame=av_frame_alloc();
   assert(sw_frame);
   sw_frame->format=AV_PIX_FMT_YUV420P;
@@ -327,7 +327,7 @@ void EGLOut::update_texture_gl(AVFrame *frame) {
   }
   else{
 	std::cerr << "Unimplemented to texture:" << safe_av_get_pix_fmt_name((AVPixelFormat)frame->format) << "\n";
-	print_hwframe_transfer_formats(frame->hw_frames_ctx);
+	std::cout<<all_av_hwframe_transfer_formats(frame->hw_frames_ctx);
 	av_frame_free(&frame);
   }
 }

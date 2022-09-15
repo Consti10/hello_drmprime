@@ -69,7 +69,7 @@ include_directories(
 	/usr/include/libdrm)
 
 
-add_executable(hello_drmprime hello_drmprime.cpp drmprime_out.cpp egl_out.cpp gl_shaders.cpp gl_shaders.h   #CUDAGLInteropHelper.cpp CUDAGLInteropHelper.h
+add_executable(hello_drmprime hello_drmprime.cpp drmprime_out.cpp egl_out.cpp gl_shaders.cpp gl_shaders.h  gl_videorenderer.cpp gl_videorenderer.h #CUDAGLInteropHelper.cpp CUDAGLInteropHelper.h
 		)
 	
 target_link_libraries(hello_drmprime
