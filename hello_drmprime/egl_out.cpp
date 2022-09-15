@@ -103,7 +103,10 @@ void EGLOut::render_once() {
   if(new_frame!= nullptr){
 	// update the texture with this frame
 	m_display_stats.n_frames_rendered++;
+	cpu_update_texture.start();
 	update_texture_gl(new_frame);
+	cpu_update_texture.stop();
+	cpu_update_texture.printInIntervalls(std::chrono::seconds(3));
   }
   cpu_glclear_time.printInIntervalls(std::chrono::seconds(3), false);
   // Only render the texture if we have one (aka we have gotten at least one frame from the decoder)

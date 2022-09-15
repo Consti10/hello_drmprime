@@ -103,6 +103,8 @@ class EGLOut : public GL_VideoRenderer{
   //std::unique_ptr<GL_VideoRenderer> gl_video_renderer=nullptr;
   int frameCount=0;
   //
+  //
+  Chronometer cpu_update_texture{"CPU Update texture"};
   // Time between frames (frame time)
   std::unique_ptr<Chronometer> frame_delta_chrono=nullptr;
   // Here we measure the time the CPU spends to build the command buffer
