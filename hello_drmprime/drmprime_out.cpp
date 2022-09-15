@@ -38,6 +38,7 @@
 
 #include "MMapFrame.h"
 #include "extra_drm.h"
+#include "color_helper.h"
 #include "drmprime_out.h"
 
 #include "drm_fourcc.h"
