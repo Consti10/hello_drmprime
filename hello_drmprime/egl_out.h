@@ -42,6 +42,8 @@ extern "C" {
 #include "../common_consti/TimeHelper.hpp"
 #include "gl_shaders.h"
 
+#include "gl_videorenderer.h"
+
 //#define X_HAS_LIB_CUDA
 #ifdef X_HAS_LIB_CUDA
 #include "CUDAGLInteropHelper.h"
@@ -49,37 +51,11 @@ extern "C" {
 
 //#define X_USE_SDL
 
-struct EGLFrameTexture{
-  // I think we need to keep the av frame reference around as long as we use the generated egl texture in opengl.
-  AVFrame* av_frame= nullptr;
-  // In contrast to "hwdectogl", created once, then re-used with each new egl image.
-  // needs to be bound to the "EGL external image" target
-  GLuint texture=0;
-  // set to true if the texture currently has a egl image backing it.
-  bool has_valid_image=false;
-};
-
-struct CUDAFrameTexture{
-  // Since we memcpy with cuda, we do not need to keep the av_frame around
-  //AVFrame* av_frame=nullptr;
-  GLuint textures[2]={0,0};
-  bool has_valid_image=false;
-};
-
-struct YUV420PSwFrameTexture{
-  // Since we copy the data, we do not need to keep the av frame around
-  //AVFrame* av_frame=nullptr;
-  GLuint textures[3]={0,0,0};
-  bool has_valid_image=false;
-  // Allows us t use glTextSubImaage instead
-  int last_width=-1;
-  int last_height=-1;
-};
 
 // Use " export DISPLAY=:0 " for ssh
 // Needs to be run with X server running (at least for now), otherwise glfw cannot create a OpenGL window.
 // Nice tool: https://www.vsynctester.com/https
-class EGLOut {
+class EGLOut : public GL_VideoRenderer{
  public:
   EGLOut(int width,int height);
   ~EGLOut();
@@ -121,27 +97,11 @@ class EGLOut {
   //
   SDL_Window* win;
   SDL_Renderer* rend;
-  // always called with the OpenGL context bound.
-  void update_texture_gl(AVFrame* frame);
   // Holds shaders for common video formats / upload techniques
   // Needs to be initialized on the GL thread.
   std::unique_ptr<GL_shaders> gl_shaders=nullptr;
-  //
-#ifdef X_HAS_LIB_CUDA
-  std::unique_ptr<CUDAGLInteropHelper> m_cuda_gl_interop_helper=nullptr;
-#endif
-  bool update_texture_egl(AVFrame* frame);
-  void update_texture_cuda(AVFrame* frame);
-  void update_texture_yuv420p(AVFrame* frame);
-  void update_texture_vdpau(AVFrame* frame);
-  // green/ blue RGB(A) textures, for testing. Uploaded once, then never modified.
-  GLuint texture_rgb_green=0;
-  GLuint texture_rgb_blue=0;
+  //std::unique_ptr<GL_VideoRenderer> gl_video_renderer=nullptr;
   int frameCount=0;
-  //
-  EGLFrameTexture egl_frame_texture{};
-  CUDAFrameTexture cuda_frametexture{};
-  YUV420PSwFrameTexture yuv_420_p_sw_frame_texture{};
   //
   // Time between frames (frame time)
   std::unique_ptr<Chronometer> frame_delta_chrono=nullptr;
