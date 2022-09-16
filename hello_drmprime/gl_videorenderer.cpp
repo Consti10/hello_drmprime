@@ -237,7 +237,7 @@ void GL_VideoRenderer::update_texture_vdpau(AVFrame* hw_frame) {
 	av_frame_free(&hw_frame);
 	return;
   }
-  update_texture_yuv420p(sw_frame);
+  update_texture_yuv420P_yuv422P(sw_frame);
   //av_frame_free(&sw_frame);
   av_frame_free(&hw_frame);
 }

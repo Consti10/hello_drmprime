@@ -49,7 +49,7 @@ extern "C" {
 #include "CUDAGLInteropHelper.h"
 #endif
 
-//#define X_USE_SDL
+#define X_USE_SDL
 
 
 // Use " export DISPLAY=:0 " for ssh
