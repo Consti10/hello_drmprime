@@ -24,6 +24,7 @@ EGLOut::~EGLOut() {
 }
 
 void EGLOut::initializeWindowRenderGlfw() {
+#ifndef X_USE_SDL
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
   glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
@@ -50,9 +51,11 @@ void EGLOut::initializeWindowRenderGlfw() {
   }
   glfwSwapInterval(0);
   setup_gl();
+#endif
 }
 
 void EGLOut::initializeWindowRendererSDL() {
+#ifdef X_USE_SDL
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 	printf("error initializing SDL: %s\n", SDL_GetError());
 	return;
@@ -69,6 +72,7 @@ void EGLOut::initializeWindowRendererSDL() {
   // creates a renderer to render our images
   rend = SDL_CreateRenderer(win, -1, render_flags);
   setup_gl();
+#endif
 }
 
 void EGLOut::setup_gl() {
@@ -77,7 +81,7 @@ void EGLOut::setup_gl() {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glViewport(0, 0, window_width, window_height);
   gl_video_renderer=std::make_unique<GL_VideoRenderer>();
-  gl_video_renderer->init_gl();
+  gl_video_renderer->init_gl(rend);
 }
 
 
@@ -103,7 +107,7 @@ void EGLOut::render_once() {
 	cpu_update_texture.start();
 	gl_video_renderer->update_texture_gl(new_frame);
 	cpu_update_texture.stop();
-	cpu_update_texture.printInIntervalls(std::chrono::seconds(3));
+	cpu_update_texture.printInIntervalls(std::chrono::seconds(3), false);
   }
   cpu_glclear_time.printInIntervalls(std::chrono::seconds(3), false);
   // Only render the texture if we have one (aka we have gotten at least one frame from the decoder)

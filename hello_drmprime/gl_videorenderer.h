@@ -9,6 +9,9 @@
 #include "avcodec_helper.hpp"
 #include "gl_shaders.h"
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_render.h>
+
 struct EGLFrameTexture{
   // I think we need to keep the av frame reference around as long as we use the generated egl texture in opengl.
   AVFrame* av_frame= nullptr;
@@ -34,12 +37,14 @@ struct YUV420PSwFrameTexture{
   // Allows us t use glTextSubImaage instead
   int last_width=-1;
   int last_height=-1;
+  SDL_Texture* sdl_texture=nullptr;
 };
 
 class GL_VideoRenderer {
  public:
   // always called with the OpenGL context bound.
-  void init_gl();
+  void init_gl(SDL_Renderer* sdl_renderer);
+  SDL_Renderer* sdl_renderer;
   // called from the gl thread, update the appropriate texture type with a new video frame
   // (The old one will be freed if still around).
   void update_texture_gl(AVFrame* frame);

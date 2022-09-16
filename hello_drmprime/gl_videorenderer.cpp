@@ -39,7 +39,8 @@ static void create_rgba_texture(GLuint& tex_id,uint32_t color_rgba){
   glBindTexture(GL_TEXTURE_2D,0);
 }
 
-void GL_VideoRenderer::init_gl() {
+void GL_VideoRenderer::init_gl(SDL_Renderer* sdl_renderer) {
+  this->sdl_renderer=sdl_renderer;
   create_rgba_texture(texture_rgb_green, create_pixel_rgba(0,255,0,255));
   create_rgba_texture(texture_rgb_blue, create_pixel_rgba(0,0,255,255));
   gl_shaders=std::make_unique<GL_shaders>();
@@ -52,6 +53,26 @@ void GL_VideoRenderer::init_gl() {
 void GL_VideoRenderer::update_texture_yuv420P_yuv422P(AVFrame* frame) {
   assert(frame);
   assert(frame->format==AV_PIX_FMT_YUV420P || frame->format==AV_PIX_FMT_YUVJ422P);
+  if(true){
+	if(yuv_420_p_sw_frame_texture.sdl_texture== nullptr){
+	  yuv_420_p_sw_frame_texture.sdl_texture = SDL_CreateTexture(sdl_renderer,
+																 SDL_PIXELFORMAT_YV12,
+									SDL_TEXTUREACCESS_STREAMING,
+									frame->width,
+									frame->height);
+	  assert(yuv_420_p_sw_frame_texture.sdl_texture!= nullptr);
+	}
+	std::cout<<"Colorspace:"<<safe_av_get_colorspace_name(frame->colorspace)<<"\n";
+	SDL_UpdateYUVTexture(yuv_420_p_sw_frame_texture.sdl_texture, nullptr,
+						 frame->data[0],
+						 frame->linesize[0],
+						 frame->data[1],
+						 frame->linesize[1],
+						 frame->data[2],
+						 frame->linesize[2]);
+	yuv_420_p_sw_frame_texture.has_valid_image= true;
+	return;
+  }
   for(int i=0;i<3;i++){
 	if(yuv_420_p_sw_frame_texture.textures[i]==0){
 	  glGenTextures(1,&yuv_420_p_sw_frame_texture.textures[i]);
@@ -271,9 +292,15 @@ void GL_VideoRenderer::draw_texture_gl() {
   }else if(cuda_frametexture.has_valid_image) {
 	gl_shaders->draw_NV12(cuda_frametexture.textures[0], cuda_frametexture.textures[1]);
   }else if(yuv_420_p_sw_frame_texture.has_valid_image){
-	gl_shaders->draw_YUV420P(yuv_420_p_sw_frame_texture.textures[0],
-							 yuv_420_p_sw_frame_texture.textures[1],
-							 yuv_420_p_sw_frame_texture.textures[2]);
+	if(yuv_420_p_sw_frame_texture.sdl_texture!= nullptr){
+	  //std::cout<<"SDL render\n";
+	  SDL_RenderCopy(sdl_renderer, yuv_420_p_sw_frame_texture.sdl_texture, nullptr, nullptr);
+	}else{
+	  std::cout<<"Cust render\n";
+	  gl_shaders->draw_YUV420P(yuv_420_p_sw_frame_texture.textures[0],
+							   yuv_420_p_sw_frame_texture.textures[1],
+							   yuv_420_p_sw_frame_texture.textures[2]);
+	}
   }
   else{
 	// no valid video texture yet, alternating draw the rgb textures.

@@ -198,7 +198,12 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,AVPacket *pack
             //MLOGD<<"Frame pts:"<<frame->pts<<" Set to:"<<now<<"\n";
             //frame->pts=now;
             frame->pts=beforeFeedFrameUs;
-		  	std::cout<<"Got frame format:"<<safe_av_get_pix_fmt_name((AVPixelFormat)frame->format)<<"\n";
+		  	{
+				std::stringstream ss;
+				ss<<"Got frame format:"<<safe_av_get_pix_fmt_name((AVPixelFormat)frame->format)<<
+				" colorspace:"<<safe_av_get_colorspace_name(frame->colorspace)<<"\n";
+				std::cout<<ss.str();
+			}
             // display frame
 			if(drm_prime_out!= nullptr){
 			  drm_prime_out->queue_new_frame_for_display(frame);
@@ -378,12 +383,12 @@ int main(int argc, char *argv[]){
 	bool is_mjpeg=false;
     if (decoder->id == AV_CODEC_ID_H264) {
 	    std::cout<<"H264 decode\n";
-        if ((decoder = avcodec_find_decoder_by_name("h264_v4l2m2m")) == NULL) {
+        /*if ((decoder = avcodec_find_decoder_by_name("h264_v4l2m2m")) == NULL) {
             fprintf(stderr, "Cannot find the h264 v4l2m2m decoder\n");
             return -1;
-        }
-	  	wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
-		//wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
+        }*/
+	  	//wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
+		wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
     }
     else if(decoder->id==AV_CODEC_ID_H265){
 	  	assert(decoder->id==AV_CODEC_ID_H265);
@@ -409,10 +414,10 @@ int main(int argc, char *argv[]){
             }
         }
 
-		wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
+		//wanted_hw_pix_fmt = AV_PIX_FMT_DRM_PRIME;
 	  	//wanted_hw_pix_fmt = AV_PIX_FMT_CUDA;
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
-	  	//wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
+	  	wanted_hw_pix_fmt = AV_PIX_FMT_YUV420P;
 	  	//wanted_hw_pix_fmt = AV_PIX_FMT_VAAPI;
 		//wanted_hw_pix_fmt = AV_PIX_FMT_VDPAU;
     }else if(decoder->id==AV_CODEC_ID_MJPEG){

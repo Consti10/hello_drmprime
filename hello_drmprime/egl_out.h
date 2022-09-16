@@ -15,12 +15,19 @@
 #include <chrono>
 
 // we support glfw or SDL for context creation
+#define X_USE_SDL
+#include <SDL2/SDL.h>
+#ifdef X_USE_SDL
+#else
 #define GLFW_INCLUDE_ES2
 extern "C" {
 #include <GLFW/glfw3.h>
+}
+#endif
+
+extern "C"{
 #include "glhelp.h"
 }
-#include <SDL2/SDL.h>
 
 #include <drm_fourcc.h>
 
@@ -48,8 +55,6 @@ extern "C" {
 #ifdef X_HAS_LIB_CUDA
 #include "CUDAGLInteropHelper.h"
 #endif
-
-#define X_USE_SDL
 
 
 // Use " export DISPLAY=:0 " for ssh
@@ -93,10 +98,12 @@ class EGLOut{
   int window_width;
   int window_height;
   //
-  GLFWwindow* window= nullptr;
-  //
+#ifdef X_USE_SDL
   SDL_Window* win;
   SDL_Renderer* rend;
+#else
+  GLFWwindow* window= nullptr;
+#endif
   std::unique_ptr<GL_VideoRenderer> gl_video_renderer=nullptr;
   int frameCount=0;
   //
