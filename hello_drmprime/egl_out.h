@@ -15,7 +15,7 @@
 #include <chrono>
 
 // we support glfw or SDL for context creation
-#define X_USE_SDL
+//#define X_USE_SDL
 #include <SDL2/SDL.h>
 #ifdef X_USE_SDL
 #else

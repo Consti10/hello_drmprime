@@ -87,7 +87,11 @@ void EGLOut::setup_gl() {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glViewport(0, 0, window_width, window_height);
   gl_video_renderer=std::make_unique<GL_VideoRenderer>();
+#ifdef X_USE_SDL
   gl_video_renderer->init_gl(rend);
+#else
+  gl_video_renderer->init_gl(nullptr);
+#endif
 }
 
 
