@@ -51,6 +51,8 @@ void EGLOut::initializeWindowRenderGlfw() {
   }
   glfwSwapInterval(0);
   setup_gl();
+#else
+  assert(false);
 #endif
 }
 
@@ -66,12 +68,16 @@ void EGLOut::initializeWindowRendererSDL() {
 									 SDL_WINDOWPOS_CENTERED,
 									 SDL_WINDOWPOS_CENTERED,
 									window_width, window_height, flags);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
   // triggers the program that controls
   // your graphics hardware and sets flags
   Uint32 render_flags = SDL_RENDERER_ACCELERATED;
   // creates a renderer to render our images
   rend = SDL_CreateRenderer(win, -1, render_flags);
   setup_gl();
+#else
+  assert(false);
 #endif
 }
 
