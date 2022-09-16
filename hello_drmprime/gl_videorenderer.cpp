@@ -62,7 +62,11 @@ void GL_VideoRenderer::update_texture_yuv420P_yuv422P(AVFrame* frame) {
 									frame->height);
 	  assert(yuv_420_p_sw_frame_texture.sdl_texture!= nullptr);
 	}
-	std::cout<<"Colorspace:"<<safe_av_get_colorspace_name(frame->colorspace)<<"\n";
+	if(frame->format==AV_PIX_FMT_YUV420P){
+	  SDL_SetYUVConversionMode(SDL_YUV_CONVERSION_JPEG);
+	}else{
+	  SDL_SetYUVConversionMode(SDL_YUV_CONVERSION_BT601);
+	}
 	SDL_UpdateYUVTexture(yuv_420_p_sw_frame_texture.sdl_texture, nullptr,
 						 frame->data[0],
 						 frame->linesize[0],

@@ -212,7 +212,7 @@ static int decode_and_wait_for_frame(AVCodecContext * const avctx,AVPacket *pack
 			  egl_out->queue_new_frame_for_display(frame);
 			}
         }else{
-            std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";
+            //std::cout<<"avcodec_receive_frame returned:"<<ret<<"\n";
 			// for some video files, the decoder does not output a frame every time a h264 frame has been fed
 			// In this case, I unblock after X seconds, but we cannot measure the decode delay by using the before-after
 			// approach. We can still measure it using the pts timestamp from av, but this one cannot necessarily be trusted 100%
