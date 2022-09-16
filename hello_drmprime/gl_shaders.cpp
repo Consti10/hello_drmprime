@@ -244,7 +244,7 @@ void GL_shaders::initialize() {
   checkGlError("Create VBO");
 }
 
-void GL_shaders::beforeDrawVboSetup(GLint pos, GLint uvs) {
+void GL_shaders::beforeDrawVboSetup(GLint pos, GLint uvs) const {
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glEnableVertexAttribArray(pos);
   glEnableVertexAttribArray(uvs);
