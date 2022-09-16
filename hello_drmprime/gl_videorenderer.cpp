@@ -53,7 +53,7 @@ void GL_VideoRenderer::init_gl(SDL_Renderer* sdl_renderer) {
 void GL_VideoRenderer::update_texture_yuv420P_yuv422P(AVFrame* frame) {
   assert(frame);
   assert(frame->format==AV_PIX_FMT_YUV420P || frame->format==AV_PIX_FMT_YUVJ422P);
-  if(true){
+  if(false){
 	if(yuv_420_p_sw_frame_texture.sdl_texture== nullptr){
 	  yuv_420_p_sw_frame_texture.sdl_texture = SDL_CreateTexture(sdl_renderer,
 																 SDL_PIXELFORMAT_YV12,
@@ -84,8 +84,9 @@ void GL_VideoRenderer::update_texture_yuv420P_yuv422P(AVFrame* frame) {
 	}
 	GL_shaders::checkGlError("Xupload YUV420P");
 	glBindTexture(GL_TEXTURE_2D, yuv_420_p_sw_frame_texture.textures[i]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	const auto test_texture_target=GL_TEXTURE_2D;
+	glTexParameteri(test_texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(test_texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	bool use_tex_sub_image= false;
 	if(yuv_420_p_sw_frame_texture.last_width==frame->width &&
@@ -98,18 +99,18 @@ void GL_VideoRenderer::update_texture_yuv420P_yuv422P(AVFrame* frame) {
 	if(i==0){
 	  // Full Y plane
 	  if(use_tex_sub_image){
-		glTexSubImage2D(GL_TEXTURE_2D,0,0,0,frame->width,frame->height,GL_LUMINANCE,GL_UNSIGNED_BYTE,frame->data[0]);
+		glTexSubImage2D(test_texture_target,0,0,0,frame->width,frame->height,GL_LUMINANCE,GL_UNSIGNED_BYTE,frame->data[0]);
 	  }else{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width, frame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[0]);
+		glTexImage2D(test_texture_target, 0, GL_LUMINANCE, frame->width, frame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[0]);
 	  }
 	}else{
 	  // half size U,V planes
 	  const int frame_width=frame->format==AV_PIX_FMT_YUV420P ? frame->width / 2 : frame->width;
 	  const int frame_height=frame->height / 2;
 	  if(use_tex_sub_image){
-		glTexSubImage2D(GL_TEXTURE_2D, 0,0,0, frame_width, frame_height, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[i]);
+		glTexSubImage2D(test_texture_target, 0,0,0, frame_width, frame_height, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[i]);
 	  } else{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame_width, frame_height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[i]);
+		glTexImage2D(test_texture_target, 0, GL_LUMINANCE, frame_width, frame_height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[i]);
 	  }
 	}
 	glBindTexture(GL_TEXTURE_2D,0);

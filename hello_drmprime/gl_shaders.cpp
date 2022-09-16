@@ -95,8 +95,12 @@ static const GLchar* fragment_shader_source_YUV420P =
 //
 	"    yuv += offset;\n"
 	"    rgb.r = dot(yuv, Rcoeff);\n"
+	"    rgb.r = dot(yuv, Rcoeff);\n"
 	"    rgb.g = dot(yuv, Gcoeff);\n"
 	"    rgb.b = dot(yuv, Bcoeff);\n"
+	//"rgb.r=yuv.z;\n"
+	//"rgb.g*=0.000000001;\n"
+	//"rgb.b*=0.000000001;\n"
 	/*"	mat3 colorMatrix = mat3(\n"
 	"		1.1644f, 1.1644f, 1.1644f,\n"
 	"        0.0f, -0.3917f, 2.0172f,\n"
