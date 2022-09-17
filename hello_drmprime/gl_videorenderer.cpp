@@ -320,13 +320,15 @@ static std::string safe_glGetString(GLenum name){
   if(tmp==nullptr)return "Unknown";
   return std::string((const char*)tmp); // NOLINT(modernize-return-braced-init-list)
 }
-void GL_VideoRenderer::debug_info() {
+std::string GL_VideoRenderer::debug_info() {
   const auto gl_vendor= safe_glGetString(GL_VENDOR);
   const auto gl_renderer= safe_glGetString(GL_RENDERER);
   const auto gl_version= safe_glGetString(GL_VERSION);
   const auto gl_shading_language_version= safe_glGetString(GL_SHADING_LANGUAGE_VERSION);
-  printf("GL_VENDOR    : %s\n", gl_vendor.c_str() );
-  printf("GL_RENDERER  : %s\n", gl_renderer.c_str() );
-  printf("GL_VERSION  : %s\n", gl_version.c_str() );
-  printf("GL_SHADING_LANGUAGE_VERSION : %s\n", gl_shading_language_version.c_str());
+  std::stringstream ss;
+  ss<<"GL_VENDOR    : "<< gl_vendor<<"\n";
+  ss<<"GL_RENDERER  : "<< gl_renderer<<"\n";
+  ss<<"GL_VERSION  : "<< gl_version<<"\n";
+  ss<<"GL_SHADING_LANGUAGE_VERSION : "<< gl_shading_language_version<<"\n";
+  return ss.str();
 }

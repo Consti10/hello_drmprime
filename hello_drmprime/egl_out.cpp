@@ -82,7 +82,7 @@ void EGLOut::initializeWindowRendererSDL() {
 }
 
 void EGLOut::setup_gl() {
-  GL_VideoRenderer::debug_info();
+  std::cout<<GL_VideoRenderer::debug_info();
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glViewport(0, 0, window_width, window_height);
   gl_video_renderer=std::make_unique<GL_VideoRenderer>();
