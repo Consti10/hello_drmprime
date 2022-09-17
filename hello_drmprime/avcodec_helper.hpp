@@ -61,8 +61,6 @@ static std::string safe_av_get_colorspace_name(enum AVColorSpace val){
   return {tmp};
 }
 
-
-
 static std::string all_av_hwframe_transfer_formats(AVBufferRef *hwframe_ctx){
   std::stringstream ss;
   if(hwframe_ctx== nullptr){

@@ -53,6 +53,7 @@ class GL_VideoRenderer {
   //
   int curr_video_width=0;
   int curr_video_height=0;
+  static void debug_info();
  private:
   // Holds shaders for common video formats / upload techniques
   // Needs to be initialized on the GL thread.
