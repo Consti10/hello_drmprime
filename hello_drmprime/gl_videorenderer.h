@@ -45,7 +45,7 @@ class GL_VideoRenderer {
   // always called with the OpenGL context bound.
   void init_gl(SDL_Renderer* sdl_renderer);
   SDL_Renderer* sdl_renderer;
-  // called from the gl thread, update the appropriate texture type with a new video frame
+  // MUST BE ! called from the gl thread, update the appropriate texture type with a new video frame
   // (The old one will be freed if still around).
   void update_texture_gl(AVFrame* frame);
   // draw the latest updated video texture (or the alternating colors if no video texture is set)
