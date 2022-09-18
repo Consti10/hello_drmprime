@@ -90,31 +90,6 @@ static const GLchar* fragment_shader_source_YUV420P =
 	"                1,  -0.344,  -0.714,\n"
 	"                1,   1.772,   0);\n"
 	"	vec3 rgb=yuv*colorMatrix;\n"
-	/*"// YUV offset \n"
-	"const vec3 offset = vec3(0, -0.501960814, -0.501960814);\n"
-	"\n"
-	"// RGB coefficients \n"
-	"const vec3 Rcoeff = vec3(1,  0.000,  1.402);\n"
-	"const vec3 Gcoeff = vec3(1, -0.3441, -0.7141);\n"
-	"const vec3 Bcoeff = vec3(1,  1.772,  0.000);\n"
-//
-	"    yuv += offset;\n"
-	"    rgb.r = dot(yuv, Rcoeff);\n"
-	"    rgb.r = dot(yuv, Rcoeff);\n"
-	"    rgb.g = dot(yuv, Gcoeff);\n"
-	"    rgb.b = dot(yuv, Bcoeff);\n"*/
-	//"rgb.r=yuv.z;\n"
-	//"rgb.g*=0.000000001;\n"
-	//"rgb.b*=0.000000001;\n"
-	/*"	mat3 colorMatrix = mat3(\n"
-	"		1.1644f, 1.1644f, 1.1644f,\n"
-	"        0.0f, -0.3917f, 2.0172f,\n"
-	"        1.5960f, -0.8129f, 0.0f"
-	"		);\n"*/
-	/*"	mat3 colorMatrix = mat3(\n"
-	"		1,   0,       1.402,\n"
-	"		1,  -0.344,  -0.714,\n"
-	"		1,   1.772,   0);\n"*/
 	"	out_color = vec4(rgb, 1.0);\n"
 	"}\n";
 static const GLchar* fragment_shader_source_NV12 =
