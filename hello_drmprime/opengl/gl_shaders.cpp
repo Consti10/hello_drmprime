@@ -299,12 +299,21 @@ static void unbind_textures(int n_textures){
     // Overkill, but needed for QT
     glActiveTexture(GL_TEXTURE0);
 }
+// Set texture uniforms such that the first one is bound to uniform 0,
+// second one to uniform 1 etc
+static void set_uniforms_ascending(std::vector<GLint> uniforms){
+  for(unsigned int i=0;i<uniforms.size();i++){
+	glUniform1i(uniforms[i], i);
+  }
+}
 
 void GL_shaders::draw_YUV420P(GLuint textureY, GLuint textureU, GLuint textureV) {
   checkGlError("B Draw YUV420 texture");
   glUseProgram(yuv_420P_shader.program);
   const std::vector<GLuint> textures{textureY,textureU,textureV};
   bind_textures(textures);
+  const std::vector<GLint> uniforms{yuv_420P_shader.s_texture_y,yuv_420P_shader.s_texture_u,yuv_420P_shader.s_texture_v};
+  set_uniforms_ascending(uniforms);
   beforeDrawVboSetup(yuv_420P_shader.pos,yuv_420P_shader.uvs);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   afterDrawVboCleanup(yuv_420P_shader.pos,yuv_420P_shader.uvs);
@@ -316,6 +325,8 @@ void GL_shaders::draw_NV12(GLuint textureY, GLuint textureUV) {
   glUseProgram(nv12_shader.program);
   const std::vector<GLuint> textures{textureY,textureUV};
   bind_textures(textures);
+  const std::vector<GLint> uniforms{nv12_shader.s_texture_y,nv12_shader.s_texture_uv};
+  set_uniforms_ascending(uniforms);
   beforeDrawVboSetup(nv12_shader.pos,nv12_shader.uvs);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   afterDrawVboCleanup(nv12_shader.pos,nv12_shader.uvs);
