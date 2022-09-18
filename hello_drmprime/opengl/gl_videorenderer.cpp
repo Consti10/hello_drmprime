@@ -79,7 +79,8 @@ void GL_VideoRenderer::update_texture_yuv420P_yuv422P(AVFrame* frame) {
   }
   const GLuint frame_width=frame->width;
   const GLuint frame_height=frame->height;
-  const GLuint uv_width=frame_width/2;
+  const bool is_yuv422=frame->format==AV_PIX_FMT_YUVJ422P;
+  const GLuint uv_width= is_yuv422 ? frame_width : frame_width/2;
   const GLuint uv_height=frame_height/2;
   GLuint widths[3] = {
 	  frame_width,

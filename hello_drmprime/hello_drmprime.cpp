@@ -433,7 +433,7 @@ int main(int argc, char *argv[]){
 	// needed for FFMPEG ?
 	//decoder_ctx->extra_hw_frames = 10;
 
-    if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
+    /*if (hw_decoder_init(decoder_ctx, kAvhwDeviceType) < 0){
 	  std::cerr<<"HW decoder init failed,fallback to SW decode\n";
 	  // Use SW decode as fallback ?!
 	  //return -1;
@@ -442,7 +442,7 @@ int main(int argc, char *argv[]){
 		wanted_hw_pix_fmt=AV_PIX_FMT_YUVJ422P;
 	  }
 	  wanted_hw_pix_fmt=AV_PIX_FMT_YUV420P;
-	}
+	}*/
 
     // Consti10
     decoder_ctx->thread_count = 1;
