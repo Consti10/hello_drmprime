@@ -77,44 +77,34 @@ void GL_VideoRenderer::update_texture_yuv420P_yuv422P(AVFrame* frame) {
 	yuv_420_p_sw_frame_texture.has_valid_image= true;
 	return;
   }
+  const int frame_width=frame->width;
+  const int frame_height=frame->height;
+  const int uv_width=frame_width/2;
+  const int uv_height=frame_height/2;
+  GLuint widths[3] = {
+	  frame_width,
+	  uv_width,
+	  uv_width
+  };
+  GLuint heights[3] = {
+	  frame_height,
+	  uv_height,
+	  uv_height
+  };
   for(int i=0;i<3;i++){
 	if(yuv_420_p_sw_frame_texture.textures[i]==0){
 	  glGenTextures(1,&yuv_420_p_sw_frame_texture.textures[i]);
 	  assert(yuv_420_p_sw_frame_texture.textures[i]>0);
 	}
-	GL_shaders::checkGlError("Xupload YUV420P");
-	glBindTexture(GL_TEXTURE_2D, yuv_420_p_sw_frame_texture.textures[i]);
-	const auto test_texture_target=GL_TEXTURE_2D;
-	glTexParameteri(test_texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(test_texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	bool use_tex_sub_image= false;
-	if(yuv_420_p_sw_frame_texture.last_width==frame->width &&
-		yuv_420_p_sw_frame_texture.last_height==frame->height){
-	  //use_tex_sub_image= true;
-	}else{
-	  yuv_420_p_sw_frame_texture.last_width=frame->width;
-	  yuv_420_p_sw_frame_texture.last_height=frame->height;
-	}
-	if(i==0){
-	  // Full Y plane
-	  if(use_tex_sub_image){
-		glTexSubImage2D(test_texture_target,0,0,0,frame->width,frame->height,GL_LUMINANCE,GL_UNSIGNED_BYTE,frame->data[0]);
-	  }else{
-		glTexImage2D(test_texture_target, 0, GL_LUMINANCE, frame->width, frame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[0]);
-	  }
-	}else{
-	  // half size U,V planes
-	  const int frame_width=frame->format==AV_PIX_FMT_YUV420P ? frame->width / 2 : frame->width;
-	  const int frame_height=frame->height / 2;
-	  if(use_tex_sub_image){
-		glTexSubImage2D(test_texture_target, 0,0,0, frame_width, frame_height, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[i]);
-	  } else{
-		glTexImage2D(test_texture_target, 0, GL_LUMINANCE, frame_width, frame_height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[i]);
-	  }
-	}
-	glBindTexture(GL_TEXTURE_2D,0);
+	const auto test_texture_target=GL_TEXTURE_2D;
+	glBindTexture(test_texture_target, yuv_420_p_sw_frame_texture.textures[i]);
+	glTexParameteri(test_texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(test_texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(test_texture_target, 0, GL_LUMINANCE, widths[i], heights[i], 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, frame->data[i]);
   }
+  glBindTexture(GL_TEXTURE_2D,0);
+  GL_shaders::checkGlError("upload YUV420P");
   yuv_420_p_sw_frame_texture.has_valid_image= true;
   std::cout<<"Colorspace:"<<av_color_space_name(frame->colorspace)<<"\n";
   av_frame_free(&frame);
@@ -303,7 +293,7 @@ void GL_VideoRenderer::draw_texture_gl() {
 	  //std::cout<<"SDL render\n";
 	  SDL_RenderCopy(sdl_renderer, yuv_420_p_sw_frame_texture.sdl_texture, nullptr, nullptr);
 	}else{
-	  std::cout<<"Cust render\n";
+	  //std::cout<<"Cust render\n";
 	  gl_shaders->draw_YUV420P(yuv_420_p_sw_frame_texture.textures[0],
 							   yuv_420_p_sw_frame_texture.textures[1],
 							   yuv_420_p_sw_frame_texture.textures[2]);
