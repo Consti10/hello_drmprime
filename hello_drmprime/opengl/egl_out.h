@@ -45,8 +45,8 @@ extern "C" {
 
 #include <thread>
 #include <memory>
-#include "../common_consti/ThreadsafeQueue.hpp"
-#include "../common_consti/TimeHelper.hpp"
+#include <mutex>
+#include "../../common_consti/TimeHelper.hpp"
 #include "gl_shaders.h"
 
 #include "gl_videorenderer.h"

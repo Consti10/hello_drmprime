@@ -17,7 +17,7 @@ extern "C" {
 #include "libavutil/pixdesc.h"
 }
 
-#include "../common_consti/ThreadsafeQueue.hpp"
+#include "../../common_consti/ThreadsafeQueue.hpp"
 #include "MMapFrame.h"
 #include <memory>
 #include <thread>

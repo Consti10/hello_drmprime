@@ -3,11 +3,9 @@
 //
 
 #include "egl_out.h"
-#include "avcodec_helper.hpp"
+#include "../avcodec_helper.hpp"
 
 #include <cassert>
-#include "extra_drm.h"
-
 
 
 EGLOut::EGLOut(int width, int height) :window_width(width),window_height(height){

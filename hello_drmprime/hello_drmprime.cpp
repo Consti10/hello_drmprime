@@ -54,8 +54,8 @@ extern "C" {
 #include "libavutil/pixdesc.h"
 }
 
-#include "drmprime_out.h"
-#include "egl_out.h"
+#include "drm_kms/drmprime_out.h"
+#include "opengl/egl_out.h"
 
 #include <chrono>
 #include <iostream>
@@ -68,8 +68,6 @@ extern "C" {
 #include "../common_consti/LEDSwap.h"
 #include "../common_consti/Logger.hpp"
 //
-
-#include "MMapFrame.h"
 #include "SaveFramesToFile.hpp"
 #include "avcodec_helper.hpp"
 
@@ -139,24 +137,6 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx,const enum AVPixelFo
 	  fprintf(stderr, "Failed to get HW surface format. Wanted: %s\n", av_get_pix_fmt_name(wanted_hw_pix_fmt));
 	}
     return ret;
-}
-
-static void map_frame_test(AVFrame* frame){
-  	static std::unique_ptr<std::vector<uint8_t>> copyBuffer=std::make_unique<std::vector<uint8_t>>(1920*1080*10);
-    MLOGD<<"map_frame_test\n";
-    MLOGD<<"Frame W:"<<frame->width<<" H:"<<frame->height
-    <<" Cropped W:"<<x_av_frame_cropped_width(frame)<<" H:"<<x_av_frame_cropped_height(frame)<<"\n";
-    mmapBuffer.start();
-    const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)frame->data[0];
-    MMapFrame mapFrame(frame);
-    copyMmappedBuffer.start();
-    //memcpy(copyBuffer->data(),buffMapped,obj->size);
-    memcpy_uint8(copyBuffer->data(),mapFrame.map,mapFrame.map_size);
-    copyMmappedBuffer.stop();
-    copyMmappedBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
-    mapFrame.unmap();
-    mmapBuffer.stop();
-    mmapBuffer.printInIntervals(CALCULATOR_LOG_INTERVAL);
 }
 
 //Sends one frame to the decoder, then waits for the output frame to become available

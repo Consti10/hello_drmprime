@@ -13,11 +13,22 @@ extern "C" {
 #include "libavutil/hwcontext_drm.h"
 #include "libavutil/pixdesc.h"
 }
-#include "extra.h"
-#include "../common_consti/Logger.hpp"
+#include "../../common_consti/Logger.hpp"
 #include <fcntl.h>
 #include <unistd.h>
 #include <string>
+
+static void memcpy_uint8_loop(uint8_t* dst,const uint8_t* src,size_t length){
+  for(int i=0;i<length;i++){
+	dst[i]=src[i];
+  }
+}
+
+static void memcpy_uint8(uint8_t* dst,const uint8_t* src,size_t length){
+  //memcpy_uint8_neon(dst,src,length);
+  //memcpy_uint8_neon(dst,src,length);
+  memcpy_uint8_loop(dst,src,length);
+}
 
 // MMap a drm prime ffmpeg frame
 class MMapFrame{
