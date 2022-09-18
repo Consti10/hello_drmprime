@@ -12,7 +12,7 @@ extern "C" {
 #include "libavutil/frame.h"
 }
 
-#define NV12_PLANES 2
+static constexpr auto NV12_PLANES=2;
 
 // Helper class to CUDA memcpy a ffmpeg CUDA (decoded) image into a NV12 OpenGL Texture
 // ( Actually, 2 textures with 1xY and 1xU,V interleaved, the NV12 to RGB conversion is then done in a custom OpenGL shader)
