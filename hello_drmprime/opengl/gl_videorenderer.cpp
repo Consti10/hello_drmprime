@@ -77,10 +77,10 @@ void GL_VideoRenderer::update_texture_yuv420P_yuv422P(AVFrame* frame) {
 	yuv_420_p_sw_frame_texture.has_valid_image= true;
 	return;
   }
-  const int frame_width=frame->width;
-  const int frame_height=frame->height;
-  const int uv_width=frame_width/2;
-  const int uv_height=frame_height/2;
+  const GLuint frame_width=frame->width;
+  const GLuint frame_height=frame->height;
+  const GLuint uv_width=frame_width/2;
+  const GLuint uv_height=frame_height/2;
   GLuint widths[3] = {
 	  frame_width,
 	  uv_width,
@@ -305,6 +305,19 @@ void GL_VideoRenderer::draw_texture_gl() {
 	gl_shaders->draw_rgb(rgb_texture);
 	frameCount++;
   }
+}
+
+void GL_VideoRenderer::clean_video_textures_gl()
+{
+    if(egl_frame_texture.av_frame!=nullptr){
+        av_frame_free(&egl_frame_texture.av_frame);
+    }
+    // For the other ones we don't keep a av frame reference around
+    egl_frame_texture.has_valid_image=false;
+    cuda_frametexture.has_valid_image=false;
+    yuv_420_p_sw_frame_texture.has_valid_image=false;
+    curr_video_width=0;
+    curr_video_height=0;
 }
 
 static std::string safe_glGetString(GLenum name){
