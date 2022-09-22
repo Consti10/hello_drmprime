@@ -119,7 +119,7 @@ void EGLOut::render_once() {
   cpu_glclear_time.printInIntervalls(std::chrono::seconds(3), false);
   // Only render the texture if we have one (aka we have gotten at least one frame from the decoder)
   // Note that otherwise, if we render via OpenGL but the texture has no backing, nothing really happens ;)
-  gl_video_renderer->draw_texture_gl();
+  gl_video_renderer->draw_texture_gl(true);
   cpu_frame_time.stop();
   cpu_frame_time.printInIntervalls(std::chrono::seconds(3), false);
   cpu_swap_time.start();
