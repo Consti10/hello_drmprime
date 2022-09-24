@@ -52,14 +52,16 @@ struct Options{
   int limitedFrameRate=-1;
   bool keyboard_led_toggle=false;
   int codec_type=0; //H264=0,H265=1,MJPEG=2
+  int n_frames=-1;
 };
-static const char optstr[] = "?:w:h:f:kc:";
+static const char optstr[] = "?:w:h:f:kc:n:";
 static const struct option long_options[] = {
 	{"width", required_argument, NULL, 'w'},
 	{"height", required_argument, NULL, 'w'},
 	{"framerate", no_argument, NULL, 'f'},
 	{"keyboard_led_toggle", no_argument, NULL, 'k'},
 	{"codec_type", no_argument, NULL, 'c'},
+	{"n_frames", required_argument, NULL, 'n'},
 	{NULL, 0, NULL, 0},
 };
 
@@ -84,6 +86,9 @@ static Options parse_options(int argc, char *argv[]){
 		break;
 	  case 'c':
 		options.codec_type= atoi(tmp_optarg);
+		break;
+	  case 'n':
+		options.n_frames= atoi(tmp_optarg);
 		break;
 	  case '?':
 	  default:
@@ -135,14 +140,26 @@ static bool encode_one_frame(AVCodecContext *c,AVFrame *frame,AVPacket* out_pack
 
 //static std::array<uint8_t,3> rgb_to_YCbCr(uint32_t rgb){
 //}
-// https://tvone.com/tech-support/faqs/120-ycrcb-values-for-various-colors
+
 static std::array<uint8_t,3> YCbCr_from_index(int index){
-  std::array<uint8_t,3> red{81,240,90};
-  std::array<uint8_t,3> green{145,34,54};
-  std::array<uint8_t,3> blue{41,110,240};
+  // https://tvone.com/tech-support/faqs/120-ycrcb-values-for-various-colors
+  //std::array<uint8_t,3> red{81,240,90};
+  //std::array<uint8_t,3> green{145,34,54};
+  //std::array<uint8_t,3> blue{41,110,240};
+  // https://www.mikekohn.net/file_formats/yuv_rgb_converter.php
+  std::array<uint8_t,3> red{67,90,240};
+  std::array<uint8_t,3> green{149,43,21};
+  std::array<uint8_t,3> blue{29,255,107};
   const int index_mod=index % 3;
-  if(index_mod==0)return red;
-  if(index_mod==1)return green;
+  if(index_mod==0){
+	std::cout<<"RED\n";
+	return red;
+  }
+  if(index_mod==1){
+	std::cout<<"GREEN\n";
+	return green;
+  }
+  std::cout<<"BLUE\n";
   return blue;
 }
 
@@ -159,6 +176,31 @@ static void fill_image2(AVFrame* frame,int index){
 	for (int x = 0; x < frame->width / 2; x++) {
 	  frame->data[1][y * frame->linesize[1] + x] = YCbCr[1];
 	  frame->data[2][y * frame->linesize[2] + x] = YCbCr[2];
+	}
+  }
+}
+
+// The h265 SW encoder is so "smart" to detect that nothing has "changed" if we
+// just clear the frame with a solid color. Draw "something" to avoid that
+static void intentionally_draw_some_random_data(AVFrame* frame){
+  srand(time(NULL));
+  uint8_t rand_y=rand() % (255+1);
+  uint8_t rand_u=rand() % (255+1);
+  uint8_t rand_v=rand() % (255+1);
+  const int area_divider=6;
+  for (int y = 0; y < frame->height / area_divider; y++) {
+	for (int x = 0; x < frame->width / area_divider; x++) {
+	  frame->data[0][y * frame->linesize[0] + x] = rand_y;
+	  //rand_y++;
+	}
+  }
+  // Cb and Cr
+  for (int y = 0; y < frame->height / 2 / area_divider; y++) {
+	for (int x = 0; x < frame->width / 2 / area_divider; x++) {
+	  frame->data[1][y * frame->linesize[1] + x] = rand_u;
+	  frame->data[2][y * frame->linesize[2] + x] = rand_v;
+	  //rand_u++;
+	  //rand_v++;
 	}
   }
 }
@@ -271,6 +313,11 @@ int main(int argc, char *argv[]){
   int frameCount=0;
   auto lastFrame=std::chrono::steady_clock::now();
   while(true) {
+	if(options.n_frames>0){
+	  if(frameCount>=options.n_frames){
+		break;
+	  }
+	}
 	if(options.keyboard_led_toggle){
 	  // wait for a keyboard input
 	  printf("Press ENTER key to encode new frame\n");
@@ -293,6 +340,7 @@ int main(int argc, char *argv[]){
 	pkt.size = 0;
 	// Draw something into the frame
 	fill_image2(frame,i);
+	intentionally_draw_some_random_data(frame);
 	frame->pts = i;
 
 	const bool got_frame=encode_one_frame(c,frame,&pkt);
