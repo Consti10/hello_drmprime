@@ -46,6 +46,12 @@ static std::string safe_av_hwdevice_get_type_name(enum AVHWDeviceType type){
   return {tmp};
 }
 
+static std::string av_error_as_string(int err){
+    char buf[1024];
+    av_make_error_string(buf,1024,err);
+    return std::string(buf);
+}
+
 static std::string safe_av_get_pix_fmt_name(enum AVPixelFormat pix_fmt){
   auto tmp= av_get_pix_fmt_name(pix_fmt);
   if(tmp== nullptr){
@@ -107,6 +113,55 @@ static std::string all_formats_to_string(const enum AVPixelFormat *pix_fmts){
   }
   ss<<"]";
   return ss.str();
+}
+
+static std::string all_hw_configs_for_this_codec(const AVCodec *decoder){
+    std::stringstream ss;
+    ss<<"all_hw_configs_for_this_codec:\n";
+    for (int i = 0;; i++) {
+        const AVCodecHWConfig *config = avcodec_get_hw_config(decoder, i);
+        if (!config) {
+            if(i==0){
+                ss<<"Codec does not support any HW configurations";
+                return ss.str();
+            }else{
+                return ss.str();
+            }
+
+        }
+        ss<<"HW config "<<i<<" ";
+        ss<<"HW Device name: "<<safe_av_hwdevice_get_type_name(config->device_type);
+        ss<<" PIX fmt: "<<safe_av_get_pix_fmt_name(config->pix_fmt);
+        ss<<"\n";
+    }
+}
+
+static std::string av_packet_flags_to_string(int flags){
+    if(flags & AV_PKT_FLAG_KEY){
+        return "AV_PKT_FLAG_KEY";
+    }
+    return std::to_string(flags);
+}
+
+static std::string debug_av_packet(const AVPacket* packet){
+    std::stringstream ss;
+    ss<<"AVPacket size:"<<packet->size<<",";
+    ss<<" flags:"<<av_packet_flags_to_string(packet->flags)<<",";
+    ss<<" side data elements:"<<packet->side_data_elems;
+    return ss.str();
+}
+static bool is_AV_PIX_FMT_YUV420P(int format){
+    // ffmpeg still has YUVJ420 even though marked as to be removed, and we get it in case of mjpeg decode
+    return format==AV_PIX_FMT_YUV420P || format==AV_PIX_FMT_YUVJ420P;
+}
+static bool is_AV_PIX_FMT_YUV422P(int format){
+    // ffmpeg still has YUVJ420 even though marked as to be removed, and we get it in case of mjpeg decode
+    return format==AV_PIX_FMT_YUV422P || format==AV_PIX_FMT_YUVJ422P;
+}
+
+
+static bool is_AV_PIX_FMT_YUV42XP( int format){
+    return is_AV_PIX_FMT_YUV420P(format) || is_AV_PIX_FMT_YUV422P(format);
 }
 
 

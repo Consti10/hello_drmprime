@@ -52,8 +52,8 @@ void GL_VideoRenderer::init_gl(SDL_Renderer* sdl_renderer) {
 // https://stackoverflow.com/questions/30191911/is-it-possible-to-draw-yuv422-and-yuv420-texture-using-opengl
 void GL_VideoRenderer::update_texture_yuv420P_yuv422P(AVFrame* frame) {
   assert(frame);
-  assert(frame->format==AV_PIX_FMT_YUV420P || frame->format==AV_PIX_FMT_YUVJ422P);
-  if(false){
+  assert(is_AV_PIX_FMT_YUV42XP(frame->format));
+  /*if(false){
 	if(yuv_420_p_sw_frame_texture.sdl_texture== nullptr){
 	  yuv_420_p_sw_frame_texture.sdl_texture = SDL_CreateTexture(sdl_renderer,
 																 SDL_PIXELFORMAT_YV12,
@@ -76,12 +76,14 @@ void GL_VideoRenderer::update_texture_yuv420P_yuv422P(AVFrame* frame) {
 						 frame->linesize[2]);
 	yuv_420_p_sw_frame_texture.has_valid_image= true;
 	return;
-  }
+  }*/
   const GLuint frame_width=frame->width;
   const GLuint frame_height=frame->height;
-  const bool is_yuv422=frame->format==AV_PIX_FMT_YUVJ422P;
-  const GLuint uv_width= is_yuv422 ? frame_width : frame_width/2;
-  const GLuint uv_height=frame_height/2;
+  // Both 420 and 422 have half width
+  const GLuint uv_width= frame_width/2;
+  // 420 has half height, 422 has full height
+  const GLuint uv_height=is_AV_PIX_FMT_YUV420P(frame->format) ? frame_height/2 : frame_height;
+  //std::cerr<<"UV width x height"<<uv_width<<"x"<<uv_height<<"\n";
   GLuint widths[3] = {
 	  frame_width,
 	  uv_width,
@@ -107,7 +109,7 @@ void GL_VideoRenderer::update_texture_yuv420P_yuv422P(AVFrame* frame) {
   glBindTexture(GL_TEXTURE_2D,0);
   GL_shaders::checkGlError("upload YUV420P");
   yuv_420_p_sw_frame_texture.has_valid_image= true;
-  std::cout<<"Colorspace:"<<av_color_space_name(frame->colorspace)<<"\n";
+  //std::cout<<"Colorspace:"<<av_color_space_name(frame->colorspace)<<"\n";
   av_frame_free(&frame);
   GL_shaders::checkGlError("upload YUV420P");
 }
@@ -171,7 +173,6 @@ bool GL_VideoRenderer::update_texture_egl_external(AVFrame* frame) {
   assert(frame->format==AV_PIX_FMT_DRM_PRIME);
   EGLDisplay egl_display=eglGetCurrentDisplay();
   assert(egl_display);
-  auto before=std::chrono::steady_clock::now();
   // We can now also give the frame back to av, since we are updating to a new one.
   if(egl_frame_texture.av_frame!= nullptr){
 	av_frame_free(&egl_frame_texture.av_frame);
@@ -233,8 +234,6 @@ bool GL_VideoRenderer::update_texture_egl_external(AVFrame* frame) {
   // I do not know exactly how that works, but we seem to be able to immediately delete the EGL image, as long as we don't give the frame
   // back to the decoder I assume
   eglDestroyImageKHR(egl_display, image);
-  auto delta=std::chrono::steady_clock::now()-before;
-  std::cout<<"Creating texture took:"<<std::chrono::duration_cast<std::chrono::milliseconds>(delta).count()<<"ms\n";
   egl_frame_texture.has_valid_image= true;
   return true;
 }
@@ -262,19 +261,23 @@ void GL_VideoRenderer::update_texture_vdpau(AVFrame* hw_frame) {
 // "Consumes" the given hw_frame (makes sure it is freed at the apropriate time / the previous one
 // is freed when updating to a new one.
 void GL_VideoRenderer::update_texture_gl(AVFrame *frame) {
+  // We have a new frame and we update (one of the HW/SW) textures with it that will then
+  // be rendered - make sure to discard anything that is still "on the screen" in case the
+  // format has changed in between calls
+  mark_all_video_textures_as_without();
   curr_video_width=frame->width;
   curr_video_height=frame->height;
   if(frame->format == AV_PIX_FMT_DRM_PRIME){
-	std::cout<<"update_texture_drm_prime\n";
+    //std::cout<<"update_texture_drm_prime\n";
 	update_texture_egl_external(frame);
   }else if(frame->format==AV_PIX_FMT_CUDA){
-	std::cout<<"update_texture_CUDA\n";
+    //std::cout<<"update_texture_CUDA\n";
 	update_texture_cuda(frame);
-  }else if(frame->format==AV_PIX_FMT_YUV420P || frame->format==AV_PIX_FMT_YUVJ422P){
-	std::cout<<"update_texture_yuv420P / yuv422P\n";
+  }else if(is_AV_PIX_FMT_YUV42XP(frame->format)){
+    //std::cout<<"update_texture_yuv420P / yuv422P\n";
 	update_texture_yuv420P_yuv422P(frame);
   }else if(frame->format==AV_PIX_FMT_VDPAU){
-	std::cout<<"update_texture_vdpau\n";
+    //std::cout<<"update_texture_vdpau\n";
 	update_texture_vdpau(frame);
   }
   else{
@@ -285,28 +288,29 @@ void GL_VideoRenderer::update_texture_gl(AVFrame *frame) {
 }
 
 void GL_VideoRenderer::draw_texture_gl(const bool dev_draw_alternating_rgb_dummy_frames) {
+  //GL_shaders::debug_set_swap_interval(0);
   if(egl_frame_texture.has_valid_image){
 	gl_shaders->draw_egl(egl_frame_texture.texture);
   }else if(cuda_frametexture.has_valid_image) {
 	gl_shaders->draw_NV12(cuda_frametexture.textures[0], cuda_frametexture.textures[1]);
   }else if(yuv_420_p_sw_frame_texture.has_valid_image){
-	if(yuv_420_p_sw_frame_texture.sdl_texture!= nullptr){
+    /*if(yuv_420_p_sw_frame_texture.sdl_texture!= nullptr){
 	  //std::cout<<"SDL render\n";
 	  SDL_RenderCopy(sdl_renderer, yuv_420_p_sw_frame_texture.sdl_texture, nullptr, nullptr);
-	}else{
+    }else{*/
 	  //std::cout<<"Cust render\n";
 	  gl_shaders->draw_YUV420P(yuv_420_p_sw_frame_texture.textures[0],
 							   yuv_420_p_sw_frame_texture.textures[1],
 							   yuv_420_p_sw_frame_texture.textures[2]);
-	}
+    //}
   }
   else{
-	if(dev_draw_alternating_rgb_dummy_frames){
-	  // no valid video texture yet, alternating draw the rgb textures.
-	  const auto rgb_texture=frameCount % 2==0? texture_rgb_blue:texture_rgb_green;
-	  gl_shaders->draw_rgb(rgb_texture);
-	  frameCount++;
-	}
+	// no valid video texture yet, alternating draw the rgb textures.
+    if(dev_draw_alternating_rgb_dummy_frames){
+        const auto rgb_texture=frameCount % 2==0? texture_rgb_blue:texture_rgb_green;
+        gl_shaders->draw_rgb(rgb_texture);
+        frameCount++;
+    }
   }
 }
 
@@ -321,6 +325,13 @@ void GL_VideoRenderer::clean_video_textures_gl()
     yuv_420_p_sw_frame_texture.has_valid_image=false;
     curr_video_width=0;
     curr_video_height=0;
+}
+
+void GL_VideoRenderer::mark_all_video_textures_as_without()
+{
+    egl_frame_texture.has_valid_image=false;
+    cuda_frametexture.has_valid_image=false;
+    yuv_420_p_sw_frame_texture.has_valid_image=false;
 }
 
 static std::string safe_glGetString(GLenum name){
@@ -339,4 +350,12 @@ std::string GL_VideoRenderer::debug_info() {
   ss<<"GL_VERSION  : "<< gl_version<<"\n";
   ss<<"GL_SHADING_LANGUAGE_VERSION : "<< gl_shading_language_version<<"\n";
   return ss.str();
+}
+
+
+std::vector<int> GL_VideoRenderer::supported_av_hw_formats()
+{
+    std::vector<int> ret;
+    ret.push_back(AV_PIX_FMT_DRM_PRIME);
+    return ret;
 }

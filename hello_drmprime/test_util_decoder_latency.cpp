@@ -286,6 +286,7 @@ int main(int argc, char *argv[]){
   std::cout<<"FMT name:"<<fmt->name<<"\n";
 
   ret = avformat_alloc_output_context2(&avfctx, fmt, fmt->name,"rtp://127.0.0.1:5600");
+  //ret = avformat_alloc_output_context2(&avfctx, fmt, fmt->name,"rtp://192.168.239.160:5600");
   assert(ret>=0);
 
   printf("Writing to %s\n", avfctx->filename);
@@ -351,6 +352,7 @@ int main(int argc, char *argv[]){
 	  if(options.keyboard_led_toggle){
 		switch_led_on_off();
 	  }
+	  //ret= av_write_frame(avfctx,&pkt);
 	  ret=av_interleaved_write_frame(avfctx, &pkt);
 	  assert(ret==0);
 	  av_packet_unref(&pkt);
