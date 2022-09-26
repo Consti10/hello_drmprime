@@ -360,8 +360,8 @@ int main(int argc, char *argv[]){
 		switch_led_on_off();
 	  }
 	  {
-		//std::vector<uint8_t> tmp_data(pkt.data,pkt.data+pkt.size);
-		//std::cout<<StringHelper::vectorAsString(tmp_data);
+		std::vector<uint8_t> tmp_data(pkt.data,pkt.data+pkt.size);
+		std::cout<<StringHelper::vectorAsString(tmp_data)<<"\n";
 	  }
 	  //ret= av_write_frame(avfctx,&pkt);
 	  ret=av_interleaved_write_frame(avfctx, &pkt);
