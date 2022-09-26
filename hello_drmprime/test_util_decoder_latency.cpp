@@ -28,7 +28,7 @@
 #include <sys/mman.h>
 #include <getopt.h>
 
-extern "C" {
+/*extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavutil/pixdesc.h>
@@ -38,13 +38,16 @@ extern "C" {
 #include <libavutil/imgutils.h>
 #include <libavutil/buffer.h>
 #include <libavutil/frame.h>
-}
+}*/
+#include "avcodec_helper.hpp"
 
 #include <iostream>
 #include <thread>
 #include <chrono>
 #include <cassert>
+#include <vector>
 #include "../common_consti/LEDSwap.h"
+#include "../common_consti/StringHelper.hpp"
 
 struct Options{
   int width=1280;
@@ -270,6 +273,8 @@ int main(int argc, char *argv[]){
   //
   av_dict_set_int(&av_dictionary, "reorder_queue_size", 1, 0);
   av_dict_set(&av_dictionary,"max_delay",0,0);
+
+  std::cout<<"All encode formats:"<<all_formats_to_string(codec->pix_fmts)<<"\n";
   //
   avcodec_open2(c, codec, &av_dictionary);
 
@@ -347,10 +352,16 @@ int main(int argc, char *argv[]){
 	const bool got_frame=encode_one_frame(c,frame,&pkt);
 	assert(got_frame);
 	if(got_frame){
-	  printf("Write frame %3d (size=%5d)\n", frameCount++, pkt.size);
+	  std::cout<<"Write frame "<<frameCount++<<" size:"<<pkt.size<<"\n";
+	  //printf("Write frame %3d (size=%5d)\n", frameCount++, pkt.size);
+
 	  // Change led just before writing the rtp data (for one single frame)
 	  if(options.keyboard_led_toggle){
 		switch_led_on_off();
+	  }
+	  {
+		//std::vector<uint8_t> tmp_data(pkt.data,pkt.data+pkt.size);
+		//std::cout<<StringHelper::vectorAsString(tmp_data);
 	  }
 	  //ret= av_write_frame(avfctx,&pkt);
 	  ret=av_interleaved_write_frame(avfctx, &pkt);
