@@ -42,6 +42,7 @@
 #include "avcodec_helper.hpp"
 
 #include <iostream>
+#include <fstream>
 #include <thread>
 #include <chrono>
 #include <cassert>
@@ -56,6 +57,7 @@ struct Options{
   bool keyboard_led_toggle=false;
   int codec_type=0; //H264=0,H265=1,MJPEG=2
   int n_frames=-1;
+  bool write_raw_data_to_file= true;
 };
 static const char optstr[] = "?:w:h:f:kc:n:";
 static const struct option long_options[] = {
@@ -214,6 +216,8 @@ int main(int argc, char *argv[]){
   std::cout<<"Options:\n"
   <<"keyboard_led_toggle:"<<(options.keyboard_led_toggle ? "Y":"N")<<"\n";
   //
+  std::unique_ptr<std::ofstream> m_out_file= nullptr;
+
   avcodec_register_all();
   av_register_all();
   avformat_network_init();
@@ -362,6 +366,23 @@ int main(int argc, char *argv[]){
 	  {
 		std::vector<uint8_t> tmp_data(pkt.data,pkt.data+pkt.size);
 		std::cout<<StringHelper::vectorAsString(tmp_data)<<"\n";
+
+		if(options.write_raw_data_to_file){
+		  if(m_out_file== nullptr){
+			std::stringstream ss;
+			ss<<"/tmp/original_raw.";
+			if(options.codec_type==0){
+			  ss<<"h264";
+			}else if(options.codec_type==1){
+			  ss<<"h265";
+			}else{
+			  ss<<"mjpeg";
+			}
+			m_out_file=std::make_unique<std::ofstream>(ss.str());
+		  }
+		  m_out_file->write((const char*)pkt.data,pkt.size);
+		  m_out_file->flush();
+		}
 	  }
 	  //ret= av_write_frame(avfctx,&pkt);
 	  ret=av_interleaved_write_frame(avfctx, &pkt);
