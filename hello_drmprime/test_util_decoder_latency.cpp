@@ -246,7 +246,7 @@ int main(int argc, char *argv[]){
 	c->max_b_frames = 1;
   }
   if(codec_id==AV_CODEC_ID_MJPEG){
-	c->pix_fmt = AV_PIX_FMT_YUVJ422P;
+	c->pix_fmt = AV_PIX_FMT_YUVJ420P;
   }else{
 	c->pix_fmt = AV_PIX_FMT_YUV420P;
   }
@@ -270,6 +270,8 @@ int main(int argc, char *argv[]){
 	always_av_dict_set(&av_dictionary,  "tune", "zerolatency", 0);
 	always_av_dict_set(&av_dictionary, "rc-lookahead","0",0);
 	//always_av_dict_set(&av_dictionary, "profile","baseline",0);
+  }else if(codec_id==AV_CODEC_ID_MJPEG){
+	always_av_dict_set(&av_dictionary,"huffman","0",0);
   }
   av_log_set_level(AV_LOG_TRACE);
   c->thread_count = 1;
@@ -352,7 +354,6 @@ int main(int argc, char *argv[]){
 	fill_image2(frame,i);
 	intentionally_draw_some_random_data(frame);
 	frame->pts = i;
-
 	const bool got_frame=encode_one_frame(c,frame,&pkt);
 	assert(got_frame);
 	if(got_frame){
@@ -385,6 +386,10 @@ int main(int argc, char *argv[]){
 		}
 	  }
 	  //ret= av_write_frame(avfctx,&pkt);
+	  // Dirty mjpeg hack
+	  if(codec_id == AV_CODEC_ID_MJPEG){
+		avfctx->streams[0]->codecpar->format=c->pix_fmt;
+	  }
 	  ret=av_interleaved_write_frame(avfctx, &pkt);
 	  assert(ret==0);
 	  av_packet_unref(&pkt);
