@@ -218,8 +218,8 @@ int main(int argc, char *argv[]){
   //
   std::unique_ptr<std::ofstream> m_out_file= nullptr;
 
-  avcodec_register_all();
-  av_register_all();
+  //avcodec_register_all();
+  //av_register_all();
   avformat_network_init();
 
   const AVCodecID codec_id = av_codec_id_from_user(options);
@@ -231,7 +231,7 @@ int main(int argc, char *argv[]){
   AVFrame *frame;
   AVPacket pkt;
 
-  codec = avcodec_find_encoder(codec_id);
+  codec = (AVCodec*)avcodec_find_encoder(codec_id);
   c = avcodec_alloc_context3(codec);
 
   const int video_width=options.width;
@@ -296,13 +296,14 @@ int main(int argc, char *argv[]){
   AVOutputFormat* fmt = av_guess_format("rtp", NULL, NULL);
   std::cout<<"FMT name:"<<fmt->name<<"\n";
 
-  ret = avformat_alloc_output_context2(&avfctx, fmt, fmt->name,"rtp://127.0.0.1:5600");
-  //ret = avformat_alloc_output_context2(&avfctx, fmt, fmt->name,"rtp://192.168.239.160:5600");
+  const char* filename="rtp://127.0.0.1:5600";
+  //ret = avformat_alloc_output_context2(&avfctx, fmt, fmt->name,filename);
+  ret = avformat_alloc_output_context2(&avfctx, fmt, fmt->name,filename);
   assert(ret>=0);
 
-  printf("Writing to %s\n", avfctx->filename);
+  printf("Writing to %s\n", filename);
 
-  avio_open(&avfctx->pb, avfctx->filename, AVIO_FLAG_WRITE);
+  avio_open(&avfctx->pb, filename, AVIO_FLAG_WRITE);
 
   AVStream* stream = avformat_new_stream(avfctx, codec);
   stream->codecpar->bit_rate = 400000;
