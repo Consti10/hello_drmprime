@@ -58,15 +58,17 @@ struct Options{
   int codec_type=0; //H264=0,H265=1,MJPEG=2
   int n_frames=-1;
   bool write_raw_data_to_file= true;
+  bool print_raw_data=false;
 };
-static const char optstr[] = "?:w:h:f:kc:n:";
+static const char optstr[] = "?:w:h:f:kc:n:p";
 static const struct option long_options[] = {
 	{"width", required_argument, NULL, 'w'},
 	{"height", required_argument, NULL, 'w'},
-	{"framerate", no_argument, NULL, 'f'},
+	{"framerate", required_argument, NULL, 'f'},
 	{"keyboard_led_toggle", no_argument, NULL, 'k'},
 	{"codec_type", no_argument, NULL, 'c'},
 	{"n_frames", required_argument, NULL, 'n'},
+	{"print_raw_data", no_argument, NULL, 'p'},
 	{NULL, 0, NULL, 0},
 };
 
@@ -95,6 +97,8 @@ static Options parse_options(int argc, char *argv[]){
 	  case 'n':
 		options.n_frames= atoi(tmp_optarg);
 		break;
+	  case 'p':
+		options.print_raw_data= true;
 	  case '?':
 	  default:
 		std::cout<<"Usage: "<<" -f --framerate [limit framerate]"<<"\n";
@@ -366,9 +370,10 @@ int main(int argc, char *argv[]){
 		switch_led_on_off();
 	  }
 	  {
-		std::vector<uint8_t> tmp_data(pkt.data,pkt.data+pkt.size);
-		std::cout<<StringHelper::vectorAsString(tmp_data)<<"\n";
-
+		if(options.print_raw_data){
+		  std::vector<uint8_t> tmp_data(pkt.data,pkt.data+pkt.size);
+		  std::cout<<StringHelper::vectorAsString(tmp_data)<<"\n";
+		}
 		if(options.write_raw_data_to_file){
 		  if(m_out_file== nullptr){
 			std::stringstream ss;
