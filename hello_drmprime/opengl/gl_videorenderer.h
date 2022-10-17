@@ -44,8 +44,9 @@ struct YUV420PSwFrameTexture{
 class GL_VideoRenderer {
  public:
   // always called with the OpenGL context bound.
-  void init_gl(SDL_Renderer* sdl_renderer);
-  SDL_Renderer* sdl_renderer;
+  //void init_gl(SDL_Renderer* sdl_renderer);
+  //SDL_Renderer* sdl_renderer;
+  void init_gl();
   // MUST BE ! called from the gl thread, update the appropriate texture type with a new video frame
   // (The old one will be freed if still around).
   void update_texture_gl(AVFrame* frame);

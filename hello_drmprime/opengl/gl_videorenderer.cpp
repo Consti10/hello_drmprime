@@ -39,8 +39,7 @@ static void create_rgba_texture(GLuint& tex_id,uint32_t color_rgba){
   glBindTexture(GL_TEXTURE_2D,0);
 }
 
-void GL_VideoRenderer::init_gl(SDL_Renderer* sdl_renderer) {
-  this->sdl_renderer=sdl_renderer;
+void GL_VideoRenderer::init_gl() {
   create_rgba_texture(texture_rgb_green, create_pixel_rgba(0,255,0,255));
   create_rgba_texture(texture_rgb_blue, create_pixel_rgba(0,0,255,255));
   gl_shaders=std::make_unique<GL_shaders>();

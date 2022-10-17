@@ -87,7 +87,7 @@ void EGLOut::setup_gl() {
 #ifdef X_USE_SDL
   gl_video_renderer->init_gl(rend);
 #else
-  gl_video_renderer->init_gl(nullptr);
+  gl_video_renderer->init_gl();
 #endif
 }
 
